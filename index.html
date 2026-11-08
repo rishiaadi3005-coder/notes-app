@@ -11,89 +11,185 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Ten Days">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#141C18">
+<meta name="theme-color" content="#0A0E0D" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#EEF2EF" media="(prefers-color-scheme: light)">
 <style>
+/* Ten Days look: dark by default, soft teal glow, warm red for the check-in button, glass cards.
+   Every color is a token, so the light theme only swaps tokens. */
 :root {
-  --bg: #F1F3F0; --surface: #FFFFFF; --ink: #141C18; --muted: #545F59; --line: #DAE0DA;
-  --corner: #0E6B58; --corner-soft: #E0EFE9; --signal: #D4452A; --signal-ink: #FFFFFF; --signal-soft: #FBE6E0;
-  --warn: #8A5E0F; --warn-soft: #F6ECD8;
+  --bg: #0A0E0D; --glow-a: rgba(64, 210, 172, .16); --glow-b: rgba(214, 72, 50, .07);
+  --glass-hi: rgba(255, 255, 255, .075); --glass-lo: rgba(255, 255, 255, .03); --glass-solid: #151C19;
+  --line: rgba(255, 255, 255, .11); --field: rgba(255, 255, 255, .05);
+  --ink: #ECF2EF; --muted: #A9B6B0;
+  --corner: #5FD6B6; --corner-2: #3FBF9C; --corner-ink: #04211A; --corner-soft: rgba(95, 214, 182, .12); --corner-glow: rgba(63, 191, 156, .28);
+  --ok-text: #7FE3C7; --bad-text: #FF9A8A; --warn-text: #F2C76E; --warn-soft: rgba(242, 199, 110, .10);
+  --red-1: #D2402D; --red-2: #A62E1F; --signal-ink: #FFFFFF; --signal-soft: rgba(255, 110, 90, .13); --signal-line: rgba(255, 130, 110, .5);
+  --red-glow: rgba(210, 64, 45, .42); --red-glow-hi: rgba(210, 64, 45, .62);
+  --orb-1: rgba(110, 230, 198, .30); --orb-2: rgba(80, 210, 175, .16); --orb-3: rgba(80, 210, 175, 0);
+  --orb-shine: rgba(150, 250, 222, .18); --orb-halo: rgba(95, 214, 182, .30);
+  --bar-bg: rgba(10, 14, 13, .80); --shadow: rgba(0, 0, 0, .35); --hx: 0;
   --bar: 104px;
-  color-scheme: light;
+  color-scheme: dark;
 }
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #0E1412; --surface: #17201C; --ink: #E7ECE8; --muted: #A3AEA8; --line: #27312C;
-    --corner: #43B89C; --corner-soft: #173129; --signal: #EE6441; --signal-ink: #1A0E0A; --signal-soft: #3A1C14;
-    --warn: #D9A64A; --warn-soft: #352A15; color-scheme: dark; }
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #EEF2EF; --glow-a: rgba(30, 150, 120, .14); --glow-b: rgba(214, 72, 50, .05);
+    --glass-hi: rgba(255, 255, 255, .88); --glass-lo: rgba(255, 255, 255, .66); --glass-solid: #FFFFFF;
+    --line: rgba(20, 40, 32, .13); --field: rgba(255, 255, 255, .8);
+    --ink: #121A16; --muted: #4C5751;
+    --corner: #12806A; --corner-2: #0D6855; --corner-ink: #FFFFFF; --corner-soft: rgba(18, 128, 106, .10); --corner-glow: rgba(18, 128, 106, .22);
+    --ok-text: #0B5E4D; --bad-text: #B3301D; --warn-text: #7A520B; --warn-soft: rgba(160, 110, 20, .10);
+    --signal-soft: rgba(201, 58, 40, .08); --signal-line: rgba(201, 58, 40, .45);
+    --red-glow: rgba(201, 58, 40, .28); --red-glow-hi: rgba(201, 58, 40, .42);
+    --orb-1: rgba(40, 170, 140, .22); --orb-2: rgba(40, 170, 140, .10); --orb-3: rgba(40, 170, 140, 0);
+    --orb-shine: rgba(255, 255, 255, .5); --orb-halo: rgba(18, 128, 106, .18);
+    --bar-bg: rgba(238, 242, 239, .84); --shadow: rgba(20, 40, 32, .12);
+    color-scheme: light;
+  }
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--ink); }
+html { background: var(--bg); }
+html, body { margin: 0; color: var(--ink); }
 /* Body text follows the iPhone Text Size setting through -apple-system-body; everything else is sized in em from it. */
-body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 17px; line-height: 1.45; }
-@supports (font: -apple-system-body) { body { font: -apple-system-body; line-height: 1.45; } }
+body {
+  min-height: 100vh;
+  background: radial-gradient(90% 55% at 50% -8%, var(--glow-a), transparent 70%), radial-gradient(70% 40% at 50% 112%, var(--glow-b), transparent 70%), var(--bg);
+  font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 17px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+}
+@supports (font: -apple-system-body) {
+  body { font: -apple-system-body; line-height: 1.45; font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, sans-serif; }
+}
 button, input, textarea, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
-:focus-visible { outline: 3px solid var(--corner); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--corner); outline-offset: 3px; }
 [hidden] { display: none !important; }
 
-.screen { max-width: 540px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; gap: 1em;
-  padding-top: calc(1.2em + env(safe-area-inset-top, 0px));
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 1em); }
-h1 { font-size: 1.6em; line-height: 1.15; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.screen { max-width: 540px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; gap: 1.1em;
+  padding-top: calc(1.4em + env(safe-area-inset-top, 0px));
+  padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px));
+  padding-bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 1.2em); }
+#screen.enter { animation: screenin 180ms ease-out both; }
+@keyframes screenin { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+h1 { font-size: 2em; line-height: 1.1; margin: 0; font-weight: 800; letter-spacing: -.02em; text-wrap: balance; }
 h1:focus { outline: none; }
 p { margin: 0; }
 .sub { color: var(--muted); }
 .small { font-size: .85em; color: var(--muted); }
-.lbl { font-size: .85em; font-weight: 600; color: var(--muted); }
+.lbl { font-size: .85em; font-weight: 650; color: var(--muted); letter-spacing: .01em; }
 .push { margin-top: auto; }
-.group { display: flex; flex-direction: column; gap: .75em; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 1em; display: flex; flex-direction: column; gap: .75em; min-width: 0; }
-.card.warn { background: var(--warn-soft); border-color: var(--warn); }
-.card.bad { background: var(--signal-soft); border-color: var(--signal); }
-.card.ok { background: var(--corner-soft); border-color: var(--corner); }
-.status { font-weight: 600; }
-.status.ok { color: var(--corner); }
-.status.bad { color: var(--signal); }
+.group { display: flex; flex-direction: column; gap: .8em; }
 
-.btn { min-height: 48px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: .6em 1em; border-radius: 12px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center; text-align: center; width: 100%; }
-.btn.primary { min-height: 56px; background: var(--ink); color: var(--bg); border-color: var(--ink); font-size: 1.05em; }
-.btn.corner { min-height: 56px; background: var(--corner); color: #fff; border-color: var(--corner); font-size: 1.05em; }
-.btn.danger { background: var(--signal); color: var(--signal-ink); border-color: var(--signal); }
-.btn.link { background: none; border: 0; text-decoration: underline; min-height: 44px; width: auto; align-self: center; }
+/* glass surfaces, with a solid fallback where blur isn't supported */
+.card, .btn, .chip, code, .cancelbar, .toast {
+  -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%);
+}
+.card { background: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); border: 1px solid var(--line); border-radius: 24px; padding: 1.15em 1.2em;
+  display: flex; flex-direction: column; gap: .8em; min-width: 0; box-shadow: 0 14px 34px var(--shadow); }
+.card.warn { background: linear-gradient(180deg, var(--warn-soft), var(--glass-lo)); border-color: var(--warn-text); }
+.card.bad { background: linear-gradient(180deg, var(--signal-soft), var(--glass-lo)); border-color: var(--signal-line); }
+.card.ok { background: linear-gradient(180deg, var(--corner-soft), var(--glass-lo)); border-color: var(--corner); }
+.status { font-weight: 700; }
+.status.ok { color: var(--ok-text); }
+.status.bad { color: var(--bad-text); }
+
+.btn { min-height: 48px; border: 1px solid var(--line); background: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); color: var(--ink);
+  padding: .7em 1.1em; border-radius: 18px; font-weight: 650; text-decoration: none; display: flex; align-items: center; justify-content: center;
+  text-align: center; width: 100%; transition: transform 120ms ease, filter 120ms ease; }
+.btn.primary, .btn.corner { min-height: 56px; background: linear-gradient(180deg, var(--corner), var(--corner-2)); color: var(--corner-ink);
+  border-color: transparent; font-size: 1.05em; font-weight: 750; box-shadow: 0 10px 26px var(--corner-glow); }
+.btn.danger { background: linear-gradient(180deg, var(--red-1), var(--red-2)); color: var(--signal-ink); border-color: transparent; }
+.btn.link { background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; text-decoration: underline; text-underline-offset: 3px;
+  min-height: 44px; width: auto; align-self: center; color: var(--ink); }
 .btn:disabled { opacity: .45; cursor: default; }
 .btn .hint { display: block; font-weight: 400; font-size: .85em; color: var(--muted); }
-.morelist .btn { justify-content: space-between; text-align: left; flex-direction: column; align-items: flex-start; }
-.row { display: flex; gap: .5em; flex-wrap: wrap; align-items: center; }
+.morelist .btn { justify-content: space-between; text-align: left; flex-direction: column; align-items: flex-start; border-radius: 20px; padding: .85em 1.15em; }
+.row { display: flex; gap: .6em; flex-wrap: wrap; align-items: center; }
 .row > .btn { flex: 1; width: auto; }
-.chip { min-height: 48px; border: 1px solid var(--line); background: transparent; padding: .4em 1em; border-radius: 99px; font-weight: 600; }
+.chip { min-height: 48px; border: 1px solid var(--line); background: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); padding: .45em 1.1em; border-radius: 99px; font-weight: 650;
+  transition: transform 120ms ease, filter 120ms ease; }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.field { display: flex; flex-direction: column; gap: .3em; min-width: 0; }
-input[type=text], input[type=tel], textarea { width: 100%; min-width: 0; min-height: 48px; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: .6em .8em; }
-.toggle { display: flex; gap: .75em; align-items: flex-start; min-height: 48px; }
+.btn:active:not(:disabled), .chip:active, .sos:active { transform: scale(.97); filter: brightness(1.12); }
+
+.field { display: flex; flex-direction: column; gap: .35em; min-width: 0; }
+input[type=text], input[type=tel], textarea { width: 100%; min-width: 0; min-height: 48px; border: 1px solid var(--line); background: var(--field); border-radius: 16px; padding: .65em .9em; }
+.toggle { display: flex; gap: .8em; align-items: flex-start; min-height: 48px; }
 .toggle input { width: 26px; height: 26px; margin-top: .1em; accent-color: var(--corner); flex: none; }
-code { font: .85em ui-monospace, Menlo, Consolas, monospace; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: .6em .8em; word-break: break-all; display: block; -webkit-user-select: all; user-select: all; }
-ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: .5em; }
+code { font: .85em ui-monospace, Menlo, Consolas, monospace; background: var(--field); border: 1px solid var(--line); border-radius: 14px; padding: .7em .9em;
+  word-break: break-all; display: block; -webkit-user-select: all; user-select: all; }
+ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: .55em; }
 
-.breath { align-self: center; position: relative; width: min(70vw, 260px); aspect-ratio: 1; border-radius: 50%; border: 3px solid var(--corner); display: grid; place-items: center; overflow: hidden; }
-.breath .fill { position: absolute; inset: 0; border-radius: 50%; background: var(--corner-soft); transform: scale(0); animation: breathfill 10s linear forwards; }
-.breath .count { position: relative; font-size: 3em; font-weight: 800; font-variant-numeric: tabular-nums; }
-@keyframes breathfill { from { transform: scale(0); } to { transform: scale(1); } }
-@media (prefers-reduced-motion: reduce) { .breath .fill { animation: none; transform: scale(1); } }
+/* home: a soft orb behind the status line */
+#screen[data-screen="home"] #status-line { position: relative; isolation: isolate; min-height: min(42vh, 320px); display: grid; place-items: center; text-align: center;
+  padding: 2em 1.2em; font-size: 1.1em; font-weight: 600; color: var(--ink); }
+#screen[data-screen="home"] #status-line::before { content: ""; position: absolute; z-index: -1; left: 50%; top: 50%; width: min(86vw, 360px); aspect-ratio: 1;
+  border-radius: 50%; transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 50% 38%, var(--orb-shine), transparent 32%), radial-gradient(circle, var(--orb-1), var(--orb-2) 45%, var(--orb-3) 70%);
+  box-shadow: 0 0 80px var(--orb-halo); animation: idleglow 7s ease-in-out infinite alternate; }
+@keyframes idleglow { from { opacity: .72; transform: translate(-50%, -50%) scale(.95); } to { opacity: 1; transform: translate(-50%, -50%) scale(1.04); } }
 
-.logrow { display: flex; flex-direction: column; gap: .4em; padding: .8em 0; border-bottom: 1px solid var(--line); }
+/* breath: a glowing orb that grows, a thin progress ring, the countdown */
+@property --p { syntax: "<number>"; inherits: false; initial-value: 0; }
+.breath { align-self: center; position: relative; width: min(72vw, 280px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; margin: .4em 0; }
+.breath::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--line); }
+.breath::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(var(--corner) calc(var(--p) * 1turn), transparent 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+  animation: ring var(--bdur, 10s) linear var(--bdelay, 0s) both; }
+@keyframes ring { from { --p: 0; } to { --p: 1; } }
+.breath .fill { position: absolute; inset: 7%; border-radius: 50%;
+  background: radial-gradient(circle at 50% 36%, var(--orb-shine), transparent 30%), radial-gradient(circle, var(--orb-1), var(--orb-2) 55%, var(--orb-3) 72%);
+  box-shadow: 0 0 60px var(--orb-halo), inset 0 0 40px var(--orb-halo);
+  transform: scale(.35); animation: breathfill 10s linear forwards; }
+@keyframes breathfill { from { transform: scale(.35); opacity: .75; } to { transform: scale(1); opacity: 1; } }
+.breath .count { position: relative; font-size: 3.4em; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+
+.logrow { display: flex; flex-direction: column; gap: .4em; padding: .85em 0; border-bottom: 1px solid var(--line); }
 .logrow:last-child { border-bottom: 0; }
 
 /* fixed SOS bar, above the home indicator */
-.sosbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--bg); border-top: 1px solid var(--line);
+.sosbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--bar-bg); border-top: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(22px) saturate(150%); backdrop-filter: blur(22px) saturate(150%);
   padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .sosbar > * { max-width: 540px; margin: 0 auto; }
-.sos { width: 100%; min-height: 72px; border: 0; border-radius: 18px; background: var(--signal); color: var(--signal-ink); font-size: 1.5em; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+.sos { position: relative; z-index: 0; width: 100%; min-height: 72px; border: 0; border-radius: 22px; color: var(--signal-ink); background: linear-gradient(180deg, var(--red-1), var(--red-2));
+  font-size: 1.5em; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 8px 22px var(--red-glow);
+  transition: transform 120ms ease, filter 120ms ease;
   -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
-.cancelbar { display: flex; gap: .75em; align-items: center; min-height: 72px; background: var(--signal-soft); border: 2px solid var(--signal); border-radius: 18px; padding: .5em .75em; }
-.cancelbar b { flex: 1; font-size: 1.15em; }
+/* the glow is its own layer and only its opacity animates, which is cheap to draw */
+.sos::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 10px 36px var(--red-glow-hi); opacity: .45; animation: sosglow 3.6s ease-in-out infinite alternate; }
+@keyframes sosglow { from { opacity: .45; } to { opacity: 1; } }
+.cancelbar { display: flex; gap: .75em; align-items: center; min-height: 72px; background: linear-gradient(180deg, var(--signal-soft), var(--glass-lo));
+  border: 1px solid var(--signal-line); border-radius: 22px; padding: .5em .75em; }
+.cancelbar b { flex: 1; font-size: 1.15em; font-weight: 800; }
 .cancelbar .btn { width: auto; min-width: 110px; min-height: 56px; }
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 8px); z-index: 40;
-  background: var(--ink); color: var(--bg); padding: .6em 1em; border-radius: 12px; font-weight: 600; max-width: calc(100% - 32px); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 10px); z-index: 40;
+  background: var(--ink); color: var(--bg); padding: .65em 1.1em; border-radius: 16px; font-weight: 650; max-width: calc(100% - 32px); box-shadow: 0 10px 30px var(--shadow); }
+
+/* hidden switch used only to trigger the iPhone haptic tick */
+.hx { position: fixed; left: 0; bottom: 0; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
+
+/* no blur support: solid surfaces */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card, .chip, code, .btn:not(.primary):not(.corner):not(.danger):not(.link) { background: var(--glass-solid); }
+  .sosbar { background: var(--bg); }
+}
+
+/* Reduce Motion: no idle glow, no pulsing, no fades or press scaling; the breath shows its filled state */
+@media (prefers-reduced-motion: reduce) {
+  #screen.enter { animation: none; }
+  #screen[data-screen="home"] #status-line::before { animation: none; opacity: 1; }
+  .sos { transition: none; }
+  .sos::before { animation: none; opacity: .75; }
+  .btn, .chip { transition: none; }
+  .btn:active:not(:disabled), .chip:active, .sos:active { transform: none; filter: none; }
+  .breath .fill { animation: none; transform: scale(1); opacity: 1; }
+  .breath::after { animation: none; --p: 1; }
+}
 </style>
 </head>
 <body>
@@ -209,6 +305,39 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
   }
   save();
 
+  // ============ haptics: called only from tap handlers, never from timers or network callbacks ============
+  var HX = { vibrate: false };
+  try { HX.vibrate = typeof navigator.vibrate === "function"; } catch (e) {}
+  var hxLabel = null;
+  if (!HX.vibrate) {
+    // iPhone: toggling a hidden switch from a tap is reported to give a light tick (iOS Safari 17.4+)
+    var hxInput = h("input", { type: "checkbox", id: "hx", tabindex: "-1" });
+    hxInput.setAttribute("switch", "");
+    hxLabel = h("label", { id: "hx-label", for: "hx", class: "hx", "aria-hidden": "true" }, hxInput, "haptic");
+    document.body.appendChild(hxLabel);
+  }
+  var HX_PATTERN = { tick: 8, press: [22, 40, 30], success: [12, 60, 12], warn: [35, 60, 35] };
+  function haptic(kind) {
+    try {
+      if (S.haptics === false) return;
+      if (HX.vibrate) { navigator.vibrate(HX_PATTERN[kind] || HX_PATTERN.tick); return; }
+      if (hxLabel) hxLabel.click();   // one light tick for every kind; no separate success or failure feel
+    } catch (e) {}
+  }
+  document.addEventListener("click", function (e) {
+    try {
+      var t = e.target;
+      if (!t || !t.closest || t.closest("#hx-label")) return;
+      if (t.closest("#cd-cancel")) return;   // Cancel buzzes inside cancelSOS, only once the 700 ms guard passes
+      // A tap on a label that wraps a checkbox fires twice (label, then box). Only the box's click buzzes.
+      var lab = t.closest("label");
+      if (lab && t.tagName !== "INPUT" && lab.querySelector("input[type=checkbox]")) return;
+      if (t.closest("#sos")) return haptic("press");
+      if (t.closest("#test-yes")) return haptic("success");
+      if (t.closest("button, a.btn, .chip, .toggle input")) haptic("tick");
+    } catch (x) {}
+  }, true);
+
   // Topics are made only inside the home-screen app, never in Safari.
   function ensureTopics() {
     if (!isStandalone()) return false;
@@ -258,7 +387,7 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
   // ============ replies (his buttons) ============
   var awaitingTest = null; // { kind: "alert"|"night", since }
   function pollReplies() {
-    if (!S.topics.replies || !navigator.onLine) return Promise.resolve();
+    if (!S.topics.replies || !navigator.onLine || document.hidden) return Promise.resolve();
     var since = Math.max(S.lastReply ? S.lastReply.at : 0, Date.now() - 24 * 3600e3);
     return fetch(NTFY + encodeURIComponent(S.topics.replies) + "/json?poll=1&since=" + Math.floor(since / 1000))
       .then(function (r) { return r.ok ? r.text() : ""; })
@@ -281,8 +410,9 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
   function schedulePoll() {
     clearTimeout(pollT);
     if (awaitingTest && Date.now() >= fastUntil) awaitingTest = null;
+    if (document.hidden) return;   // no polling at all while the app is in the background; it restarts when shown
     var fast = (ui.screen === "breath" || !!awaitingTest) && Date.now() < fastUntil;
-    pollT = setTimeout(function () { if (!document.hidden) pollReplies().then(schedulePoll); else schedulePoll(); }, fast ? 5000 : 15000);
+    pollT = setTimeout(function () { if (!document.hidden) pollReplies().then(schedulePoll); }, fast ? 5000 : 15000);
   }
   function markTested(kind) {
     if (kind === "alert") S.alertTestedAt = Date.now();
@@ -313,7 +443,7 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
     }, 1000);
   }
   function stopCountdown() { clearInterval(cdT); cdT = null; $("cancelbar").hidden = true; $("sos").hidden = false; }
-  function cancelSOS() { if (Date.now() - cdStart < 700) return; stopCountdown(); releaseAwake(); toast("Cancelled. Nothing was sent."); }
+  function cancelSOS() { if (Date.now() - cdStart < 700) return; haptic("warn"); stopCountdown(); releaseAwake(); toast("Cancelled. Nothing was sent."); }
   function sendSOS() {
     var now = Date.now();
     var again = S.log.some(function (e) { return e.at > now - NIGHT_MS && !e.untested && (e.sent === true || e.sent === null); });
@@ -521,7 +651,7 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
         h("p", { class: cls, id: "sos-status", "aria-live": "polite", text: txt }),
         h("p", { class: "small", id: "keep-on", text: "Keep the screen on until it says Sent." }),
         replied ? h("p", { class: "status ok", id: "reply-line", text: "He replied: " + S.lastReply.text }) : null,
-        h("div", { class: "breath", "aria-hidden": "true" }, fill, h("span", { class: "count", id: "breath-count", text: done ? "✓" : String(Math.ceil(left / 1000)) })),
+        h("div", { class: "breath", "aria-hidden": "true", style: "--bdur:" + BREATH_MS + "ms;--bdelay:-" + (BREATH_MS - left) + "ms" }, fill, h("span", { class: "count", id: "breath-count", text: done ? "✓" : String(Math.ceil(left / 1000)) })),
         h("p", { class: "sub", text: "Breathe in slowly, then out longer." }),
         h("div", { class: "group push" },
           st.status === "notsent" ? h("button", { class: "btn primary", type: "button", id: "resend", onclick: resend }, "Resend") : null,
@@ -567,6 +697,9 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
           item("m-log", "Private log", null, "m-log"),
           item("m-goals", "Goals", null, "m-goals"),
           item("m-backup", "Backup", null, "m-backup")),
+        h("label", { class: "toggle", for: "haptics-toggle" },
+          h("input", { type: "checkbox", id: "haptics-toggle", checked: S.haptics !== false, onchange: function (e) { S.haptics = e.target.checked; save(); } }),
+          h("span", { text: "Haptics" })),
         back("home")
       ] };
     },
@@ -743,6 +876,8 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
     var nodes = [h1];
     (function flat(list) { list.forEach(function (n) { if (Array.isArray(n)) flat(n); else if (n) nodes.push(n); }); })(out.body);
     root.replaceChildren.apply(root, nodes);
+    root.setAttribute("data-screen", ui.screen);                       // style hook only
+    if (moveFocus) { root.classList.remove("enter"); void root.offsetWidth; root.classList.add("enter"); }
     if (!moveFocus) {
       // keep what the person was typing across live refreshes
       Object.keys(vals).forEach(function (id) { var i = $(id); if (i) i.value = vals[id]; });
@@ -769,8 +904,12 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
   $("cd-cancel").addEventListener("click", cancelSOS);
   function measureBar() { document.documentElement.style.setProperty("--bar", $("sosbar").offsetHeight + "px"); }
   window.addEventListener("resize", measureBar);
-  document.addEventListener("visibilitychange", function () { if (!document.hidden) { pollReplies(); render(false); } });
-  window.addEventListener("online", function () { pollReplies(); });
+  try { if (window.ResizeObserver) new ResizeObserver(measureBar).observe($("sosbar")); } catch (e) {}   // the bar grows with Text Size
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) { clearTimeout(pollT); return; }
+    pollReplies(); render(false); schedulePoll();
+  });
+  window.addEventListener("online", function () { if (!document.hidden) pollReplies(); });
 
   function start() {
     if (S.lastSOS && S.lastSOS.status === "sending") { S.lastSOS.status = "notsent"; S.lastSOS.why = "timeout"; var e = S.log.filter(function (x) { return x.at === S.lastSOS.at; })[0]; if (e && e.sent === null) e.sent = false; save(); }
