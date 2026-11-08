@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ten Days</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ten Days">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#141C18">
+<style>
+:root {
+  --bg: #F1F3F0; --surface: #FFFFFF; --ink: #141C18; --muted: #545F59; --line: #DAE0DA;
+  --corner: #0E6B58; --corner-soft: #E0EFE9; --signal: #D4452A; --signal-ink: #FFFFFF; --signal-soft: #FBE6E0;
+  --warn: #8A5E0F; --warn-soft: #F6ECD8;
+  --bar: 104px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0E1412; --surface: #17201C; --ink: #E7ECE8; --muted: #A3AEA8; --line: #27312C;
+    --corner: #43B89C; --corner-soft: #173129; --signal: #EE6441; --signal-ink: #1A0E0A; --signal-soft: #3A1C14;
+    --warn: #D9A64A; --warn-soft: #352A15; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); }
+/* Body text follows the iPhone Text Size setting through -apple-system-body; everything else is sized in em from it. */
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 17px; line-height: 1.45; }
+@supports (font: -apple-system-body) { body { font: -apple-system-body; line-height: 1.45; } }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--corner); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+.screen { max-width: 540px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; gap: 1em;
+  padding-top: calc(1.2em + env(safe-area-inset-top, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 1em); }
+h1 { font-size: 1.6em; line-height: 1.15; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+h1:focus { outline: none; }
+p { margin: 0; }
+.sub { color: var(--muted); }
+.small { font-size: .85em; color: var(--muted); }
+.lbl { font-size: .85em; font-weight: 600; color: var(--muted); }
+.push { margin-top: auto; }
+.group { display: flex; flex-direction: column; gap: .75em; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 1em; display: flex; flex-direction: column; gap: .75em; min-width: 0; }
+.card.warn { background: var(--warn-soft); border-color: var(--warn); }
+.card.bad { background: var(--signal-soft); border-color: var(--signal); }
+.card.ok { background: var(--corner-soft); border-color: var(--corner); }
+.status { font-weight: 600; }
+.status.ok { color: var(--corner); }
+.status.bad { color: var(--signal); }
+
+.btn { min-height: 48px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: .6em 1em; border-radius: 12px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center; text-align: center; width: 100%; }
+.btn.primary { min-height: 56px; background: var(--ink); color: var(--bg); border-color: var(--ink); font-size: 1.05em; }
+.btn.corner { min-height: 56px; background: var(--corner); color: #fff; border-color: var(--corner); font-size: 1.05em; }
+.btn.danger { background: var(--signal); color: var(--signal-ink); border-color: var(--signal); }
+.btn.link { background: none; border: 0; text-decoration: underline; min-height: 44px; width: auto; align-self: center; }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn .hint { display: block; font-weight: 400; font-size: .85em; color: var(--muted); }
+.morelist .btn { justify-content: space-between; text-align: left; flex-direction: column; align-items: flex-start; }
+.row { display: flex; gap: .5em; flex-wrap: wrap; align-items: center; }
+.row > .btn { flex: 1; width: auto; }
+.chip { min-height: 48px; border: 1px solid var(--line); background: transparent; padding: .4em 1em; border-radius: 99px; font-weight: 600; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.field { display: flex; flex-direction: column; gap: .3em; min-width: 0; }
+input[type=text], input[type=tel], textarea { width: 100%; min-width: 0; min-height: 48px; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: .6em .8em; }
+.toggle { display: flex; gap: .75em; align-items: flex-start; min-height: 48px; }
+.toggle input { width: 26px; height: 26px; margin-top: .1em; accent-color: var(--corner); flex: none; }
+code { font: .85em ui-monospace, Menlo, Consolas, monospace; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: .6em .8em; word-break: break-all; display: block; -webkit-user-select: all; user-select: all; }
+ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: .5em; }
+
+.breath { align-self: center; position: relative; width: min(70vw, 260px); aspect-ratio: 1; border-radius: 50%; border: 3px solid var(--corner); display: grid; place-items: center; overflow: hidden; }
+.breath .fill { position: absolute; inset: 0; border-radius: 50%; background: var(--corner-soft); transform: scale(0); animation: breathfill 10s linear forwards; }
+.breath .count { position: relative; font-size: 3em; font-weight: 800; font-variant-numeric: tabular-nums; }
+@keyframes breathfill { from { transform: scale(0); } to { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .breath .fill { animation: none; transform: scale(1); } }
+
+.logrow { display: flex; flex-direction: column; gap: .4em; padding: .8em 0; border-bottom: 1px solid var(--line); }
+.logrow:last-child { border-bottom: 0; }
+
+/* fixed SOS bar, above the home indicator */
+.sosbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--bg); border-top: 1px solid var(--line);
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.sosbar > * { max-width: 540px; margin: 0 auto; }
+.sos { width: 100%; min-height: 72px; border: 0; border-radius: 18px; background: var(--signal); color: var(--signal-ink); font-size: 1.5em; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.cancelbar { display: flex; gap: .75em; align-items: center; min-height: 72px; background: var(--signal-soft); border: 2px solid var(--signal); border-radius: 18px; padding: .5em .75em; }
+.cancelbar b { flex: 1; font-size: 1.15em; }
+.cancelbar .btn { width: auto; min-width: 110px; min-height: 56px; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 8px); z-index: 40;
+  background: var(--ink); color: var(--bg); padding: .6em 1em; border-radius: 12px; font-weight: 600; max-width: calc(100% - 32px); }
+</style>
+</head>
+<body>
+<main class="screen" id="screen"></main>
+
+<div class="sosbar" id="sosbar">
+  <button class="sos" id="sos" type="button" aria-label="I need you. Sends a check-in.">I need you</button>
+  <div class="cancelbar" id="cancelbar" hidden role="status">
+    <b id="cd-text">Sending in 3…</b>
+    <button class="btn danger" id="cd-cancel" type="button">Cancel</button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ============ constants (no topic names, numbers or secrets live in this file) ============
+  var KEY = "tendays.v1";
+  var NTFY = "https://ntfy.sh/";
+  var TOPIC_RE = /^[A-Za-z0-9_-]{8,60}$/;
+  var CANCEL_S = 3, BREATH_MS = 10000, SEND_TIMEOUT = 10000, NIGHT_MS = 6 * 3600e3;
+  var DEFAULT_LABELS = ["I'm here", "Phone out", "I'm calling you"];
+  var GOALS = [["recovery", "Recovery"], ["reading", "Reading"], ["fitness", "Fitness"], ["devotional", "Devotional"], ["family", "Family"], ["health", "Health admin"]];
+
+  // ============ helpers ============
+  function $(id) { return document.getElementById(id); }
+  function h(tag, props) {
+    var e = document.createElement(tag);
+    if (props) for (var k in props) {
+      var v = props[k];
+      if (v == null || v === false) continue;
+      if (k === "class") e.className = v;
+      else if (k === "text") e.textContent = v;
+      else if (k === "value" || k === "checked" || k === "disabled") e[k] = v;
+      else if (k.slice(0, 2) === "on" && typeof v === "function") e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v === true ? "" : String(v));
+    }
+    (function add(list) {
+      list.forEach(function (c) {
+        if (c == null || c === false) return;
+        if (Array.isArray(c)) return add(c);
+        e.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
+      });
+    })(Array.prototype.slice.call(arguments, 2));
+    return e;
+  }
+  function obj(x) { return x && typeof x === "object" && !Array.isArray(x) ? x : null; }
+  function str(x, max) { return typeof x === "string" ? x.slice(0, max || 200) : ""; }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function cleanPhone(p) { return (p || "").replace(/[^\d+]/g, ""); }
+  function fmtTime(ms) { return new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); }
+  function fmtDate(ms) { return new Date(ms).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }); }
+  function randomTopic(prefix) {
+    var a = "abcdefghijkmnpqrstuvwxyz23456789", out = prefix, bytes = new Uint8Array(20);
+    crypto.getRandomValues(bytes);
+    for (var i = 0; i < bytes.length; i++) out += a[bytes[i] % a.length];
+    return out;
+  }
+  function isStandalone() {
+    var dm = false;
+    try { dm = !!(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches); } catch (e) {}
+    return dm || window.navigator.standalone === true;
+  }
+  var toastT;
+  function toast(m, ms) { var t = $("toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function () { t.hidden = true; }, ms || (m.length > 60 ? 5000 : 3000)); }
+  function isQuota(e) { return e && (e.name === "QuotaExceededError" || e.code === 22); }
+  function copyText(text, el) {
+    var fb = function () { var r = document.createRange(); r.selectNodeContents(el); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); toast("Selected. Tap Copy in the menu."); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast("Copied."); }, fb); else fb();
+  }
+  function confirmBtn(label, armedLabel, onConfirm) {
+    var armed = false, t = 0, b = h("button", { class: "btn", type: "button", text: label });
+    b.addEventListener("click", function () {
+      if (armed) { clearTimeout(t); armed = false; onConfirm(); return; }
+      armed = true; b.textContent = armedLabel; b.classList.add("danger");
+      t = setTimeout(function () { armed = false; b.textContent = label; b.classList.remove("danger"); }, 4000);
+    });
+    return b;
+  }
+
+  // ============ storage (unknown fields from later stages are kept as they are) ============
+  function migrate(r) {
+    var s = obj(r) || {};
+    s.v = 4;
+    s.topics = obj(s.topics) || {};
+    ["alert", "reminders", "replies"].forEach(function (k) { if (!TOPIC_RE.test(s.topics[k] || "")) delete s.topics[k]; });
+    if (!s.topics.alert && TOPIC_RE.test(s.topic || "")) s.topics.alert = s.topic;
+    if (!s.topics.reminders && TOPIC_RE.test(s.remTopic || "")) s.topics.reminders = s.remTopic;
+    delete s.topic; delete s.remTopic;
+    s.phone = str(s.phone, 40); s.self = str(s.self, 40); s.name = str(s.name, 40);
+    s.namedAlerts = !!s.namedAlerts; s.noteOn = !!s.noteOn; s.noteText = str(s.noteText, 80);
+    var L = Array.isArray(s.labels) ? s.labels : [];
+    s.labels = [0, 1, 2].map(function (i) { var x = str(L[i], 24).trim(); return x || DEFAULT_LABELS[i]; });
+    s.goals = Array.isArray(s.goals) && s.goals.length ? s.goals.filter(function (g) { return GOALS.some(function (x) { return x[0] === g; }); }) : ["recovery"];
+    s.ob = obj(s.ob) || { done: false };
+    s.alertTestedAt = +s.alertTestedAt || +s.testedAt || 0; delete s.testedAt;
+    s.myTestedAt = +s.myTestedAt || +s.remTestedAt || 0; delete s.remTestedAt;
+    s.nightTestedAt = +s.nightTestedAt || 0;
+    if (!Array.isArray(s.log)) s.log = Array.isArray(s.presses) ? s.presses.filter(function (t) { return typeof t === "number"; }).map(function (t) { return { at: t, sent: true, line: "" }; }) : [];
+    s.log = s.log.filter(function (e) { return obj(e) && typeof e.at === "number"; }).map(function (e) { var o = { at: e.at, sent: e.sent === true ? true : e.sent === false ? false : null, again: !!e.again, line: str(e.line, 140) }; if (e.untested) o.untested = true; return o; });
+    delete s.presses; delete s.round;
+    s.lastSOS = obj(s.lastSOS); s.lastReply = obj(s.lastReply);
+    s.breathEnd = +s.breathEnd || 0;
+    return s;
+  }
+  function load() { var raw = null; try { raw = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { raw = null; } return migrate(raw); }
+  var S = load();
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(S)); return true; }
+    catch (e) { toast(isQuota(e) ? "This phone is out of storage for Ten Days, so that wasn't saved." : "That wasn't saved on this phone.", 6000); return false; }
+  }
+  save();
+
+  // Topics are made only inside the home-screen app, never in Safari.
+  function ensureTopics() {
+    if (!isStandalone()) return false;
+    var t = S.topics, changed = false;
+    if (!t.alert) { t.alert = randomTopic("td-"); changed = true; }
+    if (!t.replies) { t.replies = randomTopic("tp-"); changed = true; }
+    if (!t.reminders) { t.reminders = randomTopic("tr-"); changed = true; }
+    if (changed) save();
+    return true;
+  }
+
+  // ============ ntfy ============
+  function ntfy(topic, params, body) {
+    if (!navigator.onLine) return Promise.resolve({ ok: false, why: "offline" });
+    var q = Object.keys(params).filter(function (k) { return params[k] !== undefined && params[k] !== ""; })
+      .map(function (k) { return k + "=" + encodeURIComponent(params[k]); }).join("&");
+    var ctrl = typeof AbortController === "function" ? new AbortController() : null, timedOut = false;
+    var timer = setTimeout(function () { timedOut = true; if (ctrl) ctrl.abort(); }, SEND_TIMEOUT);
+    var p = fetch(NTFY + encodeURIComponent(topic) + (q ? "?" + q : ""), { method: "POST", body: body || "", signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { clearTimeout(timer); return { ok: r.ok && !timedOut, why: r.ok ? "" : r.status === 429 ? "ratelimit" : "error" }; })
+      .catch(function () { clearTimeout(timer); return { ok: false, why: timedOut ? "timeout" : "error" }; });
+    var stop = new Promise(function (res) { setTimeout(function () { res({ ok: false, why: "timeout" }); }, SEND_TIMEOUT + 300); });
+    return Promise.race([p, stop]);
+  }
+  function quoteVal(s) { return '"' + String(s).replace(/"/g, "") + '"'; }
+  // His three buttons. Each posts its own words to the REPLIES topic, and nothing else.
+  function replyActions() {
+    return S.labels.map(function (l) {
+      return "http, " + quoteVal(l) + ", " + NTFY + S.topics.replies + ", method=POST, body=" + quoteVal(l) + ", clear=true";
+    }).join("; ");
+  }
+  function alertParams(title, priority) {
+    var p = { title: title, priority: String(priority || 5), tags: "rotating_light" };
+    if (S.topics.replies) p.actions = replyActions();
+    var me = cleanPhone(S.self); if (me) p.click = "tel:" + me;
+    return p;
+  }
+  function sosText(again) {
+    var base = again ? "Check in again" : "Check in";
+    var title = S.namedAlerts && S.name ? S.name + ": " + base.toLowerCase() : base;
+    var body = again ? "Please call." : "Call when you can.";
+    if (S.noteOn && S.noteText.trim()) body += " " + S.noteText.trim();
+    return { title: title, body: body };
+  }
+  function whyText(why) { return { offline: "You're offline.", timeout: "No answer from ntfy in 10 seconds.", ratelimit: "ntfy is rate-limiting. Call him.", error: "ntfy didn't accept it." }[why] || ""; }
+
+  // ============ replies (his buttons) ============
+  var awaitingTest = null; // { kind: "alert"|"night", since }
+  function pollReplies() {
+    if (!S.topics.replies || !navigator.onLine) return Promise.resolve();
+    var since = Math.max(S.lastReply ? S.lastReply.at : 0, Date.now() - 24 * 3600e3);
+    return fetch(NTFY + encodeURIComponent(S.topics.replies) + "/json?poll=1&since=" + Math.floor(since / 1000))
+      .then(function (r) { return r.ok ? r.text() : ""; })
+      .then(function (t) {
+        var best = null;
+        t.split("\n").forEach(function (line) {
+          if (!line.trim()) return;
+          try { var m = JSON.parse(line); if (m.event === "message" && typeof m.time === "number") { var at = m.time * 1000; if (!best || at > best.at) best = { at: at, text: str(m.message, 80) }; } } catch (e) {}
+        });
+        if (best && (!S.lastReply || best.at > S.lastReply.at)) {
+          S.lastReply = best; save();
+          toast("He replied: " + best.text);
+          if (awaitingTest && best.at >= awaitingTest.since - 2000) markTested(awaitingTest.kind);
+          render(false);
+        }
+      }).catch(function () {});
+  }
+  var pollT = null, fastUntil = 0;
+  function startFast() { fastUntil = Date.now() + 120e3; }   // fast polling lasts 2 minutes
+  function schedulePoll() {
+    clearTimeout(pollT);
+    if (awaitingTest && Date.now() >= fastUntil) awaitingTest = null;
+    var fast = (ui.screen === "breath" || !!awaitingTest) && Date.now() < fastUntil;
+    pollT = setTimeout(function () { if (!document.hidden) pollReplies().then(schedulePoll); else schedulePoll(); }, fast ? 5000 : 15000);
+  }
+  function markTested(kind) {
+    if (kind === "alert") S.alertTestedAt = Date.now();
+    if (kind === "night") S.nightTestedAt = Date.now();
+    if (kind === "mine") S.myTestedAt = Date.now();
+    awaitingTest = null; testState = { kind: kind, status: "confirmed" }; save(); render(false);
+  }
+
+  // ============ wake lock (not relied on) ============
+  var wake = null;
+  function holdAwake() { try { if (navigator.wakeLock && !wake) navigator.wakeLock.request("screen").then(function (w) { wake = w; w.addEventListener("release", function () { wake = null; }); }).catch(function () {}); } catch (e) {} }
+  function releaseAwake() { try { if (wake) wake.release(); } catch (e) {} wake = null; }
+
+  // ============ SOS ============
+  var cdT = null, cdStart = 0;
+  function onSOS() {
+    if (cdT) return;
+    if (!S.topics.alert) { go("notsetup"); return; }   // not logged: setup isn't done
+    holdAwake();
+    cdStart = Date.now();
+    var left = CANCEL_S;
+    $("sos").hidden = true; $("cancelbar").hidden = false; $("cd-text").textContent = "Sending in " + left + "…";
+    $("cd-cancel").focus();
+    cdT = setInterval(function () {
+      left--;
+      if (left <= 0) { stopCountdown(); sendSOS(); }
+      else $("cd-text").textContent = "Sending in " + left + "…";
+    }, 1000);
+  }
+  function stopCountdown() { clearInterval(cdT); cdT = null; $("cancelbar").hidden = true; $("sos").hidden = false; }
+  function cancelSOS() { if (Date.now() - cdStart < 700) return; stopCountdown(); releaseAwake(); toast("Cancelled. Nothing was sent."); }
+  function sendSOS() {
+    var now = Date.now();
+    var again = S.log.some(function (e) { return e.at > now - NIGHT_MS && !e.untested && (e.sent === true || e.sent === null); });
+    var entry = { at: now, sent: null, again: again, line: "" };
+    if (S.alertTestedAt === 0) entry.untested = true;
+    S.log.push(entry);
+    S.lastSOS = { at: now, status: "sending", why: "", again: again };
+    if (!(S.breathEnd > now)) S.breathEnd = now + BREATH_MS;   // a second press keeps the breath going
+    save();
+    if (ui.screen !== "breath") go("breath"); else render(false);
+    postSOS(now);
+  }
+  function postSOS(at) {
+    var entry = S.log.filter(function (e) { return e.at === at; })[0];
+    if (!entry) return;
+    S.lastSOS = { at: at, status: "sending", why: "", again: entry.again }; save(); render(false);
+    holdAwake();
+    var tx = sosText(entry.again);
+    ntfy(S.topics.alert, alertParams(tx.title, 5), tx.body).then(function (r) {
+      entry.sent = r.ok;
+      if (S.lastSOS && S.lastSOS.at === at) { S.lastSOS.status = r.ok ? "sent" : "notsent"; S.lastSOS.why = r.why; }
+      save(); releaseAwake(); render(false); startFast(); schedulePoll();
+    });
+  }
+  function resend() { if (S.lastSOS) postSOS(S.lastSOS.at); }
+
+  // ============ screens ============
+  var ui = { screen: "home", arg: null, goalSel: null };
+  var testState = null; // { kind, status: "sending"|"sent"|"notsent"|"confirmed"|"nothing", why }
+  function go(name, arg) { ui.screen = name; ui.arg = arg || null; ui.goalSel = null; render(true); window.scrollTo(0, 0); }
+  function back(to) { return h("button", { class: "btn link", type: "button", id: "back", onclick: function () { go(to || "more"); } }, "Back"); }
+  function topicBox(label, value, id) {
+    var c = h("code", { id: id, text: value || "Not made yet" });
+    return h("div", { class: "field" }, h("span", { class: "lbl", text: label }), c,
+      value ? h("button", { class: "btn", type: "button", id: id + "-copy", onclick: function () { copyText(value, c); } }, "Copy") : null);
+  }
+  var KEYS = ["alert", "replies", "reminders"], PREFIX = { alert: "td-", replies: "tp-", reminders: "tr-" };
+  var RECOPY = "Re-copy your Back Tap URL.";
+  function missingTopic() { return KEYS.some(function (k) { return !S.topics[k]; }); }
+  function setTopic(key, value) {
+    var others = KEYS.filter(function (k) { return k !== key; }).map(function (k) { return S.topics[k]; });
+    if (!TOPIC_RE.test(value)) { toast("Use 8 to 60 letters, numbers, - or _."); return false; }
+    if (others.indexOf(value) >= 0) { toast("Another channel already uses that name."); return false; }
+    if (value === S.topics[key]) { toast("That's already this channel."); return false; }
+    S.topics[key] = value;
+    if (key === "alert") S.alertTestedAt = 0;      // he has to subscribe and test again
+    if (key === "reminders") S.myTestedAt = 0;
+    if (key === "alert" || key === "replies") S.backtapStale = true;
+    return save();
+  }
+  function topicEditor(key, label, id) {
+    var who = key === "alert" ? "He must re-subscribe" : "You must re-subscribe";
+    var paste = h("input", { type: "text", id: id + "-paste", maxlength: "60", autocomplete: "off", autocapitalize: "off", spellcheck: "false" });
+    return h("div", { class: "group" }, topicBox(label, S.topics[key], id),
+      h("div", { class: "field" }, h("label", { class: "lbl", for: paste.id, text: "Paste a channel" }), paste),
+      h("div", { class: "row" },
+        h("button", { class: "btn", type: "button", id: id + "-save", onclick: function () {
+          if (setTopic(key, paste.value.trim())) { paste.value = ""; toast("Saved. " + who + " to it." + (key !== "reminders" ? " " + RECOPY : "")); render(false); }
+        } }, "Save pasted"),
+        confirmBtn("New channel", "Tap again. " + who + ".", function () {
+          if (!isStandalone()) { toast("Open Ten Days from its Home Screen icon to make a channel."); return; }
+          var others = KEYS.map(function (k) { return S.topics[k]; }), v;
+          do { v = randomTopic(PREFIX[key]); } while (others.indexOf(v) >= 0);
+          if (setTopic(key, v)) { toast("New channel saved. " + who + " to it." + (key !== "reminders" ? " " + RECOPY : "")); render(false); }
+        })));
+  }
+  function callLink(primary) { var ph = cleanPhone(S.phone); return ph ? h("a", { class: primary ? "btn corner" : "btn", href: "tel:" + ph, id: "call-him" }, "Call him") : null; }
+  function statusLine() {
+    if (S.lastReply && Date.now() - S.lastReply.at < 12 * 3600e3) return "He replied “" + S.lastReply.text + "” at " + fmtTime(S.lastReply.at) + ".";
+    if (S.alertTestedAt) return "Tested with him on " + fmtDate(S.alertTestedAt) + ".";
+    return "Not tested with him yet.";
+  }
+  function testBlock(kind) {
+    var ts = testState && testState.kind === kind ? testState : null;
+    var kids = [];
+    if (ts) {
+      var txt = { sending: "Sending…", sent: "Sent. Did it arrive?", notsent: "Not sent. " + whyText(ts.why), confirmed: "Confirmed. It works.", nothing: "Not confirmed yet. Check the steps and test again." }[ts.status];
+      kids.push(h("p", { class: "status" + (ts.status === "confirmed" ? " ok" : ts.status === "notsent" || ts.status === "nothing" ? " bad" : ""), id: "test-status", "aria-live": "polite", text: txt }));
+      if (ts.status === "sent") kids.push(h("div", { class: "row" },
+        h("button", { class: "btn", type: "button", id: "test-yes", onclick: function () { markTested(kind); } }, kind === "mine" ? "It arrived" : "He got it"),
+        h("button", { class: "btn", type: "button", id: "test-no", onclick: function () { awaitingTest = null; testState = { kind: kind, status: "nothing" }; render(false); } }, "Nothing came")));
+    }
+    return kids;
+  }
+  function sendTest(kind) {
+    var topic = kind === "mine" ? S.topics.reminders : S.topics.alert;
+    if (!topic) { toast("Open Ten Days from its Home Screen icon first."); return; }
+    testState = { kind: kind, status: "sending" }; render(false);
+    var since = Date.now();
+    var p = kind === "mine"
+      ? ntfy(topic, { title: "Ten Days test", priority: "3", tags: "white_check_mark" }, "Test only.")
+      : ntfy(topic, alertParams(kind === "night" ? "Ten Days night test" : "Ten Days test", 5), "Test only. Tap one of the buttons.");
+    p.then(function (r) {
+      testState = { kind: kind, status: r.ok ? "sent" : "notsent", why: r.why };
+      if (r.ok && kind !== "mine") { awaitingTest = { kind: kind, since: since }; startFast(); schedulePoll(); }
+      render(false);
+    });
+  }
+  function goalChips(sel) {
+    return h("div", { class: "row" }, GOALS.map(function (g) {
+      var b = h("button", { class: "chip", type: "button", "data-goal": g[0], "aria-pressed": sel.indexOf(g[0]) >= 0 ? "true" : "false" }, g[1]);
+      b.addEventListener("click", function () { var i = sel.indexOf(g[0]); if (i >= 0) sel.splice(i, 1); else sel.push(g[0]); b.setAttribute("aria-pressed", i >= 0 ? "false" : "true"); });
+      return b;
+    }));
+  }
+
+  var SCREENS = {
+    a2hs: function () {
+      return { title: "Add Ten Days to your Home Screen", body: [
+        h("p", { text: "Ten Days sets up only from its Home Screen icon, because Safari keeps separate data." }),
+        h("ol", null, h("li", { text: "Tap the Share button in Safari." }), h("li", { text: "Tap Add to Home Screen, then Add." }), h("li", { text: "Close Safari and open Ten Days from the new icon." })),
+        h("p", { class: "small", text: "Android: browser menu → Install app or Add to Home screen." })
+      ] };
+    },
+    "ob-topics": function () {
+      var his = h("input", { type: "tel", id: "his-number", value: S.phone, autocomplete: "off", placeholder: "His number" });
+      var keep = function () { S.phone = his.value.trim().slice(0, 40); save(); };
+      his.addEventListener("change", keep);
+      return { title: "Your three channels", body: [
+        h("p", { text: "Add his number, then save all three channels in Notes and send your brother only the alert channel." }),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "his-number", text: "His number" }), his),
+        topicBox("Alert channel: send this one to him", S.topics.alert, "t-alert"),
+        topicBox("Replies channel: you subscribe to this", S.topics.replies, "t-replies"),
+        topicBox("Reminders channel: you subscribe, keep it private", S.topics.reminders, "t-reminders"),
+        h("div", { class: "group push" }, h("button", { class: "btn primary", type: "button", id: "next", onclick: function () { keep(); go("ob-goals"); } }, "Next"))
+      ] };
+    },
+    "ob-goals": function () {
+      var sel = ui.goalSel || (ui.goalSel = S.goals.slice());
+      return { title: "What are you working on?", body: [
+        h("p", { text: "This stays on this phone and only shapes your next steps later." }),
+        goalChips(sel),
+        h("div", { class: "group push" }, h("button", { class: "btn primary", type: "button", id: "next", onclick: function () { S.goals = sel; save(); go("ob-his"); } }, "Next"))
+      ] };
+    },
+    "ob-his": function () {
+      var phone = h("input", { type: "tel", id: "phone", value: S.phone, autocomplete: "off", placeholder: "His number" });
+      var self = h("input", { type: "tel", id: "self", value: S.self, autocomplete: "off", placeholder: "Your number" });
+      var saveNums = function () { S.phone = phone.value.trim().slice(0, 40); S.self = self.value.trim().slice(0, 40); save(); };
+      phone.addEventListener("change", saveNums); self.addEventListener("change", saveNums);
+      var tested = !!S.alertTestedAt, onboarding = !S.ob.done;
+      return { title: "Set up his phone", body: [
+        h("p", { text: "Do this together, with his phone in your hand." }),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "phone", text: "His number, for your Call button" }), phone),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "self", text: "Your number, so tapping his alert can call you" }), self),
+        h("ol", null,
+          h("li", { text: "On his phone, install ntfy from the App Store." }),
+          h("li", { text: "In ntfy, tap + and subscribe to the alert channel below." }),
+          h("li", { text: "Tap Allow when it asks to send notifications." }),
+          h("li", { text: "Settings → Focus → Sleep → Apps → add ntfy. Confirm these screens on his iOS version." })),
+        topicBox("Alert channel", S.topics.alert, "t-alert"),
+        h("div", { class: "group push" },
+          testBlock("alert"),
+          tested
+            ? h("button", { class: "btn primary", type: "button", id: "next", onclick: function () { saveNums(); go(onboarding ? "ob-mine" : "home"); } }, onboarding ? "Next" : "Done")
+            : h("button", { class: "btn primary", type: "button", id: "send-test", onclick: function () { saveNums(); sendTest("alert"); } }, "Send \"Ten Days test\""),
+          tested ? h("button", { class: "btn link", type: "button", onclick: function () { saveNums(); sendTest("alert"); } }, "Send another test")
+            : h("button", { class: "btn link", type: "button", id: "later", onclick: function () { saveNums(); if (onboarding) go("ob-mine"); else go("home"); } }, "Finish later"))
+      ] };
+    },
+    "ob-mine": function () {
+      var tested = !!S.myTestedAt;
+      var finish = function () { S.ob.done = true; save(); go("home"); };
+      return { title: "Set up your phone", body: [
+        h("p", { text: "In ntfy on this phone, subscribe to your replies and reminders channels." }),
+        topicBox("Replies channel", S.topics.replies, "t-replies"),
+        topicBox("Reminders channel (private)", S.topics.reminders, "t-reminders"),
+        h("div", { class: "group push" },
+          testBlock("mine"),
+          tested ? h("button", { class: "btn primary", type: "button", id: "next", onclick: finish }, "Done")
+            : h("button", { class: "btn primary", type: "button", id: "send-test", onclick: function () { sendTest("mine"); } }, "Send a test to me"),
+          tested ? null : h("button", { class: "btn link", type: "button", id: "later", onclick: finish }, "Finish later"))
+      ] };
+    },
+    home: function () {
+      var card;
+      if (S.lastSOS && S.lastSOS.status === "notsent" && !S.lastSOS.dismissed && Date.now() - S.lastSOS.at < 2 * 3600e3) {
+        card = h("div", { class: "card bad" }, h("p", { class: "status bad", text: "Not sent. Your last check-in didn't go out." }),
+          h("button", { class: "btn primary", type: "button", id: "resend", onclick: function () { resend(); go("breath"); } }, "Resend"), callLink(false),
+          h("button", { class: "btn link", type: "button", id: "dismiss", onclick: function () { S.lastSOS.dismissed = true; save(); render(false); } }, "Dismiss"));
+      } else if (S.lastSOS && S.lastSOS.status === "sending") {
+        card = h("div", { class: "card" }, h("p", { class: "status", text: "Sending…" }));
+      } else if (!S.alertTestedAt) {
+        card = h("div", { class: "card warn" }, h("p", { text: "Finish setup so the button reaches him." }),
+          h("button", { class: "btn primary", type: "button", id: "finish-setup", onclick: function () { go(isStandalone() ? (S.topics.alert ? "ob-his" : "ob-topics") : "a2hs"); } }, "Finish setup"));
+      } else {
+        card = h("div", { class: "card ok" }, h("p", { class: "status ok", text: "You're clear." }));
+      }
+      return { title: "Ten Days", body: [
+        h("p", { class: "sub", id: "status-line", text: statusLine() }),
+        h("div", { class: "group push" }, card, h("button", { class: "btn", type: "button", id: "more", onclick: function () { go("more"); } }, "More"))
+      ] };
+    },
+    breath: function () {
+      var left = Math.max(0, S.breathEnd - Date.now()), done = left <= 0;
+      var st = S.lastSOS || { status: "sending" }, cls = "status", txt;
+      if (st.status === "sent") { cls = "status ok"; txt = S.alertTestedAt ? "Sent." : "Sent. It isn't tested with him yet, so call too."; }
+      else if (st.status === "notsent") { cls = "status bad"; txt = "Not sent. " + whyText(st.why); }
+      else txt = "Sending…";
+      var fill = h("div", { class: "fill" });
+      fill.style.animationDuration = BREATH_MS + "ms";
+      fill.style.animationDelay = "-" + (BREATH_MS - left) + "ms";
+      var replied = S.lastReply && S.lastSOS && S.lastReply.at >= S.lastSOS.at - 2000;
+      return { title: "Breathe", body: [
+        h("p", { class: cls, id: "sos-status", "aria-live": "polite", text: txt }),
+        h("p", { class: "small", id: "keep-on", text: "Keep the screen on until it says Sent." }),
+        replied ? h("p", { class: "status ok", id: "reply-line", text: "He replied: " + S.lastReply.text }) : null,
+        h("div", { class: "breath", "aria-hidden": "true" }, fill, h("span", { class: "count", id: "breath-count", text: done ? "✓" : String(Math.ceil(left / 1000)) })),
+        h("p", { class: "sub", text: "Breathe in slowly, then out longer." }),
+        h("div", { class: "group push" },
+          st.status === "notsent" ? h("button", { class: "btn primary", type: "button", id: "resend", onclick: resend }, "Resend") : null,
+          st.status === "notsent" || (st.status === "sent" && !S.alertTestedAt) ? callLink(false) : null,
+          h("button", { class: st.status === "notsent" ? "btn" : "btn primary", type: "button", id: "continue", disabled: !done, onclick: function () { go("line"); } }, done ? "Continue" : "Continue in " + Math.ceil(left / 1000) + "s"))
+      ] };
+    },
+    line: function () {
+      var input = h("input", { type: "text", id: "private-line", maxlength: "140", placeholder: "Optional", autocomplete: "off" });
+      var finish = function (keep) {
+        var at = S.lastSOS ? S.lastSOS.at : 0, e = S.log.filter(function (x) { return x.at === at; })[0];
+        if (keep && e && input.value.trim()) { e.line = input.value.trim().slice(0, 140); if (save()) toast("Saved on this phone."); }
+        S.breathEnd = 0; save(); go("home");
+      };
+      return { title: "A private line?", body: [
+        h("p", { text: "It stays on this phone with this press time and never goes in an alert." }),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "private-line", text: "Private line" }), input),
+        h("div", { class: "group push" },
+          h("button", { class: "btn primary", type: "button", id: "save-line", onclick: function () { finish(true); } }, "Save"),
+          h("button", { class: "btn link", type: "button", id: "skip-line", onclick: function () { finish(false); } }, "Skip"))
+      ] };
+    },
+    notsetup: function () {
+      return { title: "Not set up yet", body: [
+        h("p", { text: "This button can't reach him until setup is done." }),
+        h("div", { class: "group push" }, callLink(true),
+          h("button", { class: cleanPhone(S.phone) ? "btn" : "btn primary", type: "button", id: "finish-setup", onclick: function () { go(isStandalone() ? "ob-topics" : "a2hs"); } }, "Finish setup"),
+          h("button", { class: "btn link", type: "button", onclick: function () { go(S.ob.done ? "home" : (isStandalone() ? "ob-topics" : "a2hs")); } }, "Back"))
+      ] };
+    },
+    more: function () {
+      var item = function (id, label, hint, to) { return h("button", { class: "btn", type: "button", id: id, onclick: function () { go(to); } }, h("span", { text: label }), hint ? h("span", { class: "hint", text: hint }) : null); };
+      return { title: "More", body: [
+        h("p", { class: "sub", text: "Everything else lives here." }),
+        S.alertTestedAt && Date.now() - S.alertTestedAt > 7 * 864e5 ? h("p", { class: "small", id: "last-tested", text: "Last tested " + Math.floor((Date.now() - S.alertTestedAt) / 864e5) + " days ago" }) : null,
+        h("div", { class: "group morelist" },
+          item("m-allgood", "Send an all-good note", "For a mis-tap", "m-allgood"),
+          item("m-labels", "His reply buttons", S.labels.join(" · "), "m-labels"),
+          item("m-night", "Night test", S.nightTestedAt ? "Last run " + fmtDate(S.nightTestedAt) : "Not run yet", "m-night"),
+          item("m-setup", "Channels and numbers", null, "m-setup"),
+          item("m-backtap", "Back Tap shortcut", null, "m-backtap"),
+          item("m-bypass", "Emergency Bypass", null, "m-bypass"),
+          item("m-log", "Private log", null, "m-log"),
+          item("m-goals", "Goals", null, "m-goals"),
+          item("m-backup", "Backup", null, "m-backup")),
+        back("home")
+      ] };
+    },
+    "m-allgood": function () {
+      var st = ui.arg;
+      return { title: "Send an all-good note", body: [
+        h("p", { text: "Use this when you pressed the button by mistake." }),
+        st ? h("p", { class: "status " + (st.ok ? "ok" : "bad"), id: "allgood-status", text: st.ok ? "Sent." : "Not sent. " + whyText(st.why) }) : null,
+        h("div", { class: "group push" },
+          h("button", { class: "btn primary", type: "button", id: "send-allgood", disabled: !S.topics.alert, onclick: function () {
+            ntfy(S.topics.alert, { title: "All good", priority: "2", tags: "white_check_mark" }, "Mis-tap. All fine.").then(function (r) { ui.arg = r; render(false); });
+          } }, "Send all-good note"), back())
+      ] };
+    },
+    "m-labels": function () {
+      var ins = S.labels.map(function (l, i) { return h("input", { type: "text", id: "label-" + i, value: l, maxlength: "24", autocomplete: "off" }); });
+      return { title: "His reply buttons", body: [
+        h("p", { text: "These three are the only buttons on his alert, and each sends its words to your replies channel." }),
+        ins.map(function (inp, i) { return h("div", { class: "field" }, h("label", { class: "lbl", for: inp.id, text: "Button " + (i + 1) }), inp); }),
+        h("p", { class: "small", text: "If the buttons don't work on his iPhone, he calls or texts you instead." }),
+        h("div", { class: "group push" },
+          h("button", { class: "btn primary", type: "button", id: "save-labels", onclick: function () {
+            var next = ins.map(function (inp, i) { return inp.value.replace(/"/g, "").trim().slice(0, 24) || DEFAULT_LABELS[i]; });
+            var changed = next.join("\n") !== S.labels.join("\n");
+            S.labels = next; if (changed) S.backtapStale = true;
+            if (save()) toast("Saved. They apply to the next alert." + (changed ? " " + RECOPY : ""));
+          } }, "Save"), back())
+      ] };
+    },
+    "m-night": function () {
+      return { title: "Night test", body: [
+        h("p", { text: "Run this at night with his phone locked and on Sleep Focus." }),
+        h("p", { class: "small", id: "night-last", text: S.nightTestedAt ? "Last night test: " + fmtDate(S.nightTestedAt) + "." : "No night test yet." }),
+        h("p", { class: "small", text: "Also try once without ntfy on his Focus allow list. Don't assume urgent alerts break through." }),
+        h("div", { class: "group push" }, testBlock("night"),
+          h("button", { class: "btn primary", type: "button", id: "send-night", disabled: !S.topics.alert, onclick: function () { sendTest("night"); } }, "Send night test"), back())
+      ] };
+    },
+    "m-setup": function () {
+      var phone = h("input", { type: "tel", id: "phone", value: S.phone, autocomplete: "off" });
+      var self = h("input", { type: "tel", id: "self", value: S.self, autocomplete: "off" });
+      var name = h("input", { type: "text", id: "name", value: S.name, maxlength: "40", autocomplete: "off" });
+      var named = h("input", { type: "checkbox", id: "named", checked: S.namedAlerts });
+      var noteOn = h("input", { type: "checkbox", id: "note-on", checked: S.noteOn });
+      var note = h("input", { type: "text", id: "note-text", value: S.noteText, maxlength: "80", autocomplete: "off" });
+      return { title: "Channels and numbers", body: [
+        h("p", { text: "Keep the channel names private, and give him only the alert channel." }),
+        missingTopic() && !isStandalone() ? h("p", { class: "status bad", text: "Open Ten Days from its Home Screen icon to make your channels." }) : null,
+        missingTopic() && isStandalone() ? h("button", { class: "btn", type: "button", id: "make-topics", onclick: function () { ensureTopics(); render(false); } }, "Make my channels") : null,
+        topicEditor("alert", "Alert channel (his phone)", "t-alert"),
+        topicEditor("replies", "Replies channel (your phone)", "t-replies"),
+        topicEditor("reminders", "Reminders channel (your phone, private)", "t-reminders"),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "phone", text: "His number" }), phone),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "self", text: "Your number" }), self),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "name", text: "Your first name" }), name),
+        h("label", { class: "toggle" }, named, h("span", { text: "Put my name in the alert title. Off means it just says \"Check in\"." })),
+        h("label", { class: "toggle" }, noteOn, h("span", { text: "Add a one-line note to every alert. Not private: anyone with the channel name can read ntfy.sh." })),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "note-text", text: "Note (not private)" }), note),
+        h("div", { class: "group push" },
+          h("button", { class: "btn primary", type: "button", id: "save-setup", onclick: function () {
+            var was = [S.self, S.name, S.namedAlerts].join("\n");
+            S.phone = phone.value.trim().slice(0, 40); S.self = self.value.trim().slice(0, 40); S.name = name.value.trim().slice(0, 40);
+            S.namedAlerts = named.checked; S.noteOn = noteOn.checked; S.noteText = note.value.trim().slice(0, 80);
+            var changed = [S.self, S.name, S.namedAlerts].join("\n") !== was;
+            if (changed) S.backtapStale = true;
+            if (save()) toast(changed ? "Saved. " + RECOPY : "Saved.");
+          } }, "Save"),
+          h("div", { class: "row" },
+            h("button", { class: "btn", type: "button", id: "go-test-his", onclick: function () { go("ob-his"); } }, "Test with him"),
+            h("button", { class: "btn", type: "button", id: "go-test-mine", onclick: function () { go("ob-mine"); } }, "Test my phone")),
+          back())
+      ] };
+    },
+    "m-backtap": function () {
+      var url = S.topics.alert ? NTFY + S.topics.alert + "?title=" + encodeURIComponent(sosText(false).title) + "&message=" + encodeURIComponent(sosText(false).body) + "&priority=5&tags=rotating_light" + (S.topics.replies ? "&actions=" + encodeURIComponent(replyActions()) : "") + (cleanPhone(S.self) ? "&click=" + encodeURIComponent("tel:" + cleanPhone(S.self)) : "") : "";
+      var c = h("code", { id: "backtap-url", text: url || "Set up your channels first." });
+      return { title: "Back Tap shortcut", body: [
+        h("p", { text: "A double tap on the back of your iPhone sends the check-in without opening the app." }),
+        h("ol", null,
+          h("li", { text: "Shortcuts → + → Add Action → Get Contents of URL." }),
+          h("li", { text: "Paste the URL below." }),
+          h("li", { text: "Tap the arrow on that action, set Method to POST, and leave Request Body empty." }),
+          h("li", { text: "Name it something plain, like Check in." }),
+          h("li", { text: "Settings → Accessibility → Touch → Back Tap → Double Tap → that shortcut." }),
+          h("li", { text: "Test it with him, and confirm these screens on your iOS version." })),
+        S.backtapStale && url ? h("p", { class: "status bad", id: "backtap-stale", text: RECOPY }) : null,
+        c, url ? h("button", { class: "btn", type: "button", id: "copy-backtap", onclick: function () { copyText(url, c); if (S.backtapStale) { S.backtapStale = false; save(); render(false); } } }, "Copy URL") : null,
+        h("p", { class: "small", text: "Back Tap sends aren't in your private log, and the URL has your channel in it, so don't share it." }),
+        h("div", { class: "group push" }, back())
+      ] };
+    },
+    "m-bypass": function () {
+      return { title: "Emergency Bypass", body: [
+        h("p", { text: "This makes your call ring on his phone even when it's silenced." }),
+        h("p", { class: "lbl", text: "His iPhone" }),
+        h("ol", null, h("li", { text: "Contacts → your name → Edit." }), h("li", { text: "Ringtone → turn on Emergency Bypass → Done." }), h("li", { text: "Do the same under Text Tone if he wants texts to break through too." })),
+        h("p", { class: "lbl", text: "His Android" }),
+        h("ol", null, h("li", { text: "Contacts → star your contact." }), h("li", { text: "Settings → Do Not Disturb → People → Calls → Starred contacts." })),
+        h("p", { class: "small", text: "Confirm these screens on his phone's version, then test a call at night." }),
+        h("div", { class: "group push" }, back())
+      ] };
+    },
+    "m-log": function () {
+      var list = S.log.slice().sort(function (a, b) { return b.at - a.at; });
+      return { title: "Private log", body: [
+        h("p", { text: "Only you see this, and nothing here is ever sent." }),
+        list.length ? h("div", { class: "card", id: "log-list" }, list.map(function (e) {
+          return h("div", { class: "logrow" },
+            h("span", { class: "lbl", text: fmtDate(e.at) + ", " + fmtTime(e.at) + " · " + (e.sent === true ? (e.untested ? "Sent, not tested with him" : "Sent") : e.sent === false ? "Not sent" : "Sending") }),
+            e.line ? h("span", { text: e.line }) : null,
+            h("div", { class: "row" },
+              e.line ? confirmBtn("Delete line", "Tap again to delete", function () { e.line = ""; save(); render(false); }) : null,
+              confirmBtn("Delete entry", "Tap again to delete", function () { S.log = S.log.filter(function (x) { return x !== e; }); save(); render(false); })));
+        })) : h("p", { class: "sub", text: "Nothing here." }),
+        h("div", { class: "group push" }, back())
+      ] };
+    },
+    "m-goals": function () {
+      var sel = ui.goalSel || (ui.goalSel = S.goals.slice());
+      return { title: "Goals", body: [
+        h("p", { text: "These stay on this phone and shape your next steps in a later version." }),
+        goalChips(sel),
+        h("div", { class: "group push" }, h("button", { class: "btn primary", type: "button", id: "save-goals", onclick: function () { S.goals = sel.slice(); if (save()) toast("Saved."); } }, "Save"), back())
+      ] };
+    },
+    "m-backup": function () {
+      var file = h("input", { type: "file", id: "import-in", accept: "application/json,.json", hidden: true, onchange: function (e) {
+        var f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+        var rd = new FileReader();
+        rd.onload = function () { var d = null; try { d = JSON.parse(rd.result); } catch (err) {} if (!obj(d) || !(obj(d.topics) || Array.isArray(d.log) || typeof d.topic === "string" || typeof d.remTopic === "string" || Array.isArray(d.presses))) { toast("That isn't a Ten Days backup."); return; } go("import-confirm", d); };
+        rd.onerror = function () { toast("Couldn't read that file."); };
+        rd.readAsText(f);
+      } });
+      return { title: "Backup", body: [
+        h("p", { text: "Export saves everything on this phone to one file, and Import puts it back." }),
+        h("div", { class: "group push" },
+          h("button", { class: "btn primary", type: "button", id: "export", onclick: function () { go("export-warn"); } }, "Export"),
+          file, h("button", { class: "btn", type: "button", id: "import", onclick: function () { file.click(); } }, "Import"), back())
+      ] };
+    },
+    "export-warn": function () {
+      return { title: "Before you download", body: [
+        h("p", { text: "This file contains your channel names, your private log, both phone numbers and his last reply, so keep it somewhere only you can open." }),
+        h("div", { class: "group push" },
+          h("button", { class: "btn primary", type: "button", id: "export-confirm", onclick: function () {
+            var data = JSON.parse(JSON.stringify(S)); data.exportedAt = new Date().toISOString();
+            var url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+            var d = new Date(), a = h("a", { href: url, download: "ten-days-" + d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + ".json", hidden: true });
+            document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 5000);
+            toast("Backup file made."); go("m-backup");
+          } }, "Download"),
+          h("button", { class: "btn link", type: "button", id: "export-cancel", onclick: function () { go("m-backup"); } }, "Cancel"))
+      ] };
+    },
+    "import-confirm": function (d) {
+      return { title: "Replace this phone's data?", body: [
+        h("p", { text: "Everything on this phone is replaced with the backup" + (d && d.exportedAt ? " from " + fmtDate(Date.parse(d.exportedAt)) : "") + "." }),
+        h("div", { class: "group push" },
+          h("button", { class: "btn danger", type: "button", id: "import-replace", onclick: function () { S = migrate(d); S.ob.done = true; if (isStandalone()) ensureTopics(); if (save()) { toast("Restored."); go("home"); } } }, "Replace"),
+          h("button", { class: "btn link", type: "button", id: "import-cancel", onclick: function () { go("m-backup"); } }, "Cancel"))
+      ] };
+    }
+  };
+
+  function render(moveFocus) {
+    var fn = SCREENS[ui.screen] || SCREENS.home;
+    var out = fn(ui.arg);
+    var h1 = h("h1", { tabindex: "-1", text: out.title });
+    var root = $("screen");
+    var active = document.activeElement && document.activeElement.id && root.contains(document.activeElement) ? document.activeElement.id : null;
+    var vals = {}, checks = {};
+    Array.prototype.forEach.call(root.querySelectorAll("input[type=text],input[type=tel]"), function (i) { if (i.id) vals[i.id] = i.value; });
+    Array.prototype.forEach.call(root.querySelectorAll("input[type=checkbox]"), function (i) { if (i.id) checks[i.id] = i.checked; });
+    var nodes = [h1];
+    (function flat(list) { list.forEach(function (n) { if (Array.isArray(n)) flat(n); else if (n) nodes.push(n); }); })(out.body);
+    root.replaceChildren.apply(root, nodes);
+    if (!moveFocus) {
+      // keep what the person was typing across live refreshes
+      Object.keys(vals).forEach(function (id) { var i = $(id); if (i) i.value = vals[id]; });
+      Object.keys(checks).forEach(function (id) { var i = $(id); if (i) i.checked = checks[id]; });
+      if (active && $(active)) $(active).focus();
+    } else { try { h1.focus({ preventScroll: true }); } catch (e) { h1.focus(); } }
+    if (ui.screen === "breath") tickBreath();
+  }
+  var breathT = null;
+  function tickBreath() {
+    clearTimeout(breathT);
+    if (ui.screen !== "breath") return;
+    breathT = setTimeout(function () {
+      var left = Math.max(0, S.breathEnd - Date.now());
+      var c = $("breath-count"), b = $("continue");
+      if (c) c.textContent = left > 0 ? String(Math.ceil(left / 1000)) : "✓";
+      if (b) { b.disabled = left > 0; b.textContent = left > 0 ? "Continue in " + Math.ceil(left / 1000) + "s" : "Continue"; }
+      if (left > 0) tickBreath();
+    }, 250);
+  }
+
+  // ============ boot ============
+  $("sos").addEventListener("click", onSOS);
+  $("cd-cancel").addEventListener("click", cancelSOS);
+  function measureBar() { document.documentElement.style.setProperty("--bar", $("sosbar").offsetHeight + "px"); }
+  window.addEventListener("resize", measureBar);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) { pollReplies(); render(false); } });
+  window.addEventListener("online", function () { pollReplies(); });
+
+  function start() {
+    if (S.lastSOS && S.lastSOS.status === "sending") { S.lastSOS.status = "notsent"; S.lastSOS.why = "timeout"; var e = S.log.filter(function (x) { return x.at === S.lastSOS.at; })[0]; if (e && e.sent === null) e.sent = false; save(); }
+    if (!S.ob.done) {
+      if (!isStandalone()) return go("a2hs");
+      ensureTopics();
+      return go("ob-topics");
+    }
+    if (S.breathEnd > Date.now()) return go("breath");
+    go("home");
+  }
+  if (location.hash) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
+  measureBar();
+  start();
+  pollReplies();
+  schedulePoll();
+})();
+</script>
+</body>
+</html>
