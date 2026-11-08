@@ -113,7 +113,8 @@ p { margin: 0; }
 .btn:active:not(:disabled), .chip:active, .sos:active { transform: scale(.97); filter: brightness(1.12); }
 
 .field { display: flex; flex-direction: column; gap: .35em; min-width: 0; }
-input[type=text], input[type=tel], textarea { width: 100%; min-width: 0; min-height: 48px; border: 1px solid var(--line); background: var(--field); border-radius: 16px; padding: .65em .9em; }
+input[type=text], input[type=tel], input[type=date], input[type=time], input[type=url], select, textarea { width: 100%; min-width: 0; min-height: 48px; border: 1px solid var(--line); background: var(--field); border-radius: 16px; padding: .65em .9em; }
+textarea { min-height: 6em; resize: vertical; }
 .toggle { display: flex; gap: .8em; align-items: flex-start; min-height: 48px; }
 .toggle input { width: 26px; height: 26px; margin-top: .1em; accent-color: var(--corner); flex: none; }
 code { font: .85em ui-monospace, Menlo, Consolas, monospace; background: var(--field); border: 1px solid var(--line); border-radius: 14px; padding: .7em .9em;
@@ -155,7 +156,8 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
   padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .sosbar > * { max-width: 540px; margin: 0 auto; }
 .sos { position: relative; z-index: 0; width: 100%; min-height: 72px; border: 0; border-radius: 22px; color: var(--signal-ink); background: linear-gradient(180deg, var(--red-1), var(--red-2));
-  font-size: 1.5em; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+  /* capped so the bar stays under a third of a small screen at the largest Text Size */
+  font-size: min(1.5em, 36px); font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 8px 22px var(--red-glow);
   transition: transform 120ms ease, filter 120ms ease;
   -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
@@ -165,8 +167,8 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
 @keyframes sosglow { from { opacity: .45; } to { opacity: 1; } }
 .cancelbar { display: flex; gap: .75em; align-items: center; min-height: 72px; background: linear-gradient(180deg, var(--signal-soft), var(--glass-lo));
   border: 1px solid var(--signal-line); border-radius: 22px; padding: .5em .75em; }
-.cancelbar b { flex: 1; font-size: 1.15em; font-weight: 800; }
-.cancelbar .btn { width: auto; min-width: 110px; min-height: 56px; }
+.cancelbar b { flex: 1; font-size: min(1.15em, 26px); font-weight: 800; }
+.cancelbar .btn { width: auto; min-width: 110px; min-height: 56px; font-size: min(1em, 24px); }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 10px); z-index: 40;
   background: var(--ink); color: var(--bg); padding: .65em 1.1em; border-radius: 16px; font-weight: 650; max-width: calc(100% - 32px); box-shadow: 0 10px 30px var(--shadow); }
 
@@ -215,6 +217,19 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
   var CANCEL_S = 3, BREATH_MS = 10000, SEND_TIMEOUT = 10000, NIGHT_MS = 6 * 3600e3;
   var DEFAULT_LABELS = ["I'm here", "Phone out", "I'm calling you"];
   var GOALS = [["recovery", "Recovery"], ["reading", "Reading"], ["fitness", "Fitness"], ["devotional", "Devotional"], ["family", "Family"], ["health", "Health admin"]];
+  var TYPES = ["READ", "CALL", "MEETING", "ERRAND", "CUSTOM"];
+  var TYPE_NAME = { READ: "Read", CALL: "Call", MEETING: "Meeting", ERRAND: "Errand", CUSTOM: "Custom" };
+  var REPEATS = [["once", "Once"], ["daily", "Daily"], ["weekly", "Weekly"]];
+  var DATE_RE = /^\d{4}-\d{2}-\d{2}$/, TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/, LINK_RE = /^https?:\/\/[^\s"'<>]+$/i;
+  // Starter tasks for the goals picked. Untimed, so only Pre-sleep and reading ever reach home on their own.
+  var STARTERS = {
+    recovery: { title: "Pre-sleep", type: "CUSTOM", kind: "presleep", repeat: "daily", goal: "recovery", items: [{ t: "Phone outside the room" }, { t: "Lights out" }, { t: "Page read" }] },
+    reading: { title: "Read today's pages", type: "READ", repeat: "daily", goal: "reading" },
+    fitness: { title: "Workout", type: "CUSTOM", repeat: "daily", goal: "fitness" },
+    devotional: { title: "Devotional", type: "CUSTOM", repeat: "daily", goal: "devotional" },
+    family: { title: "Call family", type: "CALL", repeat: "weekly", goal: "family" },
+    health: { title: "Health admin call", type: "CALL", repeat: "once", goal: "health" }
+  };
 
   // ============ helpers ============
   function $(id) { return document.getElementById(id); }
@@ -250,6 +265,12 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
     for (var i = 0; i < bytes.length; i++) out += a[bytes[i] % a.length];
     return out;
   }
+  function newId() {
+    var a = "abcdefghijkmnpqrstuvwxyz23456789", out = "k", bytes = new Uint8Array(10);
+    crypto.getRandomValues(bytes);
+    for (var i = 0; i < bytes.length; i++) out += a[bytes[i] % a.length];
+    return out;
+  }
   function isStandalone() {
     var dm = false;
     try { dm = !!(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches); } catch (e) {}
@@ -275,7 +296,7 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
   // ============ storage (unknown fields from later stages are kept as they are) ============
   function migrate(r) {
     var s = obj(r) || {};
-    s.v = 4;
+    s.v = 5;
     s.topics = obj(s.topics) || {};
     ["alert", "reminders", "replies"].forEach(function (k) { if (!TOPIC_RE.test(s.topics[k] || "")) delete s.topics[k]; });
     if (!s.topics.alert && TOPIC_RE.test(s.topic || "")) s.topics.alert = s.topic;
@@ -295,7 +316,34 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
     delete s.presses; delete s.round;
     s.lastSOS = obj(s.lastSOS); s.lastReply = obj(s.lastReply);
     s.breathEnd = +s.breathEnd || 0;
+    // Stage 1: tasks, contacts, free days. Unknown fields inside a task are kept too.
+    var seen = {};
+    s.tasks = (Array.isArray(s.tasks) ? s.tasks : []).map(normTask).filter(function (t) { if (!t) return false; if (seen[t.id]) t.id = newId(); seen[t.id] = true; return true; });
+    s.contacts = (Array.isArray(s.contacts) ? s.contacts : []).filter(obj).map(function (c) { return { id: /^[A-Za-z0-9_-]{4,40}$/.test(c.id || "") ? c.id : newId(), name: str(c.name, 60).trim(), phone: str(c.phone, 40).trim() }; })
+      .filter(function (c) { return c.name && cleanPhone(c.phone); }).slice(0, 300);
+    s.freeDays = (Array.isArray(s.freeDays) ? s.freeDays : []).filter(function (k, i, a) { return DATE_RE.test(k || "") && a.indexOf(k) === i; });
+    var nn = obj(s.notNow);
+    s.notNow = nn && DATE_RE.test(nn.day || "") && Array.isArray(nn.keys) ? { day: nn.day, keys: nn.keys.filter(function (k) { return typeof k === "string"; }).slice(0, 50) } : null;
+    s.starters = obj(s.starters) || {};
     return s;
+  }
+  function normTask(x) {
+    var t = obj(x); if (!t) return null;
+    t.title = str(t.title, 80).trim(); if (!t.title) return null;
+    t.id = /^[A-Za-z0-9_-]{4,40}$/.test(t.id || "") ? t.id : newId();
+    t.type = TYPES.indexOf(t.type) >= 0 ? t.type : "CUSTOM";
+    t.repeat = ["once", "daily", "weekly"].indexOf(t.repeat) >= 0 ? t.repeat : "once";
+    t.date = DATE_RE.test(t.date || "") ? t.date : ""; t.time = TIME_RE.test(t.time || "") ? t.time : "";
+    t.doneOn = str(t.doneOn, 20);
+    t.goal = str(t.goal, 20);
+    t.private = typeof t.private === "boolean" ? t.private : t.goal === "recovery";   // recovery tasks are private by default
+    t.items = (Array.isArray(t.items) ? t.items : []).filter(obj).map(function (i) { return { t: str(i.t, 80).trim(), doneOn: str(i.doneOn, 20) }; }).filter(function (i) { return i.t; }).slice(0, 50);
+    var c = obj(t.contact) || {}; t.contact = { name: str(c.name, 60), phone: str(c.phone, 40) };
+    t.notes = str(t.notes, 1000); t.callBackBy = DATE_RE.test(t.callBackBy || "") ? t.callBackBy : "";
+    t.link = LINK_RE.test(t.link || "") ? str(t.link, 500) : "";
+    t.created = +t.created || Date.now();
+    if (t.kind !== "presleep") delete t.kind;
+    return t;
   }
   function load() { var raw = null; try { raw = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { raw = null; } return migrate(raw); }
   var S = load();
@@ -471,9 +519,9 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
   function resend() { if (S.lastSOS) postSOS(S.lastSOS.at); }
 
   // ============ screens ============
-  var ui = { screen: "home", arg: null, goalSel: null };
+  var ui = { screen: "home", arg: null, goalSel: null, prev: null, editType: null };
   var testState = null; // { kind, status: "sending"|"sent"|"notsent"|"confirmed"|"nothing", why }
-  function go(name, arg) { ui.screen = name; ui.arg = arg || null; ui.goalSel = null; render(true); window.scrollTo(0, 0); }
+  function go(name, arg) { ui.prev = ui.screen; ui.screen = name; ui.arg = arg || null; ui.goalSel = null; ui.editType = null; render(true); window.scrollTo(0, 0); }
   function back(to) { return h("button", { class: "btn link", type: "button", id: "back", onclick: function () { go(to || "more"); } }, "Back"); }
   function topicBox(label, value, id) {
     var c = h("code", { id: id, text: value || "Not made yet" });
@@ -550,6 +598,138 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
     }));
   }
 
+  // ============ tasks (all local; nothing here is ever sent) ============
+  function dayKey(d) { d = d || new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function parseDay(k) { var p = k.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function weekStart(d) { var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }   // Monday
+  function periodKey(t, now) { now = now || new Date(); return t.repeat === "daily" ? dayKey(now) : t.repeat === "weekly" ? "w" + dayKey(weekStart(now)) : "once"; }
+  function isDone(t, now) { return t.doneOn === periodKey(t, now); }
+  function itemDone(t, it, now) { return it.doneOn === periodKey(t, now); }
+  // When this task is due in its current period, or null if it has no time.
+  function dueAt(t, now) {
+    now = now || new Date();
+    if (!t.time) return null;
+    var hm = t.time.split(":"), base = null;
+    if (t.repeat === "daily") base = now;
+    else if (t.repeat === "weekly") { var ref = t.date ? parseDay(t.date) : new Date(t.created || Date.now()); base = weekStart(now); base.setDate(base.getDate() + ((ref.getDay() + 6) % 7)); }
+    else if (t.date) base = parseDay(t.date);
+    if (!base) return null;
+    return new Date(base.getFullYear(), base.getMonth(), base.getDate(), +hm[0], +hm[1]).getTime();
+  }
+  function whenText(ms) { return dayKey(new Date(ms)) === dayKey() ? fmtTime(ms) : fmtDate(ms) + ", " + fmtTime(ms); }
+  function taskById(id) { return S.tasks.filter(function (t) { return t.id === id; })[0] || null; }
+  function taskMeta(t) {
+    var d = dueAt(t), when = d !== null ? (t.repeat === "once" ? whenText(d) : fmtTime(d)) : t.date ? fmtDate(parseDay(t.date).getTime()) : "";
+    return [TYPE_NAME[t.type], REPEATS.filter(function (r) { return r[0] === t.repeat; })[0][1], when, t.private ? "Private" : ""].filter(Boolean).join(" · ");
+  }
+  function itemsLeftText(t) { var n = t.items.filter(function (i) { return itemDone(t, i); }).length; return n + " of " + t.items.length + " done"; }
+  function markDone(t) { t.doneOn = periodKey(t); if (save()) toast(t.type === "CALL" ? "Marked as called." : "Done."); render(false); }
+  function undoDone(t) { t.doneOn = ""; save(); render(false); }
+  function setItem(t, it, on) {
+    var k = periodKey(t);
+    it.doneOn = on ? k : "";
+    var all = t.items.every(function (i) { return i.doneOn === k; });
+    if (all) t.doneOn = k; else if (t.doneOn === k) t.doneOn = "";
+    save(); if (all) toast("All done."); render(false);
+  }
+  function addStarters() {
+    var n = 0;
+    S.goals.forEach(function (g) {
+      if (S.starters[g] || !STARTERS[g]) return;
+      S.starters[g] = true;
+      var t = normTask(Object.assign(JSON.parse(JSON.stringify(STARTERS[g])), { id: newId(), created: Date.now() }));
+      if (t) { S.tasks.push(t); n++; }
+    });
+    return n;
+  }
+  function skipped(key) { return !!(S.notNow && S.notNow.day === dayKey() && S.notNow.keys.indexOf(key) >= 0); }
+  function notNow(key) { var d = dayKey(); if (!S.notNow || S.notNow.day !== d) S.notNow = { day: d, keys: [] }; S.notNow.keys.push(key); save(); render(false); }
+  // The one next step on home. Step 1 (a failed or unsent check-in) is handled before this is called.
+  // Step 2 (a running focus or reading session) arrives with those features in a later stage.
+  function nextStep(nowMs) {
+    var now = new Date(nowMs || Date.now()), ms = now.getTime();
+    var open = S.tasks.filter(function (t) { return !isDone(t, now) && !skipped("t:" + t.id); });
+    var timed = open.filter(function (t) { var d = dueAt(t, now); return d !== null && d - ms <= 2 * 3600e3; })
+      .sort(function (a, b) { return dueAt(a, now) - dueAt(b, now); });
+    if (timed[0]) return { step: "due", task: timed[0] };
+    var book = open.filter(function (t) { return t.type === "READ" && t.repeat === "daily"; })[0];
+    if (book) return { step: "read", task: book };
+    var ps = open.filter(function (t) { return t.kind === "presleep"; })[0];
+    if (ps && now.getHours() >= 20) return { step: "presleep", task: ps };
+    return { step: "clear" };
+  }
+  function stepCard(ns) {
+    var t = ns.task, d = dueAt(t), ph = cleanPhone(t.contact.phone);
+    var open = function () { go("task", t.id); }, done = function () { markDone(t); };
+    var label = ns.step === "read" ? "Today's pages" : ns.step === "presleep" ? "Before bed" : (d < Date.now() ? "Was due " : "Due ") + whenText(d);
+    var first, second = null, openLink = true;
+    if (t.type === "READ") { first = h("button", { class: "btn primary", type: "button", id: "step-go", onclick: open }, "Open book"); openLink = false; }
+    else if (t.kind === "presleep") { first = h("button", { class: "btn primary", type: "button", id: "step-go", onclick: open }, "Pre-sleep"); openLink = false; }
+    else if (t.type === "CALL" && ph) { first = h("a", { class: "btn primary", id: "step-go", href: "tel:" + ph }, "Call"); second = h("button", { class: "btn", type: "button", id: "step-done", onclick: done }, "Called"); }
+    else if (t.type === "MEETING" && t.link) { first = h("a", { class: "btn primary", id: "step-go", href: t.link, target: "_blank", rel: "noopener noreferrer" }, "Join"); second = h("button", { class: "btn", type: "button", id: "step-done", onclick: done }, "Done"); }
+    else if (t.type === "ERRAND" || t.items.length) { first = h("button", { class: "btn primary", type: "button", id: "step-go", onclick: open }, "Open list"); openLink = false; }
+    else first = h("button", { class: "btn primary", type: "button", id: "step-go", onclick: done }, "Done");
+    var sub = t.items.length ? itemsLeftText(t) : t.type === "CALL" ? t.contact.name : "";
+    return h("div", { class: "card", id: "next-step" },
+      h("p", { class: "lbl", id: "step-when", text: label }),
+      h("p", { class: "status", id: "step-title", text: t.title }),
+      sub ? h("p", { class: "small", text: sub }) : null,
+      first, second,
+      h("div", { class: "row" },
+        openLink ? h("button", { class: "btn link", type: "button", id: "step-open", onclick: open }, "Open") : null,
+        h("button", { class: "btn link", type: "button", id: "not-now", onclick: function () { notNow("t:" + t.id); } }, "Not now")));
+  }
+  function icsEscape(x) { return String(x).replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n"); }
+  function icsFold(line) { var out = []; while (line.length > 73) { out.push(line.slice(0, 73)); line = " " + line.slice(73); } out.push(line); return out.join("\r\n"); }
+  function downloadIcs(t) {
+    var d = dueAt(t); if (d === null) return;
+    var f = function (x) { return x.getFullYear() + pad(x.getMonth() + 1) + pad(x.getDate()) + "T" + pad(x.getHours()) + pad(x.getMinutes()) + "00"; };
+    var lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Ten Days//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT",
+      "UID:" + t.id + "@ten-days", "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""),
+      "DTSTART:" + f(new Date(d)), "DTEND:" + f(new Date(d + 30 * 60e3)),
+      "SUMMARY:" + icsEscape(t.private ? "Ten Days" : t.title)];   // a private task shows only "Ten Days" in Calendar
+    if (t.repeat === "daily") lines.push("RRULE:FREQ=DAILY");
+    if (t.repeat === "weekly") lines.push("RRULE:FREQ=WEEKLY");
+    if (!t.private && t.type === "MEETING" && t.link) lines.push("URL:" + t.link);
+    lines.push("END:VEVENT", "END:VCALENDAR");
+    var url = URL.createObjectURL(new Blob([lines.map(icsFold).join("\r\n") + "\r\n"], { type: "text/calendar" }));
+    var a = h("a", { href: url, download: "ten-days-task.ics", hidden: true });
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 5000);
+  }
+  function smsHref(t) {
+    var left = t.items.filter(function (i) { return !itemDone(t, i); });
+    var list = (left.length ? left : t.items).map(function (i) { return "- " + i.t; }).join("\n");
+    return "sms:&body=" + encodeURIComponent(t.title + "\n" + list);
+  }
+  function parseVcf(text) {
+    var out = [];
+    String(text).replace(/\r\n?/g, "\n").replace(/\n[ \t]/g, "").split(/BEGIN:VCARD/i).slice(1).forEach(function (card) {
+      var name = "", n = "", tel = "";
+      card.split("\n").forEach(function (line) {
+        var m = line.match(/^(?:[A-Za-z0-9-]+\.)?([A-Za-z-]+)(?:;[^:]*)?:(.*)$/); if (!m) return;
+        var key = m[1].toUpperCase(), raw = m[2];
+        var un = function (v) { return v.replace(/\\n/gi, " ").replace(/\\([,;\\])/g, "$1").trim(); };
+        if (key === "FN" && !name) name = un(raw);
+        else if (key === "N" && !n) n = raw.split(";").slice(0, 2).reverse().map(un).join(" ").trim();
+        else if (key === "TEL" && !tel) tel = un(raw).replace(/^tel:/i, "");
+      });
+      name = (name || n).slice(0, 60); tel = tel.slice(0, 40);
+      if (name && cleanPhone(tel)) out.push({ name: name, phone: tel });
+    });
+    return out;
+  }
+  function sel(id, opts, value) { return h("select", { id: id }, opts.map(function (o) { return h("option", { value: o[0], selected: o[0] === value }, o[1]); })); }
+  var quietBusy = false;
+  function sendQuiet() {
+    if (quietBusy || !S.topics.alert) return;
+    quietBusy = true; ui.arg = { status: "sending" }; render(false);
+    // The single free-day exception: only from this tap, and the words say nothing about the day.
+    ntfy(S.topics.alert, { title: "✓", priority: "2" }, "Checking in.").then(function (r) {
+      quietBusy = false;
+      if (ui.screen === "m-free") { ui.arg = r; render(false); } else toast(r.ok ? "Sent." : "Not sent. " + whyText(r.why));
+    });
+  }
+
   var SCREENS = {
     a2hs: function () {
       return { title: "Add Ten Days to your Home Screen", body: [
@@ -574,9 +754,9 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
     "ob-goals": function () {
       var sel = ui.goalSel || (ui.goalSel = S.goals.slice());
       return { title: "What are you working on?", body: [
-        h("p", { text: "This stays on this phone and only shapes your next steps later." }),
+        h("p", { text: "This stays on this phone and adds a few starter tasks you can change or delete." }),
         goalChips(sel),
-        h("div", { class: "group push" }, h("button", { class: "btn primary", type: "button", id: "next", onclick: function () { S.goals = sel; save(); go("ob-his"); } }, "Next"))
+        h("div", { class: "group push" }, h("button", { class: "btn primary", type: "button", id: "next", onclick: function () { S.goals = sel; addStarters(); save(); go("ob-his"); } }, "Next"))
       ] };
     },
     "ob-his": function () {
@@ -630,7 +810,10 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
         card = h("div", { class: "card warn" }, h("p", { text: "Finish setup so the button reaches him." }),
           h("button", { class: "btn primary", type: "button", id: "finish-setup", onclick: function () { go(isStandalone() ? (S.topics.alert ? "ob-his" : "ob-topics") : "a2hs"); } }, "Finish setup"));
       } else {
-        card = h("div", { class: "card ok" }, h("p", { class: "status ok", text: "You're clear." }));
+        var ns = nextStep();
+        card = ns.step === "clear"
+          ? h("div", { class: "card ok", id: "next-step" }, h("p", { class: "status ok", text: "You're clear." }), h("p", { class: "small", text: "Nothing due in the next 2 hours. Your tasks are in More." }))
+          : stepCard(ns);
       }
       return { title: "Ten Days", body: [
         h("p", { class: "sub", id: "status-line", text: statusLine() }),
@@ -688,6 +871,8 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
         h("p", { class: "sub", text: "Everything else lives here." }),
         S.alertTestedAt && Date.now() - S.alertTestedAt > 7 * 864e5 ? h("p", { class: "small", id: "last-tested", text: "Last tested " + Math.floor((Date.now() - S.alertTestedAt) / 864e5) + " days ago" }) : null,
         h("div", { class: "group morelist" },
+          item("m-tasks", "Tasks", S.tasks.length ? null : "Add your first task", "m-tasks"),
+          S.goals.indexOf("recovery") >= 0 || S.freeDays.length ? item("m-free", "Free day", S.freeDays.indexOf(dayKey()) >= 0 ? "Today is marked" : null, "m-free") : null,
           item("m-allgood", "Send an all-good note", "For a mis-tap", "m-allgood"),
           item("m-labels", "His reply buttons", S.labels.join(" · "), "m-labels"),
           item("m-night", "Night test", S.nightTestedAt ? "Last run " + fmtDate(S.nightTestedAt) : "Not run yet", "m-night"),
@@ -701,6 +886,168 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
           h("input", { type: "checkbox", id: "haptics-toggle", checked: S.haptics !== false, onchange: function (e) { S.haptics = e.target.checked; save(); } }),
           h("span", { text: "Haptics" })),
         back("home")
+      ] };
+    },
+    "m-tasks": function () {
+      var now = new Date();
+      var list = S.tasks.slice().sort(function (a, b) {
+        var da = isDone(a, now), db = isDone(b, now); if (da !== db) return da ? 1 : -1;
+        var x = dueAt(a, now), y = dueAt(b, now); if (x === null && y === null) return 0; if (x === null) return 1; if (y === null) return -1; return x - y;
+      });
+      return { title: "Tasks", body: [
+        h("p", { text: "Tasks stay on this phone. Home shows only the next one." }),
+        list.length ? h("div", { class: "group morelist", id: "task-list" }, list.map(function (t) {
+          return h("button", { class: "btn", type: "button", "data-task": t.id, onclick: function () { go("task", t.id); } },
+            h("span", { text: t.title }), h("span", { class: "hint", text: (isDone(t, now) ? "Done · " : "") + taskMeta(t) }));
+        })) : h("p", { class: "sub", id: "no-tasks", text: "No tasks yet. Tap New task to add one." }),
+        h("div", { class: "group push" },
+          h("button", { class: "btn primary", type: "button", id: "new-task", onclick: function () { go("task-edit", null); } }, "New task"),
+          h("button", { class: "btn", type: "button", id: "m-contacts", onclick: function () { go("contacts"); } }, "Contacts"),
+          back())
+      ] };
+    },
+    task: function (id) {
+      var t = taskById(id), from = ui.prev === "home" ? "home" : "m-tasks";
+      if (!t) return { title: "Task", body: [h("p", { text: "This task isn't here anymore." }), h("div", { class: "group push" }, back("m-tasks"))] };
+      var done = isDone(t), d = dueAt(t), ph = cleanPhone(t.contact.phone), info = [], acts = [];
+      info.push(h("p", { class: "sub", id: "task-meta", text: taskMeta(t) }));
+      if (done) info.push(h("p", { class: "status ok", id: "task-done", text: t.repeat === "daily" ? "Done today." : t.repeat === "weekly" ? "Done this week." : "Done." }));
+      if (t.type === "CALL") {
+        info.push(h("p", { id: "call-who", text: t.contact.name || ph ? [t.contact.name, t.contact.phone].filter(Boolean).join(" · ") : "No number yet. Tap Edit to add one." }));
+        if (t.callBackBy) info.push(h("p", { class: "small", id: "callback", text: "Call back by " + fmtDate(parseDay(t.callBackBy).getTime()) + "." }));
+        var notes = h("textarea", { id: "call-notes", maxlength: "1000", rows: "3", value: t.notes });
+        info.push(h("div", { class: "field" }, h("label", { class: "lbl", for: "call-notes", text: "Notes, like a reference number" }), notes,
+          h("button", { class: "btn", type: "button", id: "save-notes", onclick: function () { t.notes = notes.value.slice(0, 1000); if (save()) toast("Notes saved."); } }, "Save notes")));
+      }
+      if (t.type === "MEETING") info.push(h("p", { class: "small", id: "meet-link", text: t.link || "No link yet. Tap Edit to paste one." }));
+      if (t.type === "READ") info.push(h("p", { text: "Mark today's pages when you've read them." }));
+      if (t.type === "ERRAND" && !t.items.length) info.push(h("p", { class: "sub", text: "No items yet. Tap Edit and add them, one per line." }));
+      if (t.items.length) info.push(h("div", { class: "card", id: "items" }, t.items.map(function (it, i) {
+        return h("label", { class: "toggle", for: "item-" + i },
+          h("input", { type: "checkbox", id: "item-" + i, checked: itemDone(t, it), onchange: function (e) { setItem(t, it, e.target.checked); } }),
+          h("span", { text: it.t }));
+      })));
+      if (t.type === "CALL" && ph) acts.push(h("a", { class: "btn primary", id: "task-call", href: "tel:" + ph }, "Call"));
+      if (t.type === "MEETING" && t.link) acts.push(h("a", { class: "btn primary", id: "task-join", href: t.link, target: "_blank", rel: "noopener noreferrer" }, "Join"));
+      if (!done) acts.push(h("button", { class: acts.length ? "btn" : "btn primary", type: "button", id: "task-done-btn", onclick: function () { markDone(t); } },
+        t.type === "CALL" ? "Called" : t.type === "READ" ? "Today's pages done" : "Done"));
+      else acts.push(h("button", { class: "btn link", type: "button", id: "undo-done", onclick: function () { undoDone(t); } }, "Not done yet"));
+      if (t.type === "ERRAND" && t.items.length) acts.push(t.private
+        ? h("p", { class: "small", id: "text-list-off", text: "This list is private, so Text this list is off." })
+        : h("a", { class: "btn", id: "text-list", href: smsHref(t) }, "Text this list"));
+      if (t.type === "ERRAND" && t.items.length && !t.private) acts.push(h("p", { class: "small", text: "Opens Messages with the list. You pick who and tap Send." }));
+      if (d !== null) acts.push(h("button", { class: "btn", type: "button", id: "ics", onclick: function () { downloadIcs(t); toast(t.private ? "Calendar file made. It says only “Ten Days”." : "Calendar file made."); } }, "Add to Calendar"));
+      var del = confirmBtn("Delete", "Tap again to delete", function () { S.tasks = S.tasks.filter(function (x) { return x !== t; }); save(); toast("Deleted."); go("m-tasks"); });
+      del.id = "delete-task";
+      acts.push(h("div", { class: "row" }, h("button", { class: "btn", type: "button", id: "edit-task", onclick: function () { go("task-edit", t.id); } }, "Edit"), del));
+      acts.push(back(from));
+      return { title: t.title, body: [info, h("div", { class: "group push" }, acts)] };
+    },
+    "task-edit": function (id) {
+      var t = id ? taskById(id) : null, presleep = !!(t && t.kind === "presleep");
+      var title = h("input", { type: "text", id: "t-title", value: t ? t.title : "", maxlength: "80", autocomplete: "off" });
+      var typeSel = sel("t-type", TYPES.map(function (k) { return [k, TYPE_NAME[k]]; }), ui.editType || (t ? t.type : "CUSTOM"));
+      var rep = sel("t-repeat", REPEATS, t ? t.repeat : "once");
+      var date = h("input", { type: "date", id: "t-date", value: t ? t.date : "" });
+      var time = h("input", { type: "time", id: "t-time", value: t ? t.time : "" });
+      var priv = h("input", { type: "checkbox", id: "t-private", checked: t ? t.private : false });
+      var who = h("input", { type: "text", id: "t-who", value: t ? t.contact.name : "", maxlength: "60", autocomplete: "off" });
+      var num = h("input", { type: "tel", id: "t-num", value: t ? t.contact.phone : "", maxlength: "40", autocomplete: "off" });
+      var pick = S.contacts.length ? sel("t-pick", [["", "Pick from your contacts"]].concat(S.contacts.map(function (c) { return [c.id, c.name]; })), "") : null;
+      if (pick) pick.addEventListener("change", function () { var c = S.contacts.filter(function (x) { return x.id === pick.value; })[0]; if (c) { who.value = c.name; num.value = c.phone; } });
+      var cb = h("input", { type: "date", id: "t-callback", value: t ? t.callBackBy : "" });
+      var notes = h("textarea", { id: "t-notes", maxlength: "1000", rows: "3", value: t ? t.notes : "" });
+      var link = h("input", { type: "url", id: "t-link", value: t ? t.link : "", placeholder: "https://", autocapitalize: "off", spellcheck: "false", autocomplete: "off" });
+      var items = h("textarea", { id: "t-items", rows: "5", value: t ? t.items.map(function (i) { return i.t; }).join("\n") : "" });
+      var field = function (inp, label) { return h("div", { class: "field" }, h("label", { class: "lbl", for: inp.id, text: label }), inp); };
+      var callBox = h("div", { class: "group", id: "t-callbox" }, pick ? field(pick, "Contact") : null, field(who, "Who"), field(num, "Number"), field(cb, "Call back by (optional)"), field(notes, "Notes, like a reference number"));
+      var meetBox = h("div", { class: "group", id: "t-meetbox" }, field(link, "Meeting link"));
+      var itemBox = h("div", { class: "group", id: "t-itembox" }, field(items, "Items, one per line"));
+      var show = function () { var v = typeSel.value; callBox.hidden = v !== "CALL"; meetBox.hidden = v !== "MEETING"; itemBox.hidden = !(v === "ERRAND" || presleep); };
+      typeSel.addEventListener("change", function () { ui.editType = typeSel.value; show(); });
+      show();
+      return { title: t ? "Edit task" : "New task", body: [
+        field(title, "Title"),
+        presleep ? null : field(typeSel, "Type"),
+        field(rep, "Repeats"),
+        h("div", { class: "row" }, h("div", { class: "field", style: "flex:1" }, h("label", { class: "lbl", for: "t-date", text: "Date" }), date),
+          h("div", { class: "field", style: "flex:1" }, h("label", { class: "lbl", for: "t-time", text: "Time (optional)" }), time)),
+        callBox, meetBox, itemBox,
+        h("label", { class: "toggle", for: "t-private" }, priv, h("span", { text: "Private: a calendar file says only “Ten Days”, and lists can't be texted." })),
+        h("div", { class: "group push" },
+          h("button", { class: "btn primary", type: "button", id: "t-save", onclick: function () {
+            var v = title.value.trim().slice(0, 80);
+            if (!v) { toast("Add a title."); title.focus(); return; }
+            var L = link.value.trim(), ty = presleep ? t.type : typeSel.value;
+            if (ty === "MEETING" && L && !LINK_RE.test(L)) { toast("Paste a link that starts with https://"); return; }
+            var o = t || { id: newId(), created: Date.now(), doneOn: "" };
+            o.title = v; o.type = ty; o.repeat = rep.value; o.date = date.value; o.time = time.value; o.private = priv.checked;
+            if (o.repeat === "once" && o.time && !o.date) o.date = dayKey();
+            o.contact = { name: who.value.trim().slice(0, 60), phone: num.value.trim().slice(0, 40) };
+            o.callBackBy = cb.value; o.notes = notes.value.slice(0, 1000); o.link = LINK_RE.test(L) ? L : "";
+            var old = o.items || [];
+            o.items = ty === "ERRAND" || presleep ? items.value.split("\n").map(function (x) { return x.trim().slice(0, 80); }).filter(Boolean).slice(0, 50)
+              .map(function (x) { var m = old.filter(function (i) { return i.t === x; })[0]; return { t: x, doneOn: m ? m.doneOn : "" }; }) : [];
+            var n = normTask(o);
+            if (!t) S.tasks.push(n);
+            if (save()) { toast("Saved."); go("task", n.id); }
+          } }, "Save"),
+          h("button", { class: "btn link", type: "button", id: "t-cancel", onclick: function () { go(t ? "task" : "m-tasks", t ? t.id : null); } }, "Cancel"))
+      ] };
+    },
+    contacts: function () {
+      var file = h("input", { type: "file", id: "vcf-in", accept: ".vcf,text/vcard,text/x-vcard", hidden: true, onchange: function (e) {
+        var f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+        if (f.size > 2e6) { toast("That file is too big to import."); return; }
+        var rd = new FileReader();
+        rd.onload = function () {
+          var list = parseVcf(rd.result), added = 0;
+          if (!list.length) { toast("No contact with a phone number in that file."); return; }
+          list.forEach(function (c) {
+            if (S.contacts.length >= 300 || S.contacts.some(function (x) { return x.name === c.name && cleanPhone(x.phone) === cleanPhone(c.phone); })) return;
+            S.contacts.push({ id: newId(), name: c.name, phone: c.phone }); added++;
+          });
+          if (save()) toast(added ? "Added " + added + (added === 1 ? " contact." : " contacts.") : "Those are already here.");
+          render(false);
+        };
+        rd.onerror = function () { toast("Couldn't read that file."); };
+        rd.readAsText(f);
+      } });
+      var name = h("input", { type: "text", id: "c-name", maxlength: "60", autocomplete: "off" });
+      var num = h("input", { type: "tel", id: "c-num", maxlength: "40", autocomplete: "off" });
+      return { title: "Contacts", body: [
+        h("p", { text: "Ten Days never reads your address book. Import a contact card (.vcf) or type one in." }),
+        S.contacts.length ? h("div", { class: "card", id: "contact-list" }, S.contacts.map(function (c) {
+          var del = confirmBtn("Delete", "Tap again to delete", function () { S.contacts = S.contacts.filter(function (x) { return x !== c; }); save(); render(false); });
+          return h("div", { class: "logrow" }, h("span", { text: c.name }), h("span", { class: "small", text: c.phone }), h("div", { class: "row" }, del));
+        })) : h("p", { class: "sub", id: "no-contacts", text: "No contacts yet. Import a .vcf or type one in below." }),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "c-name", text: "Name" }), name),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "c-num", text: "Number" }), num),
+        h("button", { class: "btn", type: "button", id: "c-add", onclick: function () {
+          var n = name.value.trim().slice(0, 60), p = num.value.trim().slice(0, 40);
+          if (!n || !cleanPhone(p)) { toast("Add a name and a number."); return; }
+          S.contacts.push({ id: newId(), name: n, phone: p }); name.value = ""; num.value = "";
+          if (save()) toast("Added."); render(false);
+        } }, "Add contact"),
+        file, h("button", { class: "btn", type: "button", id: "vcf-import", onclick: function () { file.click(); } }, "Import .vcf"),
+        h("p", { class: "small", text: "To make a .vcf: Contacts → a contact → Share Contact → Save to Files. Confirm on your iOS version." }),
+        h("div", { class: "group push" }, back("m-tasks"))
+      ] };
+    },
+    "m-free": function () {
+      var marked = S.freeDays.indexOf(dayKey()) >= 0, st = ui.arg;
+      return { title: "Free day", body: [
+        h("p", { text: "Mark today when it was a free day. It stays on this phone." }),
+        marked ? h("p", { class: "status ok", id: "free-status", text: "Today is marked. Good work." }) : null,
+        marked ? h("p", { class: "small", text: "If you want, send him a quiet ✓. He sees “✓ Checking in.” and nothing about your day." }) : null,
+        st ? h("p", { class: "status" + (st.status === "sending" ? "" : st.ok ? " ok" : " bad"), id: "quiet-status", "aria-live": "polite",
+          text: st.status === "sending" ? "Sending…" : st.ok ? "Sent." : "Not sent. " + whyText(st.why) }) : null,
+        h("div", { class: "group push" },
+          marked
+            ? h("button", { class: "btn primary", type: "button", id: "quiet-check", disabled: !S.topics.alert || quietBusy, onclick: sendQuiet }, "Send him a quiet ✓")
+            : h("button", { class: "btn primary", type: "button", id: "mark-free", onclick: function () { S.freeDays.push(dayKey()); ui.arg = null; save(); render(false); } }, "Mark today"),
+          marked ? h("button", { class: "btn link", type: "button", id: "unmark-free", onclick: function () { S.freeDays = S.freeDays.filter(function (k) { return k !== dayKey(); }); ui.arg = null; save(); render(false); } }, "Unmark today") : null,
+          back())
       ] };
     },
     "m-allgood": function () {
@@ -820,9 +1167,9 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
     "m-goals": function () {
       var sel = ui.goalSel || (ui.goalSel = S.goals.slice());
       return { title: "Goals", body: [
-        h("p", { text: "These stay on this phone and shape your next steps in a later version." }),
+        h("p", { text: "These stay on this phone. A goal you add brings one starter task, once." }),
         goalChips(sel),
-        h("div", { class: "group push" }, h("button", { class: "btn primary", type: "button", id: "save-goals", onclick: function () { S.goals = sel.slice(); if (save()) toast("Saved."); } }, "Save"), back())
+        h("div", { class: "group push" }, h("button", { class: "btn primary", type: "button", id: "save-goals", onclick: function () { S.goals = sel.slice(); var n = addStarters(); if (save()) toast(n ? "Saved. Added " + n + " starter task" + (n > 1 ? "s" : "") + " to Tasks." : "Saved."); } }, "Save"), back())
       ] };
     },
     "m-backup": function () {
@@ -834,7 +1181,7 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
         rd.readAsText(f);
       } });
       return { title: "Backup", body: [
-        h("p", { text: "Export saves everything on this phone to one file, and Import puts it back." }),
+        h("p", { text: "Export saves this phone's data to one file, except free days, and Import puts it back." }),
         h("div", { class: "group push" },
           h("button", { class: "btn primary", type: "button", id: "export", onclick: function () { go("export-warn"); } }, "Export"),
           file, h("button", { class: "btn", type: "button", id: "import", onclick: function () { file.click(); } }, "Import"), back())
@@ -842,10 +1189,11 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
     },
     "export-warn": function () {
       return { title: "Before you download", body: [
-        h("p", { text: "This file contains your channel names, your private log, both phone numbers and his last reply, so keep it somewhere only you can open." }),
+        h("p", { text: "This file contains your channel names, your private log, your tasks and contacts, both phone numbers and his last reply, so keep it somewhere only you can open." }),
+        h("p", { class: "small", text: "Free days are not in the file. They stay on this phone." }),
         h("div", { class: "group push" },
           h("button", { class: "btn primary", type: "button", id: "export-confirm", onclick: function () {
-            var data = JSON.parse(JSON.stringify(S)); data.exportedAt = new Date().toISOString();
+            var data = JSON.parse(JSON.stringify(S)); delete data.freeDays; data.exportedAt = new Date().toISOString();
             var url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
             var d = new Date(), a = h("a", { href: url, download: "ten-days-" + d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + ".json", hidden: true });
             document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 5000);
@@ -858,7 +1206,7 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
       return { title: "Replace this phone's data?", body: [
         h("p", { text: "Everything on this phone is replaced with the backup" + (d && d.exportedAt ? " from " + fmtDate(Date.parse(d.exportedAt)) : "") + "." }),
         h("div", { class: "group push" },
-          h("button", { class: "btn danger", type: "button", id: "import-replace", onclick: function () { S = migrate(d); S.ob.done = true; if (isStandalone()) ensureTopics(); if (save()) { toast("Restored."); go("home"); } } }, "Replace"),
+          h("button", { class: "btn danger", type: "button", id: "import-replace", onclick: function () { var free = S.freeDays; S = migrate(d); S.freeDays = free; S.ob.done = true; if (isStandalone()) ensureTopics(); if (save()) { toast("Restored."); go("home"); } } }, "Replace"),
           h("button", { class: "btn link", type: "button", id: "import-cancel", onclick: function () { go("m-backup"); } }, "Cancel"))
       ] };
     }
@@ -871,7 +1219,7 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
     var root = $("screen");
     var active = document.activeElement && document.activeElement.id && root.contains(document.activeElement) ? document.activeElement.id : null;
     var vals = {}, checks = {};
-    Array.prototype.forEach.call(root.querySelectorAll("input[type=text],input[type=tel]"), function (i) { if (i.id) vals[i.id] = i.value; });
+    Array.prototype.forEach.call(root.querySelectorAll("input[type=text],input[type=tel],input[type=date],input[type=time],input[type=url],textarea,select"), function (i) { if (i.id) vals[i.id] = i.value; });
     Array.prototype.forEach.call(root.querySelectorAll("input[type=checkbox]"), function (i) { if (i.id) checks[i.id] = i.checked; });
     var nodes = [h1];
     (function flat(list) { list.forEach(function (n) { if (Array.isArray(n)) flat(n); else if (n) nodes.push(n); }); })(out.body);
@@ -910,6 +1258,7 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
     pollReplies(); render(false); schedulePoll();
   });
   window.addEventListener("online", function () { if (!document.hidden) pollReplies(); });
+  setInterval(function () { if (!document.hidden && ui.screen === "home" && !cdT) render(false); }, 60e3);
 
   function start() {
     if (S.lastSOS && S.lastSOS.status === "sending") { S.lastSOS.status = "notsent"; S.lastSOS.why = "timeout"; var e = S.log.filter(function (x) { return x.at === S.lastSOS.at; })[0]; if (e && e.sent === null) e.sent = false; save(); }
@@ -918,6 +1267,7 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
       ensureTopics();
       return go("ob-topics");
     }
+    if (addStarters()) save();
     if (S.breathEnd > Date.now()) return go("breath");
     go("home");
   }
