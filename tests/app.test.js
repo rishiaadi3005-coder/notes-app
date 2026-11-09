@@ -42,10 +42,12 @@ async function boot(browser, opts) {
   });
   if (opts.seed !== null) await page.addInitScript(s => { if (!sessionStorage.getItem("seeded")) { sessionStorage.setItem("seeded", "1"); localStorage.setItem("tendays.v1", s); } }, JSON.stringify(opts.seed || SEED));
   if (opts.at) await page.clock.setSystemTime(opts.at);
+  if (opts.route) await page.route(opts.route[0], opts.route[1]);
   await page.goto(APP + (opts.hash || ""));
   await page.waitForSelector("#screen h1");
   return { ctx, page, errors, posts };
 }
+function seed_name(seed, n) { seed.name = n; seed.partner = { name: n === "Rishi" ? "Audi" : "Rishi" }; }
 const S = page => page.evaluate(() => JSON.parse(localStorage.getItem("tendays.v1")));
 async function ask(page, text) { await page.fill("#qa", text); await page.click("#qa-add"); await page.waitForTimeout(80); }
 async function axe(page, name) {
@@ -1054,6 +1056,130 @@ async function axe(page, name) {
       ok(posts.some(p => p.url.includes("tr-remindersxx0001") && /delay=\d+/.test(p.url)), "scheduled a heads-up to my phone");
       ok(!errors.length, "hard: no errors " + errors.join(" | "));
       await ctx.close();
+    }
+    // ---------- Moments: two phones, one circle, the real server code ----------
+    console.log("moments");
+    {
+      const worker = (await import(path.join(__dirname, "../worker/src/index.js"))).default;
+      const { makeEnv } = require("./cfshim");
+      const menv = makeEnv(fs.readFileSync(path.join(__dirname, "../worker/schema.sql"), "utf8"), { ALLOWED_ORIGINS: "*" });
+      const srvCalls = [];
+      const viaWorker = async route => {
+        const rq = route.request(), all = await rq.allHeaders(), headers = {};
+        for (const k of Object.keys(all)) if (/^(authorization|content-type|origin|x-moment-id|x-caption|x-for-story|access-control-request-.*)$/.test(k)) headers[k] = all[k];
+        const init = { method: rq.method(), headers };
+        if (!["GET", "HEAD", "OPTIONS"].includes(rq.method())) { const b = rq.postDataBuffer(); if (b) init.body = b; }
+        srvCalls.push(rq.method() + " " + new URL(rq.url()).pathname);
+        const res = await worker.fetch(new Request(rq.url(), init), menv);
+        const h = {}; res.headers.forEach((v, k) => { h[k] = v; });
+        await route.fulfill({ status: res.status, headers: h, body: Buffer.from(await res.arrayBuffer()) });
+      };
+      // Rishi starts the circle
+      const seedR = JSON.parse(JSON.stringify(SEED)); seed_name(seedR, "Rishi");
+      const R = await boot(browser, { seed: seedR });
+      await R.page.route("https://moments.test/**", viaWorker);
+      await R.page.click("#nav-you"); await R.page.click("#y-people");
+      ok(await R.page.isVisible("#mo-setup"), "Moments: set up from You and Audi");
+      await R.page.fill("#mo-srv", "ftp://nope"); await R.page.click("#mo-start");
+      ok((await R.page.textContent("#toast")).includes("https://"), "only an https server address");
+      await R.page.fill("#mo-srv", "https://moments.test"); await R.page.click("#mo-start");
+      await R.page.waitForSelector("#mo-sum");
+      let s = await S(R.page);
+      const tokR = await R.page.evaluate(() => localStorage.getItem("tendays.motoken"));
+      ok(s.mo.circle && s.mo.me.name === "Rishi" && tokR && !JSON.stringify(s).includes(tokR), "circle started; the key is kept out of app data and backups");
+      await R.page.click("#mo-invite"); await R.page.waitForSelector("#mo-invite-link");
+      const invite = await R.page.textContent("#mo-invite-link");
+      ok(/#moments=1&srv=https%3A%2F%2Fmoments\.test&code=[a-z0-9]+&from=Rishi$/.test(invite), "invite link made");
+      // Rishi posts a photo
+      const [fc] = await Promise.all([R.page.waitForEvent("filechooser"), R.page.click("#mo-add")]);
+      await fc.setFiles(FIX + "/scan.png");
+      await R.page.waitForSelector("#mo-cap");
+      await R.page.fill("#mo-cap", "Leg day"); await R.page.click("#mo-post");
+      await R.page.waitForFunction(() => { const s = JSON.parse(localStorage.getItem("tendays.v1")); return s.moments.length === 1 && !s.moments[0].pending; });
+      s = await S(R.page); const mid = s.moments[0].id;
+      ok(s.moments[0].caption === "Leg day" && s.moments[0].hasPhoto && s.collection.length === 0, "posted to Moments, not to private reminders");
+      ok(R.posts.some(p => p.url.includes(SEED.topics.alert) && p.body.includes("Shared a moment: Leg day")), "a nudge goes to his phone");
+      // Audi joins from the link and sees it
+      const seedA = JSON.parse(JSON.stringify(SEED)); seed_name(seedA, ""); seedA.topics = { alert: "td-audialertchan01", replies: "tp-audireplies0001" };
+      const A = await boot(browser, { seed: seedA, hash: invite.slice(invite.indexOf("#")), route: ["https://moments.test/**", viaWorker] });
+      ok(await A.page.isVisible("#mo-offer") && (await A.page.textContent("#mo-offer-q")).includes("Rishi"), "the link asks Audi to join Rishi's moments");
+      await A.page.fill("#mo-join-name", "Audi"); await A.page.click("#mo-join-yes");
+      await A.page.waitForSelector("#mo-sum");
+      s = await S(A.page);
+      ok(s.moments.length === 1 && s.moments[0].caption === "Leg day" && s.mo.members.length === 2, "Audi is in and has the moment");
+      await A.page.click("#nav-home");
+      ok((await A.page.textContent("#mo-today-cap")) === "Leg day" && (await A.page.textContent("#mo-today .mometa")).includes("Rishi"), "Today: the latest moment, who and when");
+      await A.page.waitForSelector("#mo-today .mophoto img");
+      ok(await A.page.evaluate(() => document.querySelector("#mo-today .mophoto img").naturalWidth > 0), "his phone loads the photo from the server");
+      ok(!(await A.page.textContent("#screen")).includes("hasn't reacted") && !(await A.page.isVisible("#mo-reply-in")), "no pressure: no reply box, no counters");
+      await A.page.click("#mo-today-r-respect");
+      await A.page.waitForTimeout(300);
+      ok((await A.page.getAttribute("#mo-today-r-respect", "aria-pressed")) === "true", "one tap: Respect");
+      // Audi replies (optional) in the timeline
+      await A.page.click("#mo-all"); await A.page.click("#mo-reply-" + mid); await A.page.fill("#mo-reply-in", "beast"); await A.page.click("#mo-reply-send");
+      await A.page.waitForTimeout(300);
+      ok(!(await A.page.$("#mo-del-" + mid)), "he can't delete Rishi's moment");
+      // Rishi sees the reaction and reply
+      await R.page.click("#nav-you"); await R.page.click("#y-people"); await R.page.click("#mo-open");
+      await R.page.waitForFunction(id => { const s = JSON.parse(localStorage.getItem("tendays.v1")); const m = s.moments.find(x => x.id === id); return m && m.reactions.length && m.replies.length; }, mid);
+      await R.page.waitForSelector("#mo-" + mid + " .moreplies");
+      ok((await R.page.getAttribute("#mo-r-" + mid + "-respect", "aria-label")).includes("from Audi") && (await R.page.textContent("#mo-" + mid + " .moreplies")).includes("beast"), "Rishi sees Audi's Respect and reply");
+      // ten days later: the chapter
+      await R.page.clock.setSystemTime(Date.now() + 11 * 864e5);
+      await R.page.click("#back"); await R.page.waitForSelector("#mo-chapter");
+      await R.page.click("#mo-chapter");
+      ok(await R.page.isVisible("#ch-m-" + mid), "chapter: pick from the moments shared for it");
+      await R.page.click("#ch-plain");
+      const body = await R.page.inputValue("#ch-body");
+      ok(body.includes("Leg day") && body.includes("Audi reacted with Respect") && body.includes("beast") && !/Old errand|Workout|urge/i.test(body), "plain chapter: only what was shared");
+      // with AI: only the moments go, nothing about you
+      let aiSeen = null;
+      await R.page.evaluate(() => { localStorage.setItem("tendays.aikey", "AIzaTESTKEY000000000000000000000000000"); const s = JSON.parse(localStorage.getItem("tendays.v1")); s.ai.agreed = true; localStorage.setItem("tendays.v1", JSON.stringify(s)); });
+      await R.page.route("https://generativelanguage.googleapis.com/**", r => {
+        const req = r.request();
+        if (req.method() === "GET") return r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ models: [{ name: "models/gemini-9-flash-lite", supportedGenerationMethods: ["generateContent"] }] }) });
+        const b = JSON.parse(req.postData()); aiSeen = { sys: b.system_instruction.parts[0].text, data: b.contents[0].parts[0].text };
+        r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ title: "Leg day, Respect", story: "Rishi shared a photo captioned \"Leg day\". Audi reacted with Respect and wrote \"beast\"." }) }] } }] }) });
+      });
+      await R.page.reload(); await R.page.waitForSelector("#screen h1");
+      await R.page.click("#nav-you"); await R.page.click("#y-people"); await R.page.click("#mo-chapter");
+      await R.page.click("#ch-ai"); await R.page.waitForSelector("#ch-body");
+      ok(aiSeen && aiSeen.data.includes("Leg day") && aiSeen.data.includes("Audi reacted with Respect") && !/Old errand|Workout|Mom|What you know about the person/.test(aiSeen.sys + aiSeen.data), "AI chapter: sent only the shared moments, nothing else about you");
+      ok(/never what they felt/.test(aiSeen.sys) && /Never invent/.test(aiSeen.sys), "AI told not to invent events or feelings");
+      ok((await R.page.inputValue("#ch-title")) === "Leg day, Respect", "AI draft is editable");
+      await R.page.fill("#ch-title", "Leg day week"); await R.page.click("#ch-save");
+      await R.page.waitForSelector("#ch-text");
+      ok((await R.page.textContent("#screen h1")) === "Leg day week" && await R.page.isVisible("#ch-listen"), "chapter saved, can be read aloud");
+      await A.page.evaluate(() => window.__td.moSync());
+      s = await S(A.page);
+      ok(s.chapters.length === 1 && s.chapters[0].title === "Leg day week", "Audi gets the chapter");
+      // a friend joins by pasting the link inside the app (iPhone opens links in Safari, so pasting is the real path)
+      await R.page.click("#back"); await R.page.click("#back"); await R.page.click("#mo-invite"); await R.page.waitForSelector("#mo-invite-link");
+      const inv2 = await R.page.textContent("#mo-invite-link");
+      const seedF = JSON.parse(JSON.stringify(SEED)); seed_name(seedF, "Sam");
+      const F = await boot(browser, { seed: seedF, route: ["https://moments.test/**", viaWorker] });
+      await F.page.click("#nav-you"); await F.page.click("#y-people"); await F.page.fill("#mo-link", inv2); await F.page.click("#mo-link-go");
+      await F.page.click("#mo-join-yes"); await F.page.waitForSelector("#mo-sum");
+      ok((await S(F.page)).mo.members.filter(m => !m.left).length === 3, "a third person joins by pasting the link: ready for a small group");
+      await F.ctx.close();
+      await R.page.click("#mo-open"); await R.page.click("[id^='ch-open-']");
+      // Rishi deletes his moment: gone for Audi too
+      await R.page.click("#back"); await R.page.click("#mo-del-" + mid); await R.page.click("#mo-del-" + mid);
+      await R.page.waitForTimeout(400);
+      await A.page.evaluate(() => window.__td.moSync());
+      ok(!(await S(A.page)).moments.length, "deleted for everyone");
+      // offline post stays "not shared yet" and retries
+      await R.page.unroute("https://moments.test/**"); await R.page.route("https://moments.test/**", r => r.abort("failed"));
+      const [fc2] = await Promise.all([R.page.waitForEvent("filechooser"), R.page.click("#mo-add")]);
+      await fc2.setFiles(FIX + "/scan.png"); await R.page.waitForSelector("#mo-cap"); await R.page.click("#mo-post");
+      await R.page.waitForFunction(() => document.querySelector("[id^='mo-pend-']"));
+      ok((await R.page.textContent("[id^='mo-pend-']")).includes("Not shared yet"), "no connection: honest “not shared yet”");
+      await R.page.unroute("https://moments.test/**"); await R.page.route("https://moments.test/**", viaWorker);
+      await R.page.click("[id^='mo-retry-']"); await R.page.waitForTimeout(500);
+      ok(!(await S(R.page)).moments.some(m => m.pending), "Retry shares it");
+      await axe(R.page, "moments");
+      ok(!R.errors.length && !A.errors.length, "moments: no errors " + R.errors.concat(A.errors).join(" | "));
+      await R.ctx.close(); await A.ctx.close();
     }
     // quizzes from a learning book (no AI: questions made from the page's sentences)
     {

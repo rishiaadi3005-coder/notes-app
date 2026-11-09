@@ -1,0 +1,17 @@
+# Ten Days Moments server. See README.md for the five deploy steps.
+name = "ten-days-moments"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+[vars]
+# Your Ten Days address, so only the app can call this server from a browser. Comma-separate several.
+ALLOWED_ORIGINS = "https://rishiaadi3005-coder.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ten-days-moments"
+database_id = "PASTE-THE-ID-FROM-wrangler-d1-create"
+
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "ten-days-moments-photos"

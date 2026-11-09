@@ -810,6 +810,37 @@ details.adv[open] { padding-bottom: .9em; }
 .cancelbar.long { flex-wrap: wrap; padding-top: .7em; padding-bottom: .7em; }
 .cancelbar.long b { flex: 1 1 100%; }
 .cancelbar.long .btn { flex: 1; }
+/* ---- v9: Moments ---- */
+.mohead { display: flex; align-items: center; justify-content: space-between; gap: .6em; }
+.mohead .lbl, .mohead .sect-h { margin: 0; }
+.mocard { display: flex; flex-direction: column; gap: .6em; }
+.mothumb { padding: 0; border: 0; background: none; cursor: pointer; border-radius: 18px; overflow: hidden; display: block; width: 100%; }
+.mophoto { border-radius: 18px; overflow: hidden; background: var(--field); border: 1px solid var(--line); min-height: 120px; display: grid; place-items: center; }
+.mophoto img { display: block; width: 100%; height: auto; max-height: 70vh; object-fit: cover; }
+.mophoto.sm img { max-height: 240px; aspect-ratio: 4 / 3; }
+.mophoto.xs { min-height: 0; aspect-ratio: 1; }
+.mophoto.xs img { width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; }
+.mophoto.loading { animation: mopulse 1.4s ease-in-out infinite; }
+@keyframes mopulse { 50% { opacity: .55; } }
+.mometa { margin: 0; color: var(--muted); font-size: .92em; }
+.mometa b { color: var(--ink); }
+.mocap { margin: 0; font-size: 1.05em; line-height: 1.45; }
+.reacts { display: flex; gap: .45em; flex-wrap: wrap; }
+.react { min-width: 52px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: .35em; padding: .2em .8em; border-radius: 99px;
+  border: 1px solid var(--line); background: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); color: var(--ink); font: inherit; font-size: 1.05em; cursor: pointer; transition: transform 180ms var(--ease, ease), border-color 180ms ease; }
+.react:active { transform: scale(.92); }
+.react.on { border-color: var(--corner); background: var(--corner-soft); }
+.react b { font-size: .8em; font-variant-numeric: tabular-nums; }
+.mostrip { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45em; padding: 0; border: 0; background: none; cursor: pointer; width: 100%; }
+.mostrip.big { cursor: default; }
+.moitem { display: flex; flex-direction: column; gap: .6em; }
+.moitem .mophoto img { max-height: 520px; }
+.moacts { display: flex; justify-content: space-between; align-items: center; gap: .6em; }
+.moacts .btn.link { align-self: auto; }
+.moreplies { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .3em; font-size: .95em; }
+.toggle.sm { font-size: .9em; }
+.chbody p { line-height: 1.6; margin: 0 0 .9em; }
+#mo-invite-link { display: block; word-break: break-all; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -1049,6 +1080,17 @@ details.adv[open] { padding-bottom: .9em; }
     var SH = obj(s.share) || {}; s.share = { on: !!SH.on, topic: TOPIC_RE.test(SH.topic || "") ? SH.topic : "", names: !!SH.names, at: +SH.at || 0, sent: str(SH.sent, 4000) };
     var PT = obj(s.partner) || {}; s.partner = { name: str(PT.name, 40).trim(), topic: TOPIC_RE.test(PT.topic || "") ? PT.topic : "", inbox: TOPIC_RE.test(PT.inbox || "") ? PT.inbox : "", last: cleanStatus(PT.last), at: +PT.at || 0 };
     s.msgs = (Array.isArray(s.msgs) ? s.msgs : []).filter(function (m) { return obj(m) && typeof m.at === "number"; }).map(function (m) { return { at: m.at, text: str(m.text, 300), ok: m.ok === true }; }).slice(-40);
+    var MO = obj(s.mo) || {};
+    s.mo = { srv: typeof MO.srv === "string" && moSrvOk(MO.srv) ? MO.srv : "", ping: MO.ping !== false, since: +MO.since || 0, synced: +MO.synced || 0, lost: !!MO.lost,
+      circle: obj(MO.circle) && MO.circle.id ? { id: str(MO.circle.id, 40), name: str(MO.circle.name, 60), created: +MO.circle.created || Date.now() } : null,
+      me: obj(MO.me) && MO.me.id ? { id: str(MO.me.id, 40), name: str(MO.me.name, 40) } : null,
+      members: (Array.isArray(MO.members) ? MO.members : []).filter(obj).map(function (m) { return { id: str(m.id, 40), name: str(m.name, 40), left: !!m.left }; }).slice(0, 20) };
+    s.moments = (Array.isArray(s.moments) ? s.moments : []).filter(function (m) { return obj(m) && /^[a-z0-9]{8,40}$/.test(m.id || ""); }).map(function (m) {
+      return { id: m.id, author: str(m.author, 40), caption: str(m.caption, 500), forStory: m.forStory !== false, hasPhoto: !!m.hasPhoto, created: +m.created || 0, updated: +m.updated || 0, pending: !!m.pending, err: str(m.err, 120),
+        reactions: (Array.isArray(m.reactions) ? m.reactions : []).filter(obj).map(function (r) { return { member: str(r.member, 40), kind: str(r.kind, 12) }; }),
+        replies: (Array.isArray(m.replies) ? m.replies : []).filter(obj).map(function (r) { return { id: str(r.id, 40), member: str(r.member, 40), text: str(r.text, 300), at: +r.at || 0 }; }) };
+    }).slice(-400);
+    s.chapters = (Array.isArray(s.chapters) ? s.chapters : []).filter(obj).map(function (c) { return { period: Math.max(0, Math.floor(+c.period || 0)), title: str(c.title, 120), body: str(c.body, 6000), momentIds: (Array.isArray(c.momentIds) ? c.momentIds : []).map(function (x) { return str(x, 40); }).slice(0, 60), by: str(c.by, 40), updated: +c.updated || 0 }; }).slice(-100);
     s.sosWait = typeof s.sosWait === "number" && [0, 3, 60, 120, 300].indexOf(s.sosWait) >= 0 ? s.sosWait : 60;
     s.week = obj(s.week) && typeof s.week.text === "string" ? { day: str(s.week.day, 10), text: str(s.week.text, 3000), by: s.week.by === "ai" ? "ai" : "local" } : null;
     s.learn = s.learn !== false; s.patNo = obj(s.patNo) || {}; s.sugNo = obj(s.sugNo) || {}; s.lastLink = str(s.lastLink, 40);
@@ -1278,7 +1320,7 @@ details.adv[open] { padding-bottom: .9em; }
   // ============ screens ============
   var ui = { screen: "home", arg: null, goalSel: null, prev: null, editType: null, editRepeat: null, editDays: null, qa: "", search: "", showDone: false, justDone: null, burst: 0, from: "home", focusMins: 25, focusTask: "" };
   var testState = null; // { kind, status: "sending"|"sent"|"notsent"|"confirmed"|"nothing", why }
-  function go(name, arg) { ui.prev = ui.screen; ui.screen = name; ui.arg = arg || null; ui.goalSel = null; ui.editType = null; ui.editRepeat = null; ui.editDays = null; ui.justDone = null; render(true); window.scrollTo(0, 0); }
+  function go(name, arg) { if ((name === "moments" || name === "people") && name !== ui.screen) setTimeout(function () { moSync(); }, 0); ui.prev = ui.screen; ui.screen = name; ui.arg = arg || null; ui.goalSel = null; ui.editType = null; ui.editRepeat = null; ui.editDays = null; ui.justDone = null; render(true); window.scrollTo(0, 0); }
   // Inner screens name their parent; render puts one Back button at the top, always in the same place.
   function back(to) { ui.backTo = to || "checkin"; return null; }
   function topicBox(label, value, id) {
@@ -3132,7 +3174,7 @@ details.adv[open] { padding-bottom: .9em; }
     var key = aiKey();
     if (!key) return Promise.resolve({ ok: false, why: "nokey" });
     if (!navigator.onLine) return Promise.resolve({ ok: false, why: "offline" });
-    var me = aboutMe(opts.area), parts = [{ text: "<data>\n" + input + "\n</data>" }];
+    var me = opts.bare ? "" : aboutMe(opts.area), parts = [{ text: "<data>\n" + input + "\n</data>" }];
     if (opts.audio) parts.push({ inline_data: { mime_type: opts.audio.mime, data: opts.audio.b64 } });
     countAi(); save();
     var steps = 0, modelFixed = false;
@@ -4851,6 +4893,321 @@ details.adv[open] { padding-bottom: .9em; }
   }
   var SOS_WAITS = [[3, "3 seconds"], [60, "1 minute"], [120, "2 minutes"], [300, "5 minutes"], [0, "Only when I tap"]];
 
+  // ============ Moments: photos you share with your circle (you and Audi, later a few friends) ============
+  // Stored on your own small server (a Cloudflare Worker: see worker/README.md), never on ntfy.
+  // Your private reminder photos stay separate and are never shared. The access key stays out of backups.
+  var MO_KEY = "tendays.motoken", MO_REACT = [["respect", "👊", "Respect"], ["fire", "🔥", "Fire"], ["laugh", "😂", "Funny"], ["love", "❤️", "Love"]];
+  function moToken() { try { return localStorage.getItem(MO_KEY) || ""; } catch (e) { return ""; } }
+  function setMoToken(t) { try { if (t) localStorage.setItem(MO_KEY, t); else localStorage.removeItem(MO_KEY); } catch (e) {} }
+  function moOn() { return !!(S.mo.srv && S.mo.circle && moToken()); }
+  function moSrvOk(u) { return /^https:\/\/[a-z0-9.-]+(?::\d+)?(?:\/[^\s?#]*)?$/i.test(u) || /^http:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(?:\/[^\s?#]*)?$/i.test(u); }
+  function moFetch(path, opts) {
+    opts = opts || {};
+    if (!navigator.onLine) return Promise.resolve({ ok: false, status: 0, why: "offline" });
+    var ctrl = typeof AbortController === "function" ? new AbortController() : null, t = setTimeout(function () { if (ctrl) ctrl.abort(); }, opts.wait || 20000);
+    var headers = Object.assign({}, opts.headers || {}), body = opts.body;
+    if (opts.json !== undefined) { body = JSON.stringify(opts.json); headers["content-type"] = "application/json"; }
+    var tok = opts.token !== undefined ? opts.token : moToken(); if (tok) headers.authorization = "Bearer " + tok;
+    return fetch((opts.srv || S.mo.srv).replace(/\/+$/, "") + path, { method: opts.method || "GET", headers: headers, body: body, signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) {
+        clearTimeout(t);
+        var ct = r.headers.get("content-type") || "";
+        return (opts.blob && r.ok ? r.blob() : ct.indexOf("json") >= 0 ? r.json() : r.text()).then(function (d) { return { ok: r.ok, status: r.status, data: d, why: r.ok ? "" : (obj(d) && d.error) || "error " + r.status }; });
+      })
+      .catch(function () { clearTimeout(t); return { ok: false, status: 0, why: "couldn't reach your Moments server" }; });
+  }
+  function moAdopt(d) {
+    S.mo.circle = { id: str(d.circle.id, 40), name: str(d.circle.name, 60), created: +d.circle.created || Date.now() };
+    S.mo.me = { id: str(d.me.id, 40), name: str(d.me.name, 40) };
+    S.mo.members = (Array.isArray(d.members) ? d.members : []).map(function (m) { return { id: str(m.id, 40), name: str(m.name, 40), left: !!m.left }; });
+  }
+  function moStart(srv, name) {
+    return moFetch("/v1/circles", { method: "POST", srv: srv, token: "", json: { memberName: name, name: "Ten Days" } }).then(function (r) {
+      if (!r.ok) return r;
+      S.mo.srv = srv; S.moments = []; S.chapters = []; S.mo.since = 0; moAdopt(r.data); setMoToken(r.data.token); save(); return r;
+    });
+  }
+  function moJoin(srv, code, name) {
+    return moFetch("/v1/join", { method: "POST", srv: srv, token: "", json: { code: code, name: name } }).then(function (r) {
+      if (!r.ok) return r;
+      S.mo.srv = srv; S.moments = []; S.chapters = []; S.mo.since = 0; moAdopt(r.data); setMoToken(r.data.token); save();
+      return moSync().then(function () { return r; });
+    });
+  }
+  function moInviteLink() {
+    return moFetch("/v1/invites", { method: "POST" }).then(function (r) {
+      if (!r.ok) return r;
+      r.link = location.origin + location.pathname + "#moments=1&srv=" + encodeURIComponent(S.mo.srv) + "&code=" + encodeURIComponent(r.data.code) + "&from=" + encodeURIComponent(S.mo.me.name || "");
+      return r;
+    });
+  }
+  function readMoLink(text) {
+    var s = String(text || "").trim(), i = s.indexOf("#"); if (i >= 0) s = s.slice(i + 1);
+    var p = {}; s.split("&").forEach(function (kv) { var j = kv.indexOf("="); if (j > 0) { try { p[kv.slice(0, j)] = decodeURIComponent(kv.slice(j + 1)); } catch (e) {} } });
+    return moSrvOk(p.srv || "") && /^[a-z0-9]{8,64}$/.test(p.code || "") ? { srv: p.srv, code: p.code, from: str(p.from || "", 40) } : null;
+  }
+  function moName(id) { if (S.mo.me && id === S.mo.me.id) return S.mo.me.name || "You"; var m = S.mo.members.filter(function (x) { return x.id === id; })[0]; return m ? m.name : "Someone"; }
+  function moWho(id) { return S.mo.me && id === S.mo.me.id ? "You" : moName(id); }
+  function moMine(m) { return S.mo.me && m.author === S.mo.me.id; }
+  function moMerge(list) {
+    var byId = {}; S.moments.forEach(function (m) { byId[m.id] = m; });
+    list.forEach(function (x) {
+      var cur = byId[x.id];
+      if (x.deleted) { if (cur) { S.moments.splice(S.moments.indexOf(cur), 1); delete byId[x.id]; } idbDel("blobs", "m:" + x.id).catch(function () {}); return; }
+      var m = { id: str(x.id, 40), author: str(x.author, 40), caption: str(x.caption, 500), forStory: x.forStory !== false, hasPhoto: !!x.hasPhoto, created: +x.created || 0, updated: +x.updated || 0,
+        reactions: (Array.isArray(x.reactions) ? x.reactions : []).map(function (r) { return { member: str(r.member, 40), kind: str(r.kind, 12) }; }),
+        replies: (Array.isArray(x.replies) ? x.replies : []).map(function (r) { return { id: str(r.id, 40), member: str(r.member, 40), text: str(r.text, 300), at: +r.at || 0 }; }) };
+      if (cur) { if (!cur.pending) S.moments[S.moments.indexOf(cur)] = m; else { cur.pending = false; Object.assign(cur, m); } }
+      else S.moments.push(m);
+    });
+    S.moments.sort(function (a, b) { return a.created - b.created; });
+    if (S.moments.length > 400) S.moments = S.moments.slice(-400);
+  }
+  var moSyncP = null, moT = null;
+  function moSync() {
+    if (!moOn()) return Promise.resolve(false);
+    if (moSyncP) return moSyncP;
+    moSyncP = moUploadPending().then(function () { return moFetch("/v1/sync?since=" + Math.max(0, S.mo.since - 5000)); }).then(function (r) {
+      moSyncP = null;
+      if (r.status === 401) { S.mo.lost = true; save(); render(false); return false; }
+      if (!r.ok || !obj(r.data)) return false;
+      var d = r.data, before = JSON.stringify([S.moments, S.chapters]);
+      moAdopt(d); S.mo.lost = false;
+      moMerge(Array.isArray(d.moments) ? d.moments : []);
+      (Array.isArray(d.chapters) ? d.chapters : []).forEach(function (c) {
+        var x = { period: Math.floor(+c.period || 0), title: str(c.title, 120), body: str(c.body, 6000), momentIds: (Array.isArray(c.momentIds) ? c.momentIds : []).map(function (y) { return str(y, 40); }), by: str(c.by, 40), updated: +c.updated || 0 };
+        S.chapters = S.chapters.filter(function (y) { return y.period !== x.period; }).concat([x]);
+      });
+      S.mo.since = +d.now || Date.now(); S.mo.synced = Date.now(); save();
+      if (before !== JSON.stringify([S.moments, S.chapters]) && ["home", "people", "moments", "chapter"].indexOf(ui.screen) >= 0) render(false);
+      return true;
+    });
+    return moSyncP;
+  }
+  function moSchedule() { clearTimeout(moT); if (document.hidden || !moOn()) return; moT = setTimeout(function () { moSync().then(moSchedule); }, ["moments", "people"].indexOf(ui.screen) >= 0 ? 20000 : 60000); }
+  var moPhotoP = {};
+  function moFetchPhoto(id) {
+    if (moPhotoP[id]) return moPhotoP[id];
+    moPhotoP[id] = moFetch("/v1/moments/" + id + "/photo", { blob: true }).then(function (r) {
+      if (!r.ok || !(r.data instanceof Blob)) { delete moPhotoP[id]; return false; }
+      return idbPut("blobs", "m:" + id, r.data).then(function () { return true; }, function () { return false; });
+    });
+    return moPhotoP[id];
+  }
+  function moPhoto(m, cls) {
+    var alt = (m.caption ? "Photo: " + m.caption : "Photo") + ", from " + moName(m.author);
+    var box = h("div", { class: "mophoto" + (cls ? " " + cls : "") });
+    var show = function () { return blobUrl("m:" + m.id).then(function (u) { if (u) box.replaceChildren(h("img", { src: u, alt: alt, decoding: "async" })); return !!u; }); };
+    idbGet("blobs", "m:" + m.id).then(function (b) {
+      if (b) return show();
+      box.classList.add("loading"); box.replaceChildren(h("span", { class: "small", text: "Loading photo…" }));
+      return moFetchPhoto(m.id).then(function (got) { box.classList.remove("loading"); if (got) return show(); box.replaceChildren(h("span", { class: "small", text: "Photo not available right now." })); });
+    }).catch(function () { box.replaceChildren(h("span", { class: "small", text: "Photos can't load here (storage is off)." })); });
+    return box;
+  }
+  // posting: saved on this phone first, then sent; if sending fails it stays "not shared yet" and retries
+  function moPost(blob, caption, forStory) {
+    var m = { id: newId(), author: S.mo.me.id, caption: str(caption, 500).trim(), forStory: forStory !== false, hasPhoto: !!blob, created: Date.now(), updated: 0, reactions: [], replies: [], pending: true };
+    return (blob ? idbPut("blobs", "m:" + m.id, blob) : Promise.resolve()).then(function () {
+      S.moments.push(m); save(); render(false);
+      return moUpload(m).then(function (ok) {
+        if (ok) { toast("Shared with " + (moOthers().map(function (x) { return x.name; }).join(", ") || "your circle") + "."); moPing(m); }
+        else toast("Saved here, not shared yet: " + (m.err || "no connection") + ". It'll retry.", 6000);
+        render(false); return ok;
+      });
+    }, function () { toast("This phone wouldn't store the photo (storage may be full or off)."); return false; });
+  }
+  function moUpload(m) {
+    return (m.hasPhoto ? idbGet("blobs", "m:" + m.id) : Promise.resolve(null)).then(function (b) {
+      if (m.hasPhoto && !b) { m.err = "the photo is no longer on this phone"; return false; }
+      return moFetch("/v1/moments", { method: "POST", body: b || "", headers: { "content-type": b ? (b.type || "image/jpeg") : "image/jpeg", "x-moment-id": m.id, "x-caption": encodeURIComponent(m.caption), "x-for-story": m.forStory ? "1" : "0" }, wait: 45000 }).then(function (r) {
+        if (r.ok) { m.pending = false; m.err = ""; if (r.data && r.data.created) m.created = r.data.created; save(); return true; }
+        m.err = r.why; save(); return false;
+      });
+    });
+  }
+  function moUploadPending() {
+    var list = S.moments.filter(function (m) { return m.pending; });
+    return list.reduce(function (p, m) { return p.then(function () { return moUpload(m); }); }, Promise.resolve());
+  }
+  function moOthers() { return S.mo.members.filter(function (x) { return !x.left && (!S.mo.me || x.id !== S.mo.me.id); }); }
+  // a nudge on his phone through the channel you already use; the moment itself is on your server
+  function moPing(m) {
+    var topic = S.partner.inbox || S.topics.alert; if (!S.mo.ping || !topic) return;
+    ntfy(topic, { title: S.name || S.mo.me.name || "Ten Days", priority: "3", tags: "camera" }, "Shared a moment" + (m.caption ? ": " + m.caption.slice(0, 120) : "") + ". Open Ten Days to see it.");
+  }
+  function moReact(m, kind) {
+    var me = S.mo.me.id, mine = m.reactions.filter(function (r) { return r.member === me; })[0], undo = JSON.stringify(m.reactions);
+    var off = mine && mine.kind === kind;
+    m.reactions = m.reactions.filter(function (r) { return r.member !== me; });
+    if (!off) m.reactions.push({ member: me, kind: kind });
+    save(); haptic("tick"); render(false);
+    if (m.pending) return;
+    moFetch("/v1/moments/" + m.id + "/reaction", off ? { method: "DELETE" } : { method: "PUT", json: { kind: kind } }).then(function (r) {
+      if (!r.ok) { m.reactions = JSON.parse(undo); save(); render(false); toast("Reaction not sent: " + r.why + "."); }
+    });
+  }
+  function moReply(m, text) {
+    var x = { id: newId(), member: S.mo.me.id, text: str(text, 300).trim(), at: Date.now() };
+    if (!x.text) return;
+    m.replies.push(x); save(); render(false);
+    moFetch("/v1/moments/" + m.id + "/replies", { method: "POST", json: { id: x.id, text: x.text } }).then(function (r) {
+      if (!r.ok) { m.replies = m.replies.filter(function (y) { return y.id !== x.id; }); save(); render(false); toast("Reply not sent: " + r.why + "."); }
+    });
+  }
+  function moDelete(m) {
+    var drop = function () { S.moments = S.moments.filter(function (x) { return x.id !== m.id; }); idbDel("blobs", "m:" + m.id).catch(function () {}); save(); render(false); };
+    if (m.pending) { drop(); toast("Deleted."); return; }
+    moFetch("/v1/moments/" + m.id, { method: "DELETE" }).then(function (r) { if (r.ok) { drop(); toast("Deleted for everyone."); } else toast("Not deleted: " + r.why + "."); });
+  }
+  function moSetStory(m, on) {
+    m.forStory = on; save(); render(false);
+    if (!m.pending) moFetch("/v1/moments/" + m.id, { method: "PATCH", json: { forStory: on } }).then(function (r) { if (!r.ok) { m.forStory = !on; save(); render(false); toast("Not changed: " + r.why + "."); } });
+  }
+  function moLeave(deleteMine) {
+    return moFetch("/v1/leave", { method: "POST", json: { deleteMine: !!deleteMine } }).then(function (r) {
+      if (!r.ok && r.status !== 401) { toast("Couldn't leave: " + r.why + "."); return; }
+      S.moments.forEach(function (m) { idbDel("blobs", "m:" + m.id).catch(function () {}); });
+      S.moments = []; S.chapters = []; S.mo = { srv: S.mo.srv, ping: S.mo.ping, since: 0, circle: null, me: null, members: [] }; setMoToken(""); save(); toast("You left the circle."); render(false);
+    });
+  }
+  function reactRow(m, idp) {
+    var me = S.mo.me ? S.mo.me.id : "";
+    return h("div", { class: "reacts", role: "group", "aria-label": "React" }, MO_REACT.map(function (k) {
+      var who = m.reactions.filter(function (r) { return r.kind === k[0]; }), mine = who.some(function (r) { return r.member === me; });
+      var names = who.map(function (r) { return moWho(r.member); }).join(", ");
+      return h("button", { class: "react" + (mine ? " on" : ""), type: "button", id: idp + "-" + k[0], "aria-pressed": mine ? "true" : "false", "aria-label": k[2] + (names ? ", from " + names : ""), onclick: function () { moReact(m, k[0]); } },
+        h("span", { "aria-hidden": "true", text: k[1] }), who.length ? h("b", { "aria-hidden": "true", text: String(who.length) }) : null);
+    }));
+  }
+  function reactSummary(m) {
+    return m.reactions.map(function (r) { var k = MO_REACT.filter(function (x) { return x[0] === r.kind; })[0]; return k ? moWho(r.member) + " " + k[1] : ""; }).filter(Boolean).join("  ");
+  }
+  // adding a moment: pick a photo, then a small composer
+  function moPick() {
+    var f = h("input", { type: "file", accept: "image/*", hidden: true, onchange: function (e) {
+      var file = e.target.files && e.target.files[0]; if (!file) return;
+      if (!/^image\//.test(file.type)) { toast("That isn't a photo."); return; }
+      ui.moDraft = { busy: true }; go("moment-new");
+      shrinkImage(file).then(function (b) { ui.moDraft = { blob: b, url: URL.createObjectURL(b), story: true }; render(false); var c = $("mo-cap"); if (c) c.focus(); },
+        function () { ui.moDraft = null; toast("That photo couldn't be opened. Try a JPEG or PNG."); go("people"); });
+    } });
+    document.body.appendChild(f); f.click(); setTimeout(function () { f.remove(); }, 60000);
+  }
+  function addMomentBtn(id) { return h("button", { class: "btn primary", type: "button", id: id || "mo-add", onclick: moPick }, icon("image"), " Add moment"); }
+  function momentCard() {
+    if (!moOn()) return null;
+    var live = S.moments.filter(function (m) { return !m.deleted; }), m = live[live.length - 1];
+    if (!m) return h("section", { class: "card mocard", id: "mo-today" }, h("p", { class: "lbl" }, icon("image"), " Moments"),
+      h("p", { class: "small", text: "Share a picture with " + (moOthers().map(function (x) { return x.name; }).join(", ") || "your circle") + ". A reaction is all it needs." }), addMomentBtn("mo-add-today"));
+    return h("section", { class: "card mocard", id: "mo-today", "aria-labelledby": "mo-today-h" },
+      h("div", { class: "mohead" }, h("p", { class: "lbl", id: "mo-today-h" }, icon("image"), " Latest moment"), h("button", { class: "btn link", type: "button", id: "mo-all", onclick: function () { go("moments"); } }, "All")),
+      m.hasPhoto ? h("button", { class: "mothumb", type: "button", "aria-label": "Open moments", onclick: function () { go("moments"); } }, moPhoto(m, "sm")) : null,
+      h("p", { class: "mometa" }, h("b", { text: moWho(m.author) }), " · " + ago(m.created) + (m.pending ? " · not shared yet" : "")),
+      m.caption ? h("p", { class: "mocap", id: "mo-today-cap", text: m.caption }) : null,
+      moMine(m) ? (m.reactions.length ? h("p", { class: "small", id: "mo-today-rx", text: reactSummary(m) }) : null) : reactRow(m, "mo-today-r"),
+      h("button", { class: "btn", type: "button", id: "mo-add-today", onclick: moPick }, icon("image"), " Add moment"));
+  }
+
+  // ============ ten-day chapters, written from the moments people chose to share ============
+  function dayNum(ms) { var d = new Date(ms); return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); }
+  function periodOf(ms) { return Math.floor((dayNum(ms) - dayNum(S.mo.circle.created)) / 10); }
+  function periodRange(p) { var a = dayNum(S.mo.circle.created) + p * 10; var f = function (n) { var u = new Date(n * 864e5); return new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate()); }; return [f(a), f(a + 9)]; }
+  function periodLabel(p) { var r = periodRange(p), o = { month: "short", day: "numeric" }; return r[0].toLocaleDateString([], o) + " – " + r[1].toLocaleDateString([], o); }
+  function periodMoments(p) { return S.moments.filter(function (m) { return !m.deleted && !m.pending && periodOf(m.created) === p; }); }
+  function chapterFor(p) { return S.chapters.filter(function (c) { return c.period === p; })[0] || null; }
+  // the latest finished ten days that has shared moments and no chapter yet
+  function chapterDue() {
+    if (!moOn()) return null;
+    var cur = periodOf(Date.now());
+    for (var p = cur - 1; p >= Math.max(0, cur - 3); p--) if (!chapterFor(p) && periodMoments(p).some(function (m) { return m.forStory; })) return p;
+    return null;
+  }
+  var RX_WORD = { respect: "Respect", fire: "a fire", laugh: "a laugh", love: "a heart" };
+  // only what was shared for the chapter: who posted, when, captions, reactions, replies. Never tasks, alerts, urges or notes.
+  function chapterInput(list) {
+    return list.map(function (m) {
+      var d = new Date(m.created).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+      var line = d + ": " + moName(m.author) + " shared " + (m.hasPhoto ? "a photo" : "a note") + (m.caption ? ' with the caption "' + m.caption + '"' : " with no caption") + ".";
+      if (m.reactions.length) line += " Reactions: " + m.reactions.map(function (r) { return moName(r.member) + " reacted with " + (RX_WORD[r.kind] || r.kind); }).join("; ") + ".";
+      if (m.replies.length) line += " Replies: " + m.replies.map(function (r) { return moName(r.member) + ': "' + r.text + '"'; }).join("; ") + ".";
+      return line;
+    }).join("\n");
+  }
+  function plainChapter(p, list) {
+    var by = {}; list.forEach(function (m) { by[moName(m.author)] = (by[moName(m.author)] || 0) + 1; });
+    var who = Object.keys(by).map(function (n) { return n + " shared " + by[n] + (by[n] === 1 ? " moment" : " moments"); }).join(" and ");
+    var lines = list.map(function (m) {
+      var d = new Date(m.created).toLocaleDateString([], { month: "short", day: "numeric" });
+      var s = d + ": " + moName(m.author) + (m.caption ? ": “" + m.caption + "”" : " shared a photo.");
+      if (m.reactions.length) s += " " + m.reactions.map(function (r) { return moName(r.member) + " reacted with " + (RX_WORD[r.kind] || r.kind); }).join(", ") + ".";
+      if (m.replies.length) s += " " + m.replies.map(function (r) { return moName(r.member) + " said “" + r.text + "”."; }).join(" ");
+      return s;
+    });
+    return { title: "Days " + (p * 10 + 1) + " to " + (p * 10 + 10) + " · " + periodLabel(p), body: (who ? who + "." : "") + "\n\n" + lines.join("\n") };
+  }
+  var AI_CHAPTER = "Write a short chapter about ten days in a small group's shared moments, for the people in the group. " +
+    "Use only what is in the data: who shared, the dates, the captions, which reactions were tapped, and the replies. " +
+    "Never invent events, places, dialogue, motives or feelings that the data doesn't state. A reaction only means the person tapped it: write \"Audi reacted with Respect\", never what they felt or understood. " +
+    "Light, warm humor is welcome only when a caption or reply sets it up; quote their words exactly when you use them. Plain sentences, past tense, third person, 2 to 4 short paragraphs, under 220 words. " +
+    'Reply with JSON only: {"title":"short title, under 8 words","story":"the chapter, paragraphs separated by a blank line"}.';
+  function moShareChapter(c) {
+    return moFetch("/v1/chapters/" + c.period, { method: "PUT", json: { title: c.title, body: c.body, momentIds: c.momentIds } }).then(function (r) {
+      if (r.ok) { c.by = S.mo.me.id; c.updated = Date.now(); save(); toast("Chapter saved for everyone in your circle."); }
+      else toast("Saved on this phone, not shared: " + r.why + ".", 6000);
+      render(false); return r.ok;
+    });
+  }
+
+  // the Moments part of "You and Audi": set it up once, then a small summary
+  function momentsSection() {
+    var offer = ui.moOffer;
+    if (offer) {
+      var nm = h("input", { type: "text", id: "mo-join-name", value: S.name || "", maxlength: "40", autocomplete: "off", placeholder: "Your first name" });
+      return h("section", { class: "card", id: "mo-offer", "aria-labelledby": "mo-offer-q" },
+        h("p", { class: "status", id: "mo-offer-q", text: "Join " + (offer.from || "this") + "'s moments?" }),
+        h("p", { class: "small", text: "You'll see the photos they share and can react with one tap. Kept on " + offer.srv.replace(/^https?:\/\//, "") + ", their Moments server." }),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "mo-join-name", text: "Your name in the circle" }), nm),
+        h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "mo-join-yes", onclick: function () {
+          var n = nm.value.trim().slice(0, 40); if (!n) { toast("Add your name first."); nm.focus(); return; }
+          if (!S.name) S.name = n;
+          ui.moBusy = true; render(false);
+          moJoin(offer.srv, offer.code, n).then(function (r) { ui.moBusy = false; if (r.ok) { ui.moOffer = null; toast("You're in. " + (offer.from ? offer.from + "'s" : "Their") + " moments are here."); moSchedule(); } else toast("Couldn't join: " + r.why + "."); render(false); });
+        } }, ui.moBusy ? "Joining…" : "Join"), h("button", { class: "btn link", type: "button", id: "mo-join-no", onclick: function () { ui.moOffer = null; render(false); } }, "Not now")));
+    }
+    if (!moOn()) {
+      var srv = h("input", { type: "url", id: "mo-srv", value: S.mo.srv || "", autocomplete: "off", autocapitalize: "off", spellcheck: "false", placeholder: "https://ten-days-moments.you.workers.dev", "aria-label": "Your Moments server address" });
+      var me = h("input", { type: "text", id: "mo-myname", value: S.name || "", maxlength: "40", autocomplete: "off", placeholder: "Your first name", "aria-label": "Your name" });
+      var link = h("input", { type: "text", id: "mo-link", autocomplete: "off", autocapitalize: "off", spellcheck: "false", placeholder: "Got an invite? Paste the link", "aria-label": "Invite link" });
+      return h("section", { class: "card", id: "mo-setup", "aria-labelledby": "mo-setup-h" },
+        h("h2", { class: "sect-h", id: "mo-setup-h", text: "Moments" }),
+        S.mo.lost ? h("p", { class: "status bad", text: "This phone is no longer in your circle (you left, or the key was removed). Join again with a new invite." }) : null,
+        h("p", { class: "small", text: "Share photos with " + hisName() + "; a reaction is all it needs. Moments are kept on a small server you set up once (a free Cloudflare Worker; the steps are in worker/README.md in the app's GitHub repo). Only people you invite can see them. Your private reminder photos are never shared." }),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "mo-srv", text: "Server address" }), srv),
+        S.name ? null : h("div", { class: "field" }, h("label", { class: "lbl", for: "mo-myname", text: "Your name" }), me),
+        h("button", { class: "btn primary", type: "button", id: "mo-start", disabled: !!ui.moBusy, onclick: function () {
+          var u = srv.value.trim().replace(/\/+$/, ""), n = (S.name || me.value).trim().slice(0, 40);
+          if (!moSrvOk(u)) { toast("Use the https:// address of your Moments server."); srv.focus(); return; }
+          if (!n) { toast("Add your name first."); me.focus(); return; }
+          S.name = S.name || n; ui.moBusy = true; render(false);
+          moStart(u, n).then(function (r) { ui.moBusy = false; toast(r.ok ? "Your circle is ready. Invite " + hisName() + " next." : "Couldn't start it: " + r.why + "."); if (r.ok) moSchedule(); render(false); });
+        } }, ui.moBusy ? "Starting…" : "Start our circle"),
+        h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); var o = readMoLink(link.value); if (!o) { toast("That isn't a Moments invite link."); return; } ui.moOffer = o; render(false); } },
+          link, h("button", { class: "btn", type: "submit", id: "mo-link-go" }, "Join")));
+    }
+    var live = S.moments.filter(function (m) { return !m.deleted; }), last3 = live.filter(function (m) { return m.hasPhoto; }).slice(-3).reverse(), due = chapterDue();
+    return h("section", { class: "card", id: "mo-sum", "aria-labelledby": "mo-sum-h" },
+      h("div", { class: "mohead" }, h("h2", { class: "sect-h", id: "mo-sum-h", text: "Moments" }), h("span", { class: "small", text: S.mo.members.filter(function (x) { return !x.left; }).map(function (x) { return x.name; }).join(", ") })),
+      last3.length ? h("button", { class: "mostrip", type: "button", id: "mo-open-strip", "aria-label": "Open moments", onclick: function () { go("moments"); } }, last3.map(function (m) { return moPhoto(m, "xs"); })) : h("p", { class: "small", text: "No moments yet." }),
+      due !== null ? h("button", { class: "btn", type: "button", id: "mo-chapter", onclick: function () { go("chapter", due); } }, icon("book"), " Your chapter for " + periodLabel(due) + " is ready") : null,
+      h("div", { class: "row" }, addMomentBtn("mo-add"), h("button", { class: "btn", type: "button", id: "mo-open", onclick: function () { go("moments"); } }, "See all")),
+      moOthers().length ? null : h("p", { class: "small", text: "Next: invite " + hisName() + ". He opens the link in Ten Days on his phone." }),
+      ui.moInvite ? h("div", { class: "field" }, h("span", { class: "lbl", text: "Copied. Send him this link (works once, for 7 days)" }), h("p", { class: "small", text: "On iPhone, links open in Safari, not in the Ten Days icon. So he copies it, opens Ten Days from his Home Screen, and pastes it in You → Moments." }), h("code", { id: "mo-invite-link", class: "small", text: ui.moInvite })) : null,
+      h("button", { class: "btn link", type: "button", id: "mo-invite", onclick: function () {
+        moInviteLink().then(function (r) { if (!r.ok) { toast("No invite: " + r.why + "."); return; } ui.moInvite = r.link; render(false); copyText(r.link, $("mo-invite-link")); });
+      } }, "Invite someone"));
+  }
+
   var SCREENS = {
     a2hs: function () {
       return { title: "Add Ten Days to your Home Screen", body: [
@@ -4970,6 +5327,7 @@ details.adv[open] { padding-bottom: .9em; }
         orgLine(),
         noticedCard(),
         checkinsBlock(),
+        momentCard(),
         readingBlock(),
         horizon(),
         h("div", { class: "sect" }, h("h2", { text: ui.day ? (ui.day === 1 ? "Tomorrow" : fmtDate(addDays(now, ui.day).getTime())) : "Today" }),
@@ -5693,6 +6051,7 @@ details.adv[open] { padding-bottom: .9em; }
             msg, h("button", { class: "btn", type: "submit", id: "pp-send", "aria-label": "Send to " + hisName() }, icon("send"))),
           h("div", { class: "row" }, callLink(false), P.topic ? h("button", { class: "btn link", type: "button", id: "pp-refresh", onclick: function () { pollPartner().then(function () { toast(P.last ? "Up to date." : "No update from him in the last 12 hours."); render(false); }); } }, "Refresh") : null,
             P.topic ? (function () { var sb = confirmBtn("Stop following", "Tap again to stop", function () { S.partner.topic = ""; S.partner.inbox = ""; S.partner.last = null; S.partner.at = 0; save(); render(false); }); sb.classList.add("link"); sb.id = "pp-stop"; return sb; })() : null)),
+        momentsSection(),
         h("section", { class: "card pcard", id: "pp-me", "aria-labelledby": "pp-me-h" },
           h("div", { class: "phead" }, h("span", { class: "pav me", "aria-hidden": "true", text: (S.name || "Y").charAt(0).toUpperCase() }), h("h2", { id: "pp-me-h", text: "You" }),
             S.share.on && S.share.at ? h("span", { class: "small", id: "share-ago", text: "Shared " + ago(S.share.at) }) : null),
@@ -5746,6 +6105,120 @@ details.adv[open] { padding-bottom: .9em; }
           return h("li", null, icon("clock"), h("span", { text: cap(x[0]) + ": " + [x[1].time ? "usually around " + hmText(x[1].time) : "", x[1].dur ? (x[1].real ? "really takes about " : "about ") + durText(x[1].dur) : ""].filter(Boolean).join(", ") }));
         })) : h("p", { class: "small", text: "Nothing yet. Each time you give a task a time or finish it, Ten Days notices when you do that kind of thing. After two or three times it fills the time in for you." }),
         S.learn ? null : h("p", { class: "small", text: "Learning is off in “What Ten Days remembers”." })
+      ] };
+    },
+    moments: function () {
+      back("people");
+      if (!moOn()) return { title: "Moments", body: [momentsSection()] };
+      var live = S.moments.filter(function (m) { return !m.deleted; }).slice().reverse(), due = chapterDue(), cur = periodOf(Date.now());
+      var past = S.chapters.slice().sort(function (a, b) { return b.period - a.period; });
+      var leaveAll = h("input", { type: "checkbox", id: "mo-leave-all" });
+      return { title: "Moments", body: [
+        due !== null ? h("div", { class: "card", id: "ch-due" }, h("p", { class: "status", text: "Ten days done: " + periodLabel(due) }),
+          h("p", { class: "small", text: "Turn the moments you shared into a short chapter. You can edit it before anyone sees it." }),
+          h("button", { class: "btn primary", type: "button", id: "ch-due-go", onclick: function () { go("chapter", due); } }, "Write our chapter")) : null,
+        h("p", { class: "small", id: "mo-period", text: "Days " + (cur * 10 + 1) + " to " + (cur * 10 + 10) + " · " + periodLabel(cur) + ". The chapter comes after." }),
+        addMomentBtn("mo-add"),
+        live.length ? h("div", { class: "group", id: "mo-list" }, live.map(function (m) {
+          var mine = moMine(m), open = ui.moReply === m.id;
+          var rIn = open ? h("input", { type: "text", id: "mo-reply-in", maxlength: "300", autocomplete: "off", autocapitalize: "sentences", enterkeyhint: "send", placeholder: "Reply (optional)", "aria-label": "Reply to " + moName(m.author) }) : null;
+          return h("article", { class: "card moitem", id: "mo-" + m.id, "aria-label": "Moment from " + moName(m.author) },
+            h("p", { class: "mometa" }, h("b", { text: moWho(m.author) }), " · " + fmtDate(m.created) + ", " + fmtTime(m.created)),
+            m.pending ? h("p", { class: "status bad", id: "mo-pend-" + m.id }, "Not shared yet" + (m.err ? ": " + m.err : "") + ". ",
+              h("button", { class: "btn link inl", type: "button", id: "mo-retry-" + m.id, onclick: function () { moUpload(m).then(function (ok) { toast(ok ? "Shared." : "Still not shared: " + m.err + "."); render(false); }); } }, "Retry")) : null,
+            m.hasPhoto ? moPhoto(m) : null,
+            m.caption ? h("p", { class: "mocap", text: m.caption }) : null,
+            reactRow(m, "mo-r-" + m.id),
+            m.replies.length ? h("ul", { class: "moreplies" }, m.replies.map(function (r) { return h("li", null, h("b", { text: moWho(r.member) + ": " }), r.text); })) : null,
+            open ? h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); var v = rIn.value.trim(); if (!v) return; ui.moReply = null; moReply(m, v); } }, rIn, h("button", { class: "btn", type: "submit", id: "mo-reply-send", "aria-label": "Send reply" }, icon("send"))) : null,
+            mine ? h("label", { class: "toggle sm", for: "mo-story-" + m.id }, h("input", { type: "checkbox", id: "mo-story-" + m.id, checked: m.forStory, onchange: function (e) { moSetStory(m, e.target.checked); } }), h("span", { text: "Can be used in our chapter" })) : null,
+            h("div", { class: "moacts" },
+              open ? null : h("button", { class: "btn link", type: "button", id: "mo-reply-" + m.id, onclick: function () { ui.moReply = m.id; render(false); var f = $("mo-reply-in"); if (f) f.focus(); } }, "Reply"),
+              mine ? (function () { var b = confirmBtn("Delete", "Tap again to delete for everyone", function () { moDelete(m); }); b.classList.add("link"); b.id = "mo-del-" + m.id; return b; })() : null));
+        })) : h("p", { class: "empty", id: "mo-empty", text: "Nothing shared yet. Post a picture from your day; one tap of a reaction is all anyone needs to do." }),
+        past.length ? h("h2", { class: "sect-h", text: "Chapters" }) : null,
+        past.length ? h("div", { class: "group morelist compact", id: "ch-list" }, past.map(function (c) { return h("button", { class: "btn", type: "button", id: "ch-open-" + c.period, onclick: function () { go("chapter", c.period); } }, h("span", { class: "ihead" }, icon("book"), h("span", { text: c.title || "Chapter" })), h("span", { class: "hint", text: periodLabel(c.period) })); })) : null,
+        h("details", { class: "adv", id: "mo-adv" }, h("summary", null, "Circle and privacy"),
+          h("p", { class: "small", text: "In this circle: " + S.mo.members.filter(function (x) { return !x.left; }).map(function (x) { return x.name; }).join(", ") + ". Server: " + S.mo.srv.replace(/^https?:\/\//, "") + "." }),
+          h("p", { class: "small", text: "Moments marked “Can be used in our chapter” can be used for the ten-day chapter. Tasks, check-ins, I-need-you alerts, urges and notes are never part of it." }),
+          h("label", { class: "toggle", for: "mo-ping" }, h("input", { type: "checkbox", id: "mo-ping", checked: S.mo.ping, onchange: function (e) { S.mo.ping = e.target.checked; save(); } }), h("span", { text: "Nudge " + hisName() + "'s phone when I post" })),
+          h("label", { class: "toggle", for: "mo-leave-all" }, leaveAll, h("span", { text: "When I leave, also delete everything I shared" })),
+          (function () { var b = confirmBtn("Leave this circle", "Tap again to leave", function () { moLeave(leaveAll.checked); }); b.id = "mo-leave"; return b; })())
+      ] };
+    },
+    "moment-new": function () {
+      back("moments");
+      var d = ui.moDraft;
+      if (!d) return { title: "New moment", body: [h("p", { class: "empty", text: "Nothing to post." }), addMomentBtn("mo-add")] };
+      if (d.busy) return { title: "New moment", body: [aiSpin("Getting the photo ready…", "mo-busy")] };
+      var cap = h("input", { type: "text", id: "mo-cap", maxlength: "500", autocomplete: "off", autocapitalize: "sentences", enterkeyhint: "send", placeholder: "Say something about it (optional)", "aria-label": "Caption (optional)" });
+      var story = h("input", { type: "checkbox", id: "mo-story", checked: d.story !== false });
+      var done = function () { if (d.url) URL.revokeObjectURL(d.url); ui.moDraft = null; };
+      return { title: "New moment", body: [
+        h("div", { class: "mophoto" }, h("img", { src: d.url, alt: "The photo you picked" })),
+        h("form", { class: "group", onsubmit: function (e) {
+          e.preventDefault(); var b = d.blob; done(); go("moments"); moPost(b, cap.value, story.checked);
+        } },
+          cap,
+          h("label", { class: "toggle", for: "mo-story" }, story, h("span", { text: "Can be used in our ten-day chapter" })),
+          h("button", { class: "btn primary", type: "submit", id: "mo-post" }, "Share with " + (moOthers().map(function (x) { return x.name; }).join(", ") || "your circle"))),
+        h("button", { class: "btn link", type: "button", id: "mo-cancel", onclick: function () { done(); go("moments"); } }, "Cancel")
+      ] };
+    },
+    chapter: function (p) {
+      back("moments");
+      p = Math.max(0, Math.floor(+p || 0));
+      if (!moOn()) return { title: "Chapter", body: [momentsSection()] };
+      var c = chapterFor(p), ed = ui.ch && ui.ch.p === p ? ui.ch : null;
+      var pool = periodMoments(p).filter(function (m) { return m.forStory; });
+      if (c && !ed) {
+        var used = c.momentIds.map(function (id) { return S.moments.filter(function (m) { return m.id === id && m.hasPhoto && !m.deleted; })[0]; }).filter(Boolean);
+        return { title: c.title || "Chapter", body: [
+          h("p", { class: "small", id: "ch-range", text: periodLabel(p) + (c.by ? " · saved by " + moWho(c.by) : "") }),
+          used.length ? h("div", { class: "mostrip big", id: "ch-photos" }, used.map(function (m) { return moPhoto(m, "xs"); })) : null,
+          h("div", { class: "chbody", id: "ch-text" }, c.body.split(/\n{2,}/).map(function (para) { return h("p", { text: para }); })),
+          h("div", { class: "row" }, listenBtn(c.title + ". " + c.body, "ch-listen"),
+            h("button", { class: "btn", type: "button", id: "ch-edit", onclick: function () { ui.ch = { p: p, title: c.title, body: c.body, ids: c.momentIds.slice() }; render(false); } }, "Edit"))
+        ] };
+      }
+      if (periodOf(Date.now()) <= p && !c) return { title: "Chapter", body: [h("p", { class: "empty", text: "This chapter opens after " + periodRange(p)[1].toLocaleDateString([], { month: "short", day: "numeric" }) + "." })] };
+      if (!ed) ed = ui.ch = { p: p, title: "", body: "", ids: pool.map(function (m) { return m.id; }) };
+      var picked = pool.filter(function (m) { return ed.ids.indexOf(m.id) >= 0; });
+      var title = h("input", { type: "text", id: "ch-title", value: ed.title, maxlength: "120", autocomplete: "off", "aria-label": "Chapter title" });
+      var body = h("textarea", { id: "ch-body", rows: "10", maxlength: "6000", value: ed.body, "aria-label": "Chapter text" });
+      title.addEventListener("input", function () { ed.title = title.value; }); body.addEventListener("input", function () { ed.body = body.value; });
+      var aiReady = !!aiKey() && S.ai.agreed;
+      return { title: "Your chapter", body: [
+        h("p", { class: "small", id: "ch-range", text: periodLabel(p) + ". Only moments marked for the chapter are here, and only what was shared: captions, reactions and replies." }),
+        pool.length ? h("fieldset", { class: "steps", id: "ch-pick" }, h("legend", { class: "lbl", text: "Moments to use" }), pool.map(function (m) {
+          return h("label", { class: "toggle", for: "ch-m-" + m.id }, h("input", { type: "checkbox", id: "ch-m-" + m.id, checked: ed.ids.indexOf(m.id) >= 0, onchange: function (e) { ed.ids = ed.ids.filter(function (x) { return x !== m.id; }); if (e.target.checked) ed.ids.push(m.id); render(false); } }),
+            h("span", { text: new Date(m.created).toLocaleDateString([], { month: "short", day: "numeric" }) + " · " + moName(m.author) + (m.caption ? ": " + m.caption : " (photo)") }));
+        })) : h("p", { class: "empty", text: "No moments from these days were marked for the chapter." }),
+        picked.length ? h("div", { class: "row" },
+          h("button", { class: "btn", type: "button", id: "ch-plain", onclick: function () { var x = plainChapter(p, picked); ed.title = x.title; ed.body = x.body; render(false); } }, "Write it plainly"),
+          aiReady ? h("button", { class: "btn", type: "button", id: "ch-ai", disabled: !!ed.busy, onclick: function () {
+            ed.busy = true; ed.err = ""; render(false);
+            aiCall(AI_CHAPTER, chapterInput(picked), { json: true, max: 1200, bare: true, temp: .6 }).then(function (r) {
+              ed.busy = false;
+              var d = r.ok && obj(r.data);
+              if (d && str(d.story, 6000).trim()) { ed.title = str(d.title, 120).trim() || plainChapter(p, picked).title; ed.body = str(d.story, 6000).trim(); ed.by = "ai"; }
+              else ed.err = r.ok ? "The answer didn't make sense." : aiWhy(r);
+              if (ui.screen === "chapter") render(false);
+            });
+          } }, icon("sparkle"), ed.busy ? " Writing…" : " Write it with AI") : null) : null,
+        picked.length && aiReady ? h("p", { class: "small", text: "With AI: the captions, names, dates, reactions and replies above are sent to Google Gemini. Photos are not." }) : null,
+        ed.err ? h("p", { class: "status bad", id: "ch-err", role: "status", text: "AI not available: " + ed.err }) : null,
+        ed.busy ? aiSpin("Writing from your moments…", "ch-busy") : null,
+        ed.body || ed.title ? h("div", { class: "group", id: "ch-edit-box" },
+          ed.by === "ai" ? h("p", { class: "small", text: "Written by AI from the moments above. Check it: change anything that isn't how it happened." }) : null,
+          h("label", { class: "lbl", for: "ch-title", text: "Title" }), title,
+          h("label", { class: "lbl", for: "ch-body", text: "Chapter" }), body,
+          h("button", { class: "btn primary", type: "button", id: "ch-save", onclick: function () {
+            if (!ed.body.trim()) { toast("Write something first."); return; }
+            var x = { period: p, title: ed.title.trim().slice(0, 120) || plainChapter(p, picked).title, body: ed.body.trim().slice(0, 6000), momentIds: ed.ids.slice(0, 60), by: S.mo.me.id, updated: Date.now() };
+            S.chapters = S.chapters.filter(function (y) { return y.period !== p; }).concat([x]); ui.ch = null; save(); render(false);
+            moShareChapter(x);
+          } }, "Save for everyone")) : null
       ] };
     },
     checkin: function () {
@@ -6270,7 +6743,7 @@ details.adv[open] { padding-bottom: .9em; }
   SCREENS.breath = SCREENS.support;   // older saved state
   SCREENS["m-free"] = SCREENS.progress;
   SCREENS.more = SCREENS.you;
-  var TAB_OF = { people: "you", routine: "you", home: "home", breathe: "home", notes: "home", checkins: "home", quiz: "home", "m-tasks": "home", task: "home", "task-edit": "home", focus: "home", progress: "progress", "m-log": "progress" };
+  var TAB_OF = { moments: "you", "moment-new": "you", chapter: "you", people: "you", routine: "you", home: "home", breathe: "home", notes: "home", checkins: "home", quiz: "home", "m-tasks": "home", task: "home", "task-edit": "home", focus: "home", progress: "progress", "m-log": "progress" };
   var MODE_OF = { focus: "focus", breathe: "support", support: "support", line: "support", progress: "grow" };
   function updateChrome() {
     document.body.setAttribute("data-mode", MODE_OF[ui.screen] || "plan");
@@ -6370,11 +6843,13 @@ details.adv[open] { padding-bottom: .9em; }
   window.addEventListener("resize", measureBar);
   try { if (window.ResizeObserver) new ResizeObserver(measureBar).observe($("sosbar")); } catch (e) {}   // the bar grows with Text Size
   document.addEventListener("visibilitychange", function () {
-    if (document.hidden) { clearTimeout(pollT); clearTimeout(ppT); return; }
+    if (document.hidden) { clearTimeout(pollT); clearTimeout(ppT); clearTimeout(moT); return; }
+    moSync().then(moSchedule);
     if (cdT) cdTick();
     pollReplies(); render(false); schedulePoll();
     pollPartner().then(schedulePartner); sendStatus(); pingHard();
   });
+  window.addEventListener("hashchange", function () { var hs = location.hash; if (/(?:^#|&)moments=1/.test(hs)) ui.moOffer = readMoLink(hs); else if (/(?:^#|&)pair=1/.test(hs)) ui.pairOffer = readPair(hs); else return; try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} go("people"); });
   window.addEventListener("online", function () { if (!document.hidden) pollReplies(); });
   setInterval(function () {
     var a = document.activeElement, typing = a && (a.id === "qa" || a.id === "task-search" || !!(a.closest && a.closest("#asst")));
@@ -6393,18 +6868,20 @@ details.adv[open] { padding-bottom: .9em; }
     if (!S.milesInit) { afterProgress(true); S.milesInit = true; save(); }   // what you'd already done counts, without a burst of banners
     if (S.breathEnd > Date.now()) { ui.sup = { mode: "stay", since: Date.now(), g: -1 }; return go("support"); }
     pingHard();
-    if (ui.pairOffer) return go("people");
+    if (ui.pairOffer || ui.moOffer) return go("people");
     go("home");
   }
   if (/(?:^#|&)pair=1/.test(location.hash)) ui.pairOffer = readPair(location.hash);
+  if (/(?:^#|&)moments=1/.test(location.hash)) ui.moOffer = readMoLink(location.hash);
   if (location.hash) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
-  if (location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__td = { readScale: function (v) { READ_SCALE = v; }, block: parseBlock, learned: learned, hard: hardHours, parse: parseQuick, intent: intentOf, plan: planFor, fix: fixFields, next: nextQuestion, draft: newDraft, passages: passages, xp: xpTotal };   // local testing only
+  if (location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__td = { moSync: function () { return moSync(); }, readScale: function (v) { READ_SCALE = v; }, block: parseBlock, learned: learned, hard: hardHours, parse: parseQuick, intent: intentOf, plan: planFor, fix: fixFields, next: nextQuestion, draft: newDraft, passages: passages, xp: xpTotal };   // local testing only
   measureBar();
   start();
   pollReplies();
   schedulePoll();
   pollPartner().then(schedulePartner);
   sendStatus();
+  moSync().then(moSchedule);
 })();
 </script>
 </body>
