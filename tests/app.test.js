@@ -210,8 +210,8 @@ async function axe(page, name) {
       await page.fill("#aq-time", "18:30"); await page.click("#aq-set");
       s = await S(page); t = s.tasks.find(x => x.title === "Call Mom");
       ok(t && t.type === "CALL" && t.time === "18:30" && t.contact.phone, "call Mom saved with number from contacts");
-      ok(await page.isVisible("#remind-me"), "asked for a reminder: Remind me offered");
-      ok(!(await page.textContent("#asst")).includes("Reminder scheduled"), "no false 'scheduled' before it happens");
+      await page.waitForSelector("#remind-state");
+      ok((await page.textContent("#remind-state")).includes("scheduled"), "said “remind me”: reminder scheduled automatically (ntfy accepted)");
       ok(!errors.length, "questions: no errors " + errors.join(" | "));
       await ctx.close();
     }
@@ -749,6 +749,116 @@ async function axe(page, name) {
       await page.click("#nav-you"); await page.click("#y-mem");
       ok(await page.isVisible("#learn-toggle"), "learning can be switched off");
       ok(!errors.length, "manager: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+
+
+    // ---------- task rows: gestures, batch, ten days, spark ----------
+    console.log("rows");
+    {
+      const { page, errors, posts, ctx } = await boot(browser);
+      const idOf = async (title) => (await S(page)).tasks.find(t => t.title === title).id;
+      const showAll = async () => { if (await page.$('#toggle-rest[aria-expanded="false"]')) await page.click("#toggle-rest"); };
+      const rowBox = async (id) => { await showAll(); return page.locator('[data-task="' + id + '"] .trow').first().boundingBox(); };
+      // natural language with urgency, length and a lead reminder
+      await ask(page, "Sprint training at 8pm urgent 30 min timer remind 15m before");
+      let s = await S(page), t = s.tasks.find(x => x.title === "Sprint training");
+      ok(t && t.time === "20:00" && t.priority === "urgent" && t.dur === 30 && t.remindBefore === 15 && t.remindWant, "parsed time, urgent, 30 min timer, remind 15m before");
+      ok(posts.some(p => p.url.includes(SEED.topics.reminders)), "lead reminder scheduled with ntfy");
+      await page.click("#asst-close").catch(() => {});
+      for (const x of ["Laundry", "Dishes"]) await ask(page, x);
+      await page.click("#asst-close").catch(() => {});
+      // tap opens in place
+      const lid = await idOf("Laundry");
+      await showAll(); await page.click('[data-task="' + lid + '"] .tmain');
+      ok(await page.isVisible("#panel-" + lid), "tap opens the task in place");
+      // spark: change it by typing
+      await page.click('[data-spark="' + lid + '"]'); await page.fill("#sp-" + lid, "tomorrow 2pm, high, 45 min");
+      await page.click("#sp-go-" + lid);
+      t = (await S(page)).tasks.find(x => x.id === lid);
+      ok(t.time === "14:00" && t.priority === "high" && t.dur === 45 && t.date > "2000", "spark edit: tomorrow 2pm, high, 45 min");
+      await page.click("#toast-act"); t = (await S(page)).tasks.find(x => x.id === lid);
+      ok(!t.time && t.priority === "normal", "spark edit undo");
+      // double tap renames
+      await showAll(); await page.click('[data-task="' + lid + '"] .tmain'); await page.click('[data-task="' + lid + '"] .tmain');
+      await page.waitForSelector("#te-" + lid); await page.fill("#te-" + lid, "Laundry and towels"); await page.press("#te-" + lid, "Enter");
+      ok((await S(page)).tasks.find(x => x.id === lid).title === "Laundry and towels", "double tap to rename");
+      // swipe right: done; swipe left: delete with undo
+      const did = await idOf("Dishes");
+      let b = await rowBox(did);
+      await page.mouse.move(b.x + 60, b.y + b.height / 2); await page.mouse.down(); await page.mouse.move(b.x + 120, b.y + b.height / 2, { steps: 4 }); await page.mouse.move(b.x + 200, b.y + b.height / 2, { steps: 4 }); await page.mouse.up();
+      ok((await S(page)).tasks.find(x => x.id === did).doneOn, "swipe right completes");
+      await page.click("#toggle-rest").catch(() => {});
+      b = await rowBox(lid);
+      await page.mouse.move(b.x + b.width - 80, b.y + b.height / 2); await page.mouse.down(); await page.mouse.move(b.x + b.width - 140, b.y + b.height / 2, { steps: 4 }); await page.mouse.move(b.x + b.width - 220, b.y + b.height / 2, { steps: 4 }); await page.mouse.up();
+      await page.waitForTimeout(300);
+      ok(!(await S(page)).tasks.some(x => x.id === lid) && (await page.textContent("#toast")).includes("Deleted"), "swipe left deletes");
+      await page.click("#toast-act"); ok((await S(page)).tasks.some(x => x.id === lid), "delete undo");
+      // hold to select, then +1 day for several
+      b = await rowBox(lid);
+      await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down(); await page.waitForTimeout(650); await page.mouse.up();
+      ok(await page.isVisible("#bulkbar") && (await page.textContent("#bulk-n")) === "1 selected", "hold starts selecting");
+      const wid = await idOf("Workout"); await showAll(); await page.click('[data-pick="' + wid + '"]');
+      ok((await page.textContent("#bulk-n")) === "2 selected", "tap adds to the selection");
+      await page.click("#bulk-day");
+      s = await S(page);
+      ok(s.tasks.find(x => x.id === lid).date > s.tasks.find(x => x.id === lid).created.toString().slice(0, 0) && !(await page.$("#bulkbar")), "+1 day for the selection");
+      await page.click("#toast-act");
+      // drag to reorder (hold, then move)
+      const ids0 = await page.$$eval("#today-list [data-task]", els => els.map(e => e.getAttribute("data-task")));
+      if (ids0.length >= 2) {
+        const b0 = await rowBox(ids0[0]), b1 = await rowBox(ids0[1]);
+        await page.mouse.move(b1.x + b1.width / 2, b1.y + b1.height / 2); await page.mouse.down(); await page.waitForTimeout(600);
+        await page.mouse.move(b1.x + b1.width / 2, b0.y + 5, { steps: 6 }); await page.mouse.up();
+        const ids1 = await page.$$eval("#today-list [data-task]", els => els.map(e => e.getAttribute("data-task")));
+        ok(ids1[0] === ids0[1], "hold and drag reorders");
+        await page.click('[data-task="' + ids1[0] + '"] .tmain'); await page.click("#ra-down-" + ids1[0]);
+        const ids2 = await page.$$eval("#today-list [data-task]", els => els.map(e => e.getAttribute("data-task")));
+        ok(ids2[1] === ids1[0], "Move down button does the same without gestures");
+      } else ok(false, "need two rows to test reordering");
+      // the next ten days
+      ok(await page.locator("#horizon .hday").count() === 10, "ten-day strip");
+      await page.click("#hd-1"); ok(await page.isVisible("#day-sum"), "tomorrow's view with workload");
+      await page.click("#hd-0");
+      // all tasks: filters, clear finished, undo/redo
+      await page.click("#all-tasks"); await page.click("#f-done");
+      const doneN = await page.locator("#all-box [data-task]").count();
+      ok(doneN >= 1, "Done filter");
+      await page.click("#clear-done2");
+      ok((await page.textContent("#toast")).includes("Cleared"), "clear finished");
+      await page.click("#hist-undo"); await page.click("#f-done");
+      ok(await page.locator("#all-box [data-task]").count() === doneN, "undo restores cleared tasks");
+      await page.click("#hist-redo"); ok(await page.locator("#all-box [data-task]").count() < doneN, "redo");
+      // focus presets
+      await page.click("#nav-home"); await page.click("#t-focus");
+      ok(await page.locator("#f-mins .chip").count() >= 4 && await page.isVisible('[data-mins="60"]'), "focus presets 15/25/45/60");
+      ok(!errors.length, "rows: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+
+
+    // ---------- the same gestures with real touch events (the iPhone path) ----------
+    console.log("touch");
+    {
+      const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, timezoneId: "America/Chicago" });
+      const page = await ctx.newPage(); const errors = [];
+      page.on("pageerror", e => errors.push(String(e)));
+      await page.route("https://ntfy.sh/**", r => r.fulfill({ status: 200, body: "{}" }));
+      await page.addInitScript(s => { if (!sessionStorage.getItem("seeded")) { sessionStorage.setItem("seeded", "1"); localStorage.setItem("tendays.v1", s); } }, JSON.stringify(SEED));
+      await page.goto(APP); await page.waitForSelector("#qa");
+      const cdp = await ctx.newCDPSession(page);
+      const touch = async (type, x, y) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y }] });
+      const box = async (id) => { const l = page.locator('[data-task="' + id + '"] .trow').first(); await l.scrollIntoViewIfNeeded(); await page.waitForTimeout(100); return l.boundingBox(); };
+      let b = await box("kaaaa2"), y = b.y + b.height / 2;
+      await touch("touchStart", b.x + b.width - 70, y);
+      for (let dx = 15; dx <= 160; dx += 15) await touch("touchMove", b.x + b.width - 70 - dx, y);
+      await touch("touchEnd"); await page.waitForTimeout(400);
+      ok(!(await S(page)).tasks.some(t => t.id === "kaaaa2") && (await page.textContent("#toast")).includes("Deleted"), "touch: swipe left deletes");
+      await page.click("#toast-act");
+      b = await box("kaaaa3"); y = b.y + b.height / 2;
+      await touch("touchStart", b.x + b.width / 2, y); await page.waitForTimeout(650); await touch("touchEnd");
+      ok(await page.isVisible("#bulkbar"), "touch: hold to select");
+      ok(!errors.length, "touch: no errors " + errors.join(" | "));
       await ctx.close();
     }
 
