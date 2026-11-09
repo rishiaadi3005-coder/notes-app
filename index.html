@@ -754,6 +754,62 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
 .rm .gem.full .gem-spark { opacity: .9; }
 .rm .gem-level, .rm .prog i, .rm .seg button, .rm .check, .rm .strip .sbar i { transition: none; }
 .rm .check:active { transform: none; }
+/* ---- v8: now/next, counts, people, hard hours, organized You ---- */
+.nownext { margin: -.2em 0 0; display: flex; flex-direction: column; gap: .15em; font-size: .95em; color: var(--muted); line-height: 1.4; }
+.nownext b { color: var(--corner); font-weight: 750; }
+.nownext span { color: var(--ink); }
+.cntwrap { display: flex; flex-wrap: wrap; gap: .5em; margin-top: .55em; }
+.cnt { display: inline-flex; align-items: stretch; border-radius: 99px; border: 1px solid var(--line); background: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); overflow: hidden; }
+.cnt.over { border-color: var(--warn-text); background: var(--warn-soft); }
+.cntbtn { min-height: 44px; display: inline-flex; align-items: center; gap: .45em; padding: .3em .55em .3em 1em; background: none; border: 0; color: var(--ink); font: inherit; font-weight: 650; cursor: pointer; transition: transform 160ms var(--ease, ease); }
+.cntbtn:active { transform: scale(.96); }
+.cntbtn .cv { font-variant-numeric: tabular-nums; min-width: 1.4em; text-align: center; padding: .1em .45em; border-radius: 99px; background: var(--corner-soft); color: var(--ink); }
+.cnt.over .cv { background: var(--warn-soft); color: var(--warn-text); }
+.cntbtn svg { width: 16px; height: 16px; color: var(--muted); }
+.cntminus { min-width: 44px; min-height: 44px; border: 0; border-left: 1px solid var(--line); background: none; color: var(--muted); font: inherit; font-size: 1.2em; cursor: pointer; }
+.card.hard { border-color: color-mix(in srgb, var(--care, #E9A6C8) 55%, var(--line)); }
+.card.hard .lbl svg { width: 1.05em; height: 1.05em; color: var(--care, #E9A6C8); }
+.card.pteaser { display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: .9em; text-align: left; width: 100%; color: var(--ink); font: inherit; cursor: pointer; }
+.pteaser .pt-main { display: flex; flex-direction: column; gap: .15em; }
+.pteaser .pt-main b { font-size: 1.1em; }
+.pteaser .hint { color: var(--muted); font-size: .9em; }
+.pav { flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 1.15em;
+  background: linear-gradient(135deg, #7FB2FF, #C29BFF); color: #0B0E16; }
+.pav.me { background: linear-gradient(135deg, #6EE7C8, #7FB2FF); }
+.pcard { display: flex; flex-direction: column; gap: .7em; }
+.phead { display: flex; align-items: center; gap: .75em; flex-wrap: wrap; }
+.phead h2 { margin: 0; font-size: 1.25em; flex: 1; }
+.pstat { display: flex; flex-direction: column; gap: .55em; }
+.sbar2 { display: grid; grid-template-columns: 6.5em 1fr auto; align-items: center; gap: .7em; }
+.sbar2 .sl { color: var(--muted); font-size: .92em; }
+.sbar2 .track { height: 8px; border-radius: 99px; background: var(--field); border: 1px solid var(--line); overflow: hidden; }
+.sbar2 .track i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #6EE7C8, #7FB2FF); transition: width 420ms var(--ease, ease); }
+.sbar2 b { font-variant-numeric: tabular-nums; font-size: .95em; }
+.pcounts { display: flex; flex-wrap: wrap; gap: .4em; }
+.pc { display: inline-flex; align-items: center; gap: .3em; padding: .3em .75em; border-radius: 99px; border: 1px solid var(--line); background: var(--field); font-size: .9em; }
+.pc.over { border-color: var(--warn-text); color: var(--warn-text); }
+.pc.ok svg { color: var(--ok-text); }
+.pc svg { width: 14px; height: 14px; }
+.plist { margin: 0; padding-left: 1.2em; color: var(--ink); }
+.plist li { margin: .15em 0; }
+.msgline { margin: 0; font-size: .95em; }
+.pcard form.inline .btn { width: auto; min-width: 52px; }
+#share-code { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 100%; color: var(--muted); }
+details.adv { border: 1px solid var(--line); border-radius: 20px; padding: .2em .9em; background: var(--field); }
+details.adv > summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; font-weight: 650; list-style: none; }
+details.adv > summary::-webkit-details-marker { display: none; }
+details.adv > summary::after { content: "›"; margin-left: auto; transform: rotate(90deg); transition: transform 200ms var(--ease, ease); font-size: 1.3em; color: var(--muted); }
+details.adv[open] > summary::after { transform: rotate(-90deg); }
+details.adv[open] { padding-bottom: .9em; }
+.morelist.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .6em; }
+.morelist.grid2 .btn { min-height: 92px; justify-content: space-between; padding: .85em .95em; }
+.morelist.grid2 .btn .hint { font-size: .8em; }
+.morelist.compact .btn { min-height: 52px; flex-direction: row; align-items: center; justify-content: space-between; gap: .6em; padding: .55em 1.05em; }
+.morelist.compact .btn .hint { text-align: right; font-size: .8em; max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cancelbar #cd-now { min-width: 0; }
+.cancelbar.long { flex-wrap: wrap; padding-top: .7em; padding-bottom: .7em; }
+.cancelbar.long b { flex: 1 1 100%; }
+.cancelbar.long .btn { flex: 1; }
 </style>
 </head>
 <body>
@@ -766,6 +822,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   </div>
   <div class="cancelbar" id="cancelbar" hidden role="status">
     <b id="cd-text">Telling him in 3…</b>
+    <button class="btn" id="cd-now" type="button" hidden>Tell now</button>
     <button class="btn danger" id="cd-cancel" type="button">Cancel</button>
   </div>
 </div>
@@ -979,6 +1036,20 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       .filter(function (q) { return q.q && q.choices.length >= 2 && q.answer < q.choices.length; }).slice(-400);
     s.kept = (Array.isArray(s.kept) ? s.kept : []).filter(obj).map(function (k) { return { text: str(k.text, 600), label: str(k.label, 120) }; }).filter(function (k) { return k.text; }).slice(0, 50);
     s.view = s.view === "list" ? "list" : "grid";
+    // routine learning, classes, counts, hard hours, you and your brother
+    s.habits = (Array.isArray(s.habits) ? s.habits : []).filter(function (e) { return obj(e) && typeof e.k === "string" && typeof e.m === "number"; })
+      .map(function (e) { return { k: str(e.k, 30), m: Math.max(0, Math.min(1439, Math.round(e.m))), d: Math.max(0, Math.min(600, Math.round(+e.d || 0))), at: +e.at || 0 }; }).slice(-400);
+    s.blocks = (Array.isArray(s.blocks) ? s.blocks : []).filter(obj).map(function (b) { return { id: str(b.id, 40) || newId(), title: str(b.title, 60).trim() || "Class", days: (Array.isArray(b.days) ? b.days : []).map(Number).filter(function (x, i, a) { return x >= 0 && x <= 6 && a.indexOf(x) === i; }).sort(), start: TIME_RE.test(b.start || "") ? b.start : "", end: TIME_RE.test(b.end || "") ? b.end : "" }; })
+      .filter(function (b) { return b.days.length && b.start && b.end && b.end > b.start; }).slice(0, 40);
+    s.counters = (Array.isArray(s.counters) ? s.counters : []).filter(obj).map(function (c) { return { id: str(c.id, 40) || newId(), name: str(c.name, 30).trim(), limit: Math.max(0, Math.min(99, Math.floor(+c.limit || 0))) }; }).filter(function (c) { return c.name; }).slice(0, 12);
+    var CN = obj(s.countLog) || {}; s.countLog = {};
+    Object.keys(CN).filter(function (k) { return DATE_RE.test(k) && obj(CN[k]); }).sort().slice(-120).forEach(function (k) { var x = {}; Object.keys(CN[k]).slice(0, 20).forEach(function (id) { x[str(id, 40)] = Math.max(0, Math.min(999, Math.floor(+CN[k][id] || 0))); }); s.countLog[k] = x; });
+    s.urges = (Array.isArray(s.urges) ? s.urges : []).filter(function (e) { return obj(e) && typeof e.at === "number"; }).map(function (e) { return { at: e.at, via: str(e.via, 10) }; }).slice(-300);
+    s.hardPing = !!s.hardPing; s.hardPinged = DATE_RE.test(s.hardPinged || "") ? s.hardPinged : "";
+    var SH = obj(s.share) || {}; s.share = { on: !!SH.on, topic: TOPIC_RE.test(SH.topic || "") ? SH.topic : "", names: !!SH.names, at: +SH.at || 0, sent: str(SH.sent, 4000) };
+    var PT = obj(s.partner) || {}; s.partner = { name: str(PT.name, 40).trim(), topic: TOPIC_RE.test(PT.topic || "") ? PT.topic : "", inbox: TOPIC_RE.test(PT.inbox || "") ? PT.inbox : "", last: cleanStatus(PT.last), at: +PT.at || 0 };
+    s.msgs = (Array.isArray(s.msgs) ? s.msgs : []).filter(function (m) { return obj(m) && typeof m.at === "number"; }).map(function (m) { return { at: m.at, text: str(m.text, 300), ok: m.ok === true }; }).slice(-40);
+    s.sosWait = typeof s.sosWait === "number" && [0, 3, 60, 120, 300].indexOf(s.sosWait) >= 0 ? s.sosWait : 60;
     s.week = obj(s.week) && typeof s.week.text === "string" ? { day: str(s.week.day, 10), text: str(s.week.text, 3000), by: s.week.by === "ai" ? "ai" : "local" } : null;
     s.learn = s.learn !== false; s.patNo = obj(s.patNo) || {}; s.sugNo = obj(s.sugNo) || {}; s.lastLink = str(s.lastLink, 40);
     s.org = obj(s.org) && DATE_RE.test(s.org.day || "") && Array.isArray(s.org.done) && !s.org.busy ? s.org : null;
@@ -1027,7 +1098,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   var S = load();
   function save() {
     try { recordToday(); } catch (e) {}
-    try { localStorage.setItem(KEY, JSON.stringify(S)); return true; }
+    try { localStorage.setItem(KEY, JSON.stringify(S)); try { queueStatus(); } catch (e2) {} return true; }
     catch (e) { toast(isQuota(e) ? "This phone is out of storage for Ten Days, so that wasn't saved." : "That wasn't saved on this phone.", 6000); return false; }
   }
   save();
@@ -1155,24 +1226,29 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   function releaseAwake() { try { if (wake) wake.release(); } catch (e) {} wake = null; }
 
   // ============ SOS ============
-  var cdT = null, cdStart = 0;
-  function onSOS() {
+  var cdT = null, cdStart = 0, cdEnd = 0, cdShort = true;
+  // The dock button waits as long as you chose (Ten Days stays with you meanwhile); "Tell him" waits 3 seconds.
+  function onSOS(e, now) {
     if (cdT) return;
     if (!S.topics.alert) { openSupport("button"); return; }   // nothing to send yet: support opens, with setup steps
+    var wait = now ? CANCEL_S : S.sosWait;
+    if (!wait) { if (ui.screen !== "support") openSupport("sos"); else render(false); return; }
     holdAwake();
-    cdStart = Date.now();
-    var left = CANCEL_S;
-    $("dock").hidden = true; $("cancelbar").hidden = false; $("cd-text").textContent = "Telling him in " + left + "…";
+    cdStart = Date.now(); cdEnd = cdStart + wait * 1000; cdShort = wait <= CANCEL_S;
+    $("dock").hidden = true; $("cancelbar").hidden = false; $("cd-now").hidden = cdShort; $("cancelbar").classList.toggle("long", !cdShort); $("cd-cancel").textContent = cdShort ? "Cancel" : "Don't tell him";
+    cdT = setInterval(cdTick, 1000); cdTick();
     if (ui.screen !== "support") openSupport("sos"); else { if (ui.sup) { ui.sup.mode = "stay"; ui.sup.since = Date.now(); } render(false); }
     $("cd-cancel").focus();
-    cdT = setInterval(function () {
-      left--;
-      if (left <= 0) { stopCountdown(); sendSOS(); }
-      else $("cd-text").textContent = "Telling him in " + left + "…";
-    }, 1000);
   }
-  function stopCountdown() { clearInterval(cdT); cdT = null; $("cancelbar").hidden = true; $("dock").hidden = false; }
-  function cancelSOS() { if (Date.now() - cdStart < 700) return; haptic("warn"); stopCountdown(); releaseAwake(); toast("Cancelled. Nothing was sent to him."); render(false); }
+  function cdTick() {
+    if (!cdT && !cdEnd) return;
+    var left = Math.ceil((cdEnd - Date.now()) / 1000);
+    if (left <= 0 && cdT) { stopCountdown(); sendSOS(); return; }
+    left = Math.max(1, left);
+    $("cd-text").textContent = cdShort ? "Telling him in " + left + "…" : "Telling " + hisName() + " in " + (left >= 60 ? Math.floor(left / 60) + ":" + pad(left % 60) : left + " s");
+  }
+  function stopCountdown() { clearInterval(cdT); cdT = null; cdEnd = 0; $("cancelbar").hidden = true; $("dock").hidden = false; }
+  function cancelSOS() { if (Date.now() - cdStart < 700) return; haptic("warn"); var short = cdShort; stopCountdown(); releaseAwake(); toast(short ? "Cancelled. Nothing was sent to him." : "Okay, I won't tell him. I'm staying right here with you."); render(false); }
   function sendSOS() {
     var now = Date.now();
     var again = S.log.some(function (e) { return e.at > now - NIGHT_MS && !e.untested && (e.sent === true || e.sent === null); });
@@ -1366,6 +1442,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   function markDone(t) {
     var k = periodKey(t), was = todayStats(), lv0 = levelOf(xpTotal()).level;
     t.doneOn = k; t.doneAt = Date.now(); t.snoozeUntil = 0; addHist(t, k);
+    if (!t.time) logHabit(t, "done");
     ui.justDone = t.id;
     if (save()) {
       var st = todayStats(), xp = S.fx.rpg ? " +" + taskXp(t) + " XP" : "";
@@ -2553,6 +2630,9 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   function submitAsk(text) {
     text = normText(text);
     if (!text) { toast("Type what's happening first."); return false; }
+    var mc = msgCommand(text); if (mc) return mc;
+    if (countCommand(text)) return true;
+    var bl = parseBlock(text); if (bl) { addBlock(bl); return true; }
     var intent = intentOf(text), a = S.asst;
     if (intent === "note") { saveNote(text); S.asst = null; save(); return true; }
     if (runCommand(text)) { save(); return true; }
@@ -2595,12 +2675,16 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     } else {
       var dup = dupOf(d);
       if (dup) { S.asst = { kind: "task", d: taskToDraft(dup), editing: dup.id, note: "That's already on your list, so nothing new was added." }; save(); toast("Already on your list: " + dup.title); return; }
+      var auto = autoTime(d);
       n = draftToTask(d); if (!n) { toast("Add a title first."); return; } S.tasks.push(n);
     }
+    if (n.time && (!snap || JSON.parse(snap).time !== n.time) && !(d.sugg && d.sugg.time)) logHabit(n, "set");
     S.lastTask = { id: n.id, at: Date.now() };
     var keep = { sugg: d.sugg || {}, remind: !!d.remind };
     var nd = taskToDraft(n); nd.sugg = keep.sugg; nd.remind = keep.remind;
     S.asst = { kind: "task", d: nd, editing: n.id, fresh: !t };
+    if (!t && auto === "time") S.asst.note = "Set for " + hmText(n.time) + (n.dur && d.sugg.dur ? " for " + durText(n.dur) : "") + ", when you usually do this. Tap the time to change it.";
+    else if (!t && auto === "length") S.asst.note = "Set to " + durText(n.dur) + (d.sugg.dur === "real" ? ", what it really takes you." : ", like last times.");
     ui.asstEdit = null;
     if (!save()) return;
     if (n.remindWant) autoRemind(n);   // you asked for a reminder: schedule it straight away
@@ -2707,10 +2791,10 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       ic ? icon(ic) : null, h("span", { text: label }), extra.sug ? h("span", { class: "s", text: extra.sug }) : null);
   }
   function chipsFor(d) {
-    var sug = d.sugg && (d.sugg.time === "remembered" ? "from what you told me" : d.sugg.time || d.sugg.date ? "suggested" : "");
+    var sug = d.sugg && (d.sugg.time === "remembered" ? "from what you told me" : d.sugg.time === "usual" ? "your usual time" : d.sugg.time || d.sugg.date ? "suggested" : "");
     var wl = whenLabel(d), out = [fchip("when", "clock", wl || (d.anchor ? "No time yet" : "Anytime"), { sug: sug, miss: !wl })];
     if (d.anchor) out.push(fchip("when", "flag", cap(d.anchor)));
-    if (d.dur || !S.asst || !S.asst.editing) out.push(fchip("dur", "timer", d.dur ? durText(d.dur) : "Length", { miss: !d.dur }));
+    if (d.dur || !S.asst || !S.asst.editing) out.push(fchip("dur", "timer", d.dur ? durText(d.dur) : "Length", { miss: !d.dur, sug: d.sugg && d.sugg.dur ? (d.sugg.dur === "real" ? "what it really takes" : "usual") : "" }));
     if (d.type !== "CUSTOM") out.push(fchip("details", TYPE_ICON[d.type], TYPE_NAME[d.type]));
     if (d.type === "CALL" && d.contact.name) out.push(fchip("details", "people", d.contact.name + (cleanPhone(d.contact.phone) ? "" : " · no number")));
     if (d.items.length) out.push(fchip("details", "list", d.items.length + (d.items.length === 1 ? " item" : " items")));
@@ -2815,6 +2899,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       ui.asstEdit ? editorFor(a) : null,
       a.note ? h("p", { class: "small", id: "asst-note", text: a.note }) : null,
       q && !ui.asstEdit ? questionBlock(a, q) : null,
+      t && a.fresh && !ui.asstEdit && !t.anyTime ? slotRow(t) : null,
       t ? savedExtras(t, d) : null,
       h("div", { class: "row links" },
         t ? null : h("button", { class: q ? "btn" : "btn primary", type: "button", id: "asst-save", onclick: function () { commitDraft(d, "", "Saved"); render(false); } }, q ? "Save as is" : "Save"),
@@ -2950,6 +3035,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   function openSupport(via, mode) {
     S.reached = (S.reached || 0) + 1; S.supIdx = (S.supIdx || 0) + 1;
     ui.sup = { mode: mode || (via === "sos" ? "stay" : ""), since: Date.now(), g: -1, stepDone: false, via: via };
+    if (via !== "hard") logUrge(via);
     save(); afterProgress(true);
     go("support");
   }
@@ -2957,7 +3043,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   function supportLines() { return { gentle: "You did the right thing by stopping here. Let's slow down together.", direct: "Good. You stopped. Now let's get through the next ten minutes.", practical: "Here's what helps right now. Pick one thing below." }[S.profile.style] || ""; }
   function checkinBlock() {
     var st = S.lastSOS, recent = st && Date.now() - st.at < 30 * 60e3;
-    if (cdT) return h("div", { class: "card checkin" }, h("p", { class: "status", id: "sup-cd", text: "Telling him in a moment. You can still cancel below." }));
+    if (cdT) return h("div", { class: "card checkin" }, h("p", { class: "status", id: "sup-cd", text: cdShort ? "Telling him in a moment. You can still cancel below." : "I'll tell " + hisName() + " at " + fmtTime(cdEnd) + " unless you stop it. Breathe with me first." }));
     if (recent) {
       var cls = "status", txt;
       if (st.status === "sent") { cls = "status ok"; txt = S.alertTestedAt ? "He's been told. Sent at " + fmtTime(st.at) + "." : "Sent. It isn't tested with him yet, so call too."; }
@@ -2968,11 +3054,11 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         st.status === "sending" ? h("p", { class: "small", id: "keep-on", text: "Keep the screen on until it says sent." }) : null,
         replied ? h("p", { class: "status ok", id: "reply-line", text: "He replied: " + S.lastReply.text }) : null,
         h("div", { class: "row" }, st.status === "notsent" ? h("button", { class: "btn primary", type: "button", id: "resend", onclick: resend }, "Resend") : null,
-          st.status === "sent" ? h("button", { class: "btn", type: "button", id: "sup-tell", onclick: onSOS }, "Tell him again") : null,
+          st.status === "sent" ? h("button", { class: "btn", type: "button", id: "sup-tell", onclick: function () { onSOS(null, true); } }, "Tell him again") : null,
           st.status === "notsent" || (st.status === "sent" && !S.alertTestedAt) || replied ? callLink(false) : null));
     }
     if (S.topics.alert) return h("div", { class: "card checkin" },
-      h("div", { class: "row" }, h("button", { class: "btn", type: "button", id: "sup-tell", onclick: onSOS }, "Tell him I need him"), callLink(false)),
+      h("div", { class: "row" }, h("button", { class: "btn", type: "button", id: "sup-tell", onclick: function () { onSOS(null, true); } }, "Tell " + hisName() + " I need him"), callLink(false)),
       h("p", { class: "small", text: "Sends “Check in” to his phone after a 3-second chance to cancel." }));
     return h("div", { class: "card checkin" }, h("p", { class: "small", id: "sup-nosetup", text: "The check-in can't reach him yet." }),
       h("div", { class: "row" }, callLink(false), h("button", { class: "btn", type: "button", id: "finish-setup", onclick: function () { go(isStandalone() ? (S.topics.alert ? "ob-his" : "ob-topics") : "a2hs"); } }, "Finish setup")));
@@ -4025,6 +4111,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   function nextFree(dayOffset, after, mins) {
     var d = addDays(new Date(), dayOffset || 0), busy = S.tasks.filter(function (t) { return t.time && (dayOffset ? occursOn(t, d) : inToday(t) && !isDone(t)); })
       .map(function (t) { var a = new Date(d.getFullYear(), d.getMonth(), d.getDate(), +t.time.slice(0, 2), +t.time.slice(3)).getTime(); return [a, a + Math.max(15, t.dur || 30) * 60000]; });
+    busy = busy.concat(blockSpans(d).map(function (b) { return [b[0], b[1]]; }));
     var at = after;
     for (var k = 0; k < 40; k++) { var end = at + mins * 60000, hit = busy.filter(function (b) { return at < b[1] && end > b[0]; })[0]; if (!hit) break; at = hit[1]; }
     at = Math.ceil(at / 300e3) * 300e3; var x = new Date(at);
@@ -4222,10 +4309,11 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     return added;
   }
   function checkinsBlock() {
-    if (!S.checkins.length) return null;
+    if (!S.checkins.length && !S.counters.length) return null;
     var c = checkedToday();
     return h("section", { class: "checkins", id: "checkins", "aria-labelledby": "ck-h" },
-      h("div", { class: "sect" }, h("h2", { id: "ck-h", text: "Did you do these today?" }), h("button", { class: "btn link", type: "button", id: "ck-edit", onclick: function () { go("checkins"); } }, c.length + " of " + S.checkins.length)),
+      h("div", { class: "sect" }, h("h2", { id: "ck-h", text: S.checkins.length ? "Did you do these today?" : "Today's counts" }), h("button", { class: "btn link", type: "button", id: "ck-edit", onclick: function () { go("checkins"); } }, S.checkins.length ? c.length + " of " + S.checkins.length : "Edit")),
+      countsRow(),
       h("div", { class: "ckwrap" }, S.checkins.map(function (x) {
         var on = c.indexOf(x.id) >= 0;
         return h("button", { class: "ckchip" + (on ? " on" : ""), type: "button", id: "ck-" + x.id, "aria-pressed": on ? "true" : "false", onclick: function () { toggleCheck(x.id); } }, icon(on ? "check" : "circle"), h("span", { text: x.text }));
@@ -4233,7 +4321,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   }
   // "Tell me about you": speak (or type) freely; Ten Days learns what helps you and builds the check-ins.
   var AI_INTAKE = "A voice note is attached in which the person talks about themselves: what they like, their routines, what helps them relax, what they struggle with. Transcribe it and reply with JSON only: " +
-    '{"transcript":"","about":["short facts about them, max 12"],"checkins":["daily habits to check in on, phrased short like Breathwork, 5 minutes, max 8"]}. ' +
+    '{"transcript":"","about":["short facts about them, max 12"],"checkins":["daily habits to check in on, phrased short like Breathwork, 5 minutes, max 8"],"schedule":[{"title":"","days":[1,3],"start":"HH:MM","end":"HH:MM"}]}. ' +
+    "schedule is only fixed weekly times they state, like classes or work shifts (days: 0 is Sunday); leave it empty if they gave none. " +
     "Favour calming, body-based habits they mention or clearly would like: breathwork, grounding, meditation, time outside, movement, sleep, connection. Only include things grounded in what they said.";
   function aiIntake(b64, typedText) {
     setAsst({ kind: "thinking", src: "About you", voice: true });
@@ -4245,8 +4334,15 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       var d = obj(r.data) || {}, about = (Array.isArray(d.about) ? d.about : []).map(function (x) { return str(x, 140).trim(); }).filter(Boolean).slice(0, 12);
       var n = addCheckins(Array.isArray(d.checkins) ? d.checkins.slice(0, 8) : []);
       about.forEach(function (x) { if (S.about.indexOf(x) < 0) S.about.push(x); }); S.about = S.about.slice(-40);
+      var nb = 0;
+      (Array.isArray(d.schedule) ? d.schedule : []).slice(0, 12).forEach(function (b) {
+        b = obj(b); if (!b) return;
+        var x = { title: str(b.title, 60).trim() || "Class", days: (Array.isArray(b.days) ? b.days : []).map(Number).filter(function (y, i, a) { return y >= 0 && y <= 6 && y === Math.floor(y) && a.indexOf(y) === i; }).sort(), start: TIME_RE.test(b.start || "") ? b.start : "", end: TIME_RE.test(b.end || "") ? b.end : "" };
+        if (!x.days.length || !x.start || !x.end || x.end <= x.start || S.blocks.some(function (y) { return y.title.toLowerCase() === x.title.toLowerCase() && y.start === x.start; })) return;
+        x.id = newId(); S.blocks.push(x); nb++;
+      });
       S.intakeDone = true; save();
-      setAsst({ kind: "intake", heard: str(d.transcript, 600), about: about, n: n }); render(false);
+      setAsst({ kind: "intake", heard: str(d.transcript, 600), about: about, n: n, nb: nb }); render(false);
     });
   }
   function intakeCard(a) {
@@ -4254,6 +4350,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       a.heard ? h("p", { class: "small", text: "You said: “" + a.heard + (a.heard.length >= 600 ? "…" : "") + "”" }) : null,
       a.about && a.about.length ? h("ul", { class: "orglist" }, a.about.map(function (x) { return h("li", null, icon("check"), h("span", { text: x })); })) : null,
       h("p", { text: a.n ? "Added " + a.n + " daily check-ins. They're on Today: just tick what you did." : "Your check-ins are on Today." }),
+      a.nb ? h("p", { id: "in-blocks", text: "Added " + a.nb + (a.nb === 1 ? " class" : " classes") + " to your week. Ten Days plans around them. Check them in You → Your week." }) : null,
       h("div", { class: "row links" }, h("button", { class: "btn", type: "button", id: "in-edit", onclick: function () { setAsst(null); go("checkins"); } }, "Edit check-ins"), closeLink("Done"))];
   }
   function intakePrompt() {
@@ -4413,6 +4510,347 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   }
   var AI_WEEK = "Write two or three short paragraphs to the person about their week: what went well, patterns you notice (including what seems to trigger hard moments, if their notes show it), and one gentle shift for next week. Plain sentences, no lists, no headings, under 180 words.";
 
+  // ============ your routine: learned times, fixed blocks like classes, free slots ============
+  var TK_STOP = /^(?:the|a|an|my|to|go|going|do|doing|finish|start|some|at|for|on|in|get|have|time|quick|heavy|light|new|more|today|tonight|tomorrow)$/;
+  function kindKey(title) {
+    var w = String(title || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(function (x) { return x && !TK_STOP.test(x) && !/^\d/.test(x); });
+    return w[0] || "";
+  }
+  function minsOf(hm) { return +hm.slice(0, 2) * 60 + +hm.slice(3); }
+  function hmOf(m) { m = ((Math.round(m / 5) * 5) % 1440 + 1440) % 1440; return pad(Math.floor(m / 60)) + ":" + pad(m % 60); }
+  function median(a) { var b = a.slice().sort(function (x, y) { return x - y; }), n = b.length; return n ? (n % 2 ? b[(n - 1) / 2] : (b[n / 2 - 1] + b[n / 2]) / 2) : 0; }
+  // "set": you gave it a time yourself. "done": when you actually finished it (start = finish minus its length).
+  function logHabit(t, kind) {
+    if (!S.learn) return;
+    var k = kindKey(t.title); if (!k) return;
+    var now = new Date(), m;
+    if (kind === "set") { if (!t.time) return; m = minsOf(t.time); }
+    else m = t.time ? minsOf(t.time) : now.getHours() * 60 + now.getMinutes() - (t.dur || 0);
+    S.habits.push({ k: k, m: Math.max(0, Math.min(1439, m)), d: t.dur || 0, at: Date.now() });
+    if (S.habits.length > 400) S.habits.shift();
+  }
+  // What the last 60 days say about a kind of task: the time you usually do it, and how long it really takes.
+  function learned(k) {
+    if (!k || !S.learn) return null;
+    var cut = Date.now() - 60 * 864e5, xs = S.habits.filter(function (e) { return e.k === k && e.at > cut; });
+    var out = { n: xs.length, time: "", dur: 0, real: false };
+    if (xs.length >= 2) {
+      var md = median(xs.map(function (e) { return e.m; })), near = xs.filter(function (e) { return Math.abs(e.m - md) <= 75; }).length;
+      if (near / xs.length >= .6) out.time = hmOf(md);
+    }
+    var real = S.focusLog.filter(function (e) { var t = taskById(e.taskId); return t && kindKey(t.title) === k && e.mins >= 5; }).map(function (e) { return e.mins; });
+    var ds = xs.map(function (e) { return e.d; }).filter(function (d) { return d > 0; });
+    if (real.length >= 2) { out.dur = Math.max(5, Math.round(median(real) / 5) * 5); out.real = true; }
+    else if (ds.length >= 2) out.dur = median(ds);
+    return out.time || out.dur ? out : null;
+  }
+  function todayAt(hm, base) { var d = base || new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate(), +hm.slice(0, 2), +hm.slice(3)).getTime(); }
+  // A new task with no time gets the time you usually do it, when the pattern is clear. Never over a class.
+  function autoTime(d) {
+    if (d.time || d.anchor) return "";
+    var L = learned(kindKey(d.title)); if (!L) return "";
+    var did = "";
+    if (L.dur && !d.dur) { d.dur = L.dur; d.sugg.dur = L.real ? "real" : "usual"; did = "length"; }
+    if (L.time && (d.repeat !== "once" || !d.date || d.date === dayKey())) {
+      var now = new Date(), tm = L.time, at = todayAt(tm, now);
+      if (d.repeat === "once" && at < now.getTime()) at = todayAt(tm, addDays(now, 1));
+      var day = new Date(at), clash = blockSpans(day).filter(function (s) { return at < s[1] && at + (d.dur || 30) * 60000 > s[0]; })[0];
+      if (clash) { at = clash[1]; tm = pad(new Date(at).getHours()) + ":" + pad(new Date(at).getMinutes()); }
+      d.time = tm; d.sugg.time = "usual";
+      if (d.repeat === "once") d.date = dayKey(new Date(at));
+      did = "time";
+    }
+    return did;
+  }
+  // Fixed parts of your week, like classes. They aren't tasks to tick, but nothing gets planned on top of them.
+  function blocksOn(d) { var w = d.getDay(); return S.blocks.filter(function (b) { return b.days.indexOf(w) >= 0; }); }
+  function blockSpans(d) { var base = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); return blocksOn(d).map(function (b) { return [base + minsOf(b.start) * 60000, base + minsOf(b.end) * 60000, b]; }); }
+  var DAY_WORDS = { sun: 0, sunday: 0, sundays: 0, mon: 1, monday: 1, mondays: 1, tue: 2, tues: 2, tuesday: 2, tuesdays: 2, wed: 3, weds: 3, wednesday: 3, wednesdays: 3, thu: 4, thur: 4, thurs: 4, thursday: 4, thursdays: 4, fri: 5, friday: 5, fridays: 5, sat: 6, saturday: 6, saturdays: 6 };
+  function daysIn(s) {
+    var out = [];
+    if (/\bweekdays?\b/.test(s)) out = [1, 2, 3, 4, 5];
+    if (/\b(?:every ?day|daily)\b/.test(s)) out = [0, 1, 2, 3, 4, 5, 6];
+    s.split(/[\s,/&]+/).forEach(function (w) {
+      if (DAY_WORDS[w] != null) { out.push(DAY_WORDS[w]); return; }
+      // MWF, TTh, TR, MW
+      if (w.length >= 2 && /^(?:m|tu|th|t|w|r|f)+$/.test(w)) {
+        var re = /th|tu|m|t|w|r|f/g, x, got = [];
+        while ((x = re.exec(w))) got.push({ m: 1, tu: 2, t: 2, w: 3, th: 4, r: 4, f: 5 }[x[0]]);
+        out = out.concat(got);
+      }
+    });
+    return out.filter(function (x, i, a) { return a.indexOf(x) === i; }).sort();
+  }
+  function hm24(h, m, ap) { h = +h; m = +(m || 0); if (ap === "pm" && h < 12) h += 12; if (ap === "am" && h === 12) h = 0; return h <= 23 && m <= 59 ? pad(h) + ":" + pad(m) : ""; }
+  function parseBlock(text) {
+    var s = normText(text).toLowerCase().replace(/[.!]+$/, "");
+    if (!/\b(?:class|classes|lecture|lab|seminar|shift|school|tutorial|recitation|section)\b/.test(s)) return null;
+    if (/\b(?:study|studying|report|homework|hw|assignment|due|prep|review|finish|read|essay|exam|quiz|test|notes)\b/.test(s)) return null;
+    var tm = s.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(?:-|–|to|until|till)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/);
+    if (!tm) return null;
+    var days = daysIn(s.replace(tm[0], " ")); if (!days.length) return null;
+    var a1 = tm[3], a2 = tm[6];
+    if (!a1 && a2) a1 = +tm[1] > +tm[4] && a2 === "pm" ? "am" : a2;
+    if (!a1 && !a2) { a1 = +tm[1] < 8 ? "pm" : "am"; a2 = +tm[4] < 8 || +tm[4] < +tm[1] ? "pm" : a1; }
+    if (!a2) a2 = a1;
+    var st = hm24(tm[1], tm[2], a1), en = hm24(tm[4], tm[5], a2);
+    if (!st || !en || minsOf(en) <= minsOf(st)) return null;
+    var title = s.replace(tm[0], " ").split(/\s+/).filter(function (w) { return w && DAY_WORDS[w] == null && !(w.length >= 2 && /^(?:m|tu|th|t|w|r|f)+$/.test(w)) && !/^(?:my|every|on|from|at|and|is|are|weekdays?|daily|everyday|i|have)$/.test(w); }).join(" ").trim();
+    return { title: cap(title || "Class").slice(0, 60), days: days, start: st, end: en };
+  }
+  function blockLabel(b) { return b.days.map(function (d) { return DOW[d]; }).join(", ") + " " + hmText(b.start) + "–" + hmText(b.end); }
+  function addBlock(b) {
+    var nb = { id: newId(), title: b.title, days: b.days, start: b.start, end: b.end };
+    S.blocks.push(nb); save();
+    toast("Added to your week: " + nb.title + " · " + blockLabel(nb) + ". Nothing gets planned on top of it.", 7000, { label: "Undo", fn: function () { S.blocks = S.blocks.filter(function (x) { return x.id !== nb.id; }); save(); render(false); toast("Removed."); } });
+    return nb;
+  }
+  // Two open times today that fit the task, after anything timed and around classes.
+  function freeSlots(t) {
+    var now = new Date(), mins = t.dur || 30, out = [], after = now.getTime() + 15 * 60000, last = todayAt("23:00", now);
+    for (var i = 0; i < 2; i++) {
+      var s = nextFree(0, after, mins); if (!s) break;
+      var at = todayAt(s, now); if (at + mins * 60000 > last) break;
+      out.push(s); after = at + (mins + 90) * 60000;
+    }
+    return out;
+  }
+  function slotRow(t) {
+    if (t.time || t.repeat !== "once" || !inToday(t) || isDone(t) || t.anchor) return null;
+    var sl = freeSlots(t); if (!sl.length) return null;
+    return h("div", { class: "askq", id: "slots", role: "group", "aria-labelledby": "slots-q" },
+      h("p", { class: "qt", id: "slots-q", text: "Free " + (S.blocks.length ? "around your classes" : "today") + ". Pick a time?" }),
+      h("div", { class: "row" }, sl.map(function (s, i) {
+        return h("button", { class: "chip", type: "button", id: "slot-" + i, onclick: function () { pushHist("time"); t.time = s; t.date = dayKey(); logHabit(t, "set"); save(); if (S.asst && S.asst.editing === t.id) S.asst.d = taskToDraft(t); toast(t.title + " at " + hmText(s) + "."); render(false); } }, hmText(s));
+      }), h("button", { class: "chip", type: "button", id: "slot-any", onclick: function () { t.anyTime = true; save(); render(false); } }, "Any time")));
+  }
+  // The line at the top: what's happening now and what's next.
+  function nowNext(now) {
+    var ms = now.getTime(), spans = blockSpans(now);
+    var cur = spans.filter(function (s) { return s[0] <= ms && ms < s[1]; })[0];
+    var items = S.tasks.filter(function (t) { return t.time && inToday(t, now) && !isDone(t, now); }).map(function (t) { return { at: dueAt(t, now), title: t.title, dur: t.dur }; })
+      .concat(spans.map(function (s) { return { at: s[0], title: s[2].title, end: s[1] }; }))
+      .filter(function (x) { return x.at !== null && x.at > ms; }).sort(function (a, b) { return a.at - b.at; });
+    var nx = items[0];
+    if (!cur && !nx) return null;
+    var inT = function (at) { var m = Math.round((at - ms) / 60000); return m < 60 ? "in " + m + " min" : "in " + durText(m); };
+    return h("p", { class: "nownext", id: "nownext" },
+      cur ? h("span", { class: "nn-now" }, h("b", { text: "Now " }), cur[2].title + " until " + fmtTime(cur[1])) : null,
+      nx ? h("span", { class: "nn-next" }, h("b", { text: "Next " }), nx.title + " at " + fmtTime(nx.at) + " (" + inT(nx.at) + ")") : null);
+  }
+
+  // ============ things you count: sugars, water, eggs ============
+  var NUMW = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, another: 1 };
+  function singular(w) { w = String(w || "").toLowerCase().trim(); return w.replace(/(?:ies)$/, "y").replace(/(ches|shes|sses|xes)$/, function (m) { return m.slice(0, -2); }).replace(/([^s])s$/, "$1"); }
+  function counterBy(name) { var n = singular(name); return S.counters.filter(function (c) { var c1 = singular(c.name); return c1 === n || c1.split(" ")[0] === n; })[0] || null; }
+  function countOf(id, k) { var d = S.countLog[k || dayKey()]; return d && d[id] || 0; }
+  function bump(c, n) {
+    var k = dayKey(), d = S.countLog[k] || (S.countLog[k] = {});
+    d[c.id] = Math.max(0, (d[c.id] || 0) + n); save();
+    var v = d[c.id], over = c.limit && v > c.limit;
+    if (n > 0) haptic(over ? "warn" : "tick");
+    return v;
+  }
+  function addCounter(name, limit) {
+    name = cap(String(name).trim().replace(/[.!]+$/, "")).slice(0, 30); if (!name) return null;
+    var ex = counterBy(name); if (ex) { if (limit) ex.limit = limit; return ex; }
+    var c = { id: newId(), name: name, limit: Math.max(0, Math.min(99, Math.floor(+limit || 0))) };
+    S.counters.push(c); return c;
+  }
+  function countLine(c) { var v = countOf(c.id); return c.name + ": " + v + (c.limit ? " of " + c.limit + " max" : "") + " today"; }
+  function countCommand(text) {
+    var s = normText(text).toLowerCase().replace(/[.!]+$/, "").trim(), m;
+    m = s.match(/^(?:track|count|start tracking|start counting|log)\s+(?:my\s+|how many\s+)?([a-z][a-z ]{1,28}?)(?:\s*,?\s*(?:max|limit|at most|no more than|under)\s+(\d{1,2})(?:\s*(?:a|per)\s*day)?)?$/);
+    if (m && !/\b(?:pages?|calories)\b/.test(m[1])) {
+      var c = addCounter(m[1].replace(/\s+i (?:have|eat|drink)$/, ""), m[2]); if (!c) return false;
+      save(); toast("Counting " + c.name + (c.limit ? ", max " + c.limit + " a day" : "") + ". Tap it on Today, or type “had a " + singular(c.name) + "”.", 7000); return true;
+    }
+    m = s.match(/^(?:i\s+)?(?:just\s+)?(?:had|ate|drank|did|took|smoked|got)\s+(a|an|one|two|three|four|five|six|another|\d{1,2})?\s*(?:more\s+)?([a-z][a-z ]{1,28})$/)
+      || s.match(/^\+\s*(\d{1,2})?\s*([a-z][a-z ]{1,28})$/) || s.match(/^()([a-z][a-z ]{1,28}?)\s*\+\s*(\d{1,2})?$/);
+    if (!m) return false;
+    var cc = counterBy(m[2]); if (!cc) return false;
+    var n = m[3] ? +m[3] : m[1] ? (NUMW[m[1]] || +m[1] || 1) : 1, v = bump(cc, n);
+    toast(cc.name + ": " + v + " today" + (cc.limit && v > cc.limit ? ". That's over your " + cc.limit + "; no shame, just noticing." : cc.limit ? " of " + cc.limit + "." : "."), 6000, { label: "Undo", fn: function () { bump(cc, -n); render(false); toast("Undone."); } });
+    return true;
+  }
+  function countsRow() {
+    if (!S.counters.length) return null;
+    return h("div", { class: "cntwrap", id: "counts" }, S.counters.map(function (c) {
+      var v = countOf(c.id), over = c.limit && v > c.limit;
+      return h("div", { class: "cnt" + (over ? " over" : "") },
+        h("button", { class: "cntbtn", type: "button", id: "cnt-" + c.id, "aria-label": countLine(c) + ". Add one.", onclick: function () { var x = bump(c, 1); render(false); announce(c.name + " " + x); } },
+          h("span", { class: "cn", text: c.name }), h("b", { class: "cv", text: String(v) + (c.limit ? "/" + c.limit : "") }), icon("plus")),
+        v ? h("button", { class: "cntminus", type: "button", id: "cnt-" + c.id + "-minus", "aria-label": "One less " + c.name, onclick: function () { bump(c, -1); render(false); } }, "−") : null);
+    }));
+  }
+
+  // ============ hard hours: when urges usually come ============
+  function logUrge(via) { S.urges.push({ at: Date.now(), via: str(via, 10) }); if (S.urges.length > 300) S.urges.shift(); }
+  function hardHours() {
+    var cut = Date.now() - 45 * 864e5, ev = S.urges.filter(function (e) { return e.at > cut; });
+    if (ev.length < 3) return null;
+    var cnt = []; for (var i = 0; i < 24; i++) cnt.push(0);
+    ev.forEach(function (e) { cnt[new Date(e.at).getHours()]++; });
+    var best = 0, bn = 0;
+    for (var hh = 0; hh < 24; hh++) { var n = cnt[hh] + cnt[(hh + 1) % 24]; if (n > bn || (n === bn && cnt[hh] > cnt[best])) { bn = n; best = hh; } }
+    var days = {};
+    ev.forEach(function (e) { var x = new Date(e.at).getHours(); if (x === best || x === (best + 1) % 24) days[dayKey(new Date(e.at))] = 1; });
+    var nd = Object.keys(days).length;
+    if (nd < 3 || bn / ev.length < .4) return null;
+    return { start: best, days: nd, total: ev.length };
+  }
+  function hourText(hh) { return fmtTime(new Date(2000, 0, 1, hh, 0).getTime()).replace(":00", ""); }
+  function hardLabel(w) { return hourText(w.start) + "–" + hourText((w.start + 2) % 24); }
+  // 45 minutes before the window, through its end
+  function nearHard(w, now) { var d = ((now.getHours() * 60 + now.getMinutes() - w.start * 60) % 1440 + 1440) % 1440; return d >= 1440 - 45 || d < 120; }
+  function hardCard(now) {
+    var w = hardHours(); if (!w || !nearHard(w, now) || skipped("hard")) return null;
+    var plan = S.profile.step || defaultStep();
+    return h("section", { class: "card hard", id: "hard-card", "aria-labelledby": "hard-h" },
+      h("p", { class: "lbl", id: "hard-h" }, icon("moon"), " Your hard hours"),
+      h("p", { class: "status", text: hardLabel(w) + " is usually the hardest part of your day." }),
+      h("p", { class: "small", text: "It came up on " + w.days + " different days in the last six weeks. Get ahead of it: " + plan }),
+      h("div", { class: "row" },
+        h("button", { class: "btn primary", type: "button", id: "hard-breathe", onclick: function () { go("breathe"); } }, "Breathe 3 min"),
+        h("button", { class: "btn", type: "button", id: "hard-stay", onclick: function () { openSupport("hard", "stay"); } }, "Stay with me"),
+        h("button", { class: "btn link", type: "button", id: "hard-later", onclick: function () { notNow("hard"); } }, "Not now")),
+      S.topics.reminders ? h("label", { class: "toggle", for: "hard-ping" }, h("input", { type: "checkbox", id: "hard-ping", checked: !!S.hardPing, onchange: function (e) { S.hardPing = e.target.checked; S.hardPinged = ""; save(); pingHard(); render(false); } }),
+        h("span", { text: "Heads-up on my phone 15 minutes before, on days I open Ten Days" })) : null);
+  }
+  // A scheduled ntfy message to your own reminders channel. It only gets scheduled on days you open the app.
+  function pingHard() {
+    var w = hardHours(); if (!S.hardPing || !w || !S.topics.reminders || S.hardPinged === dayKey()) return;
+    var now = new Date(), at = new Date(now.getFullYear(), now.getMonth(), now.getDate(), w.start, 0).getTime() - 15 * 60000, wait = at - Date.now();
+    if (wait < 120e3) return;
+    S.hardPinged = dayKey(); save();
+    ntfy(S.topics.reminders, { title: "Heads-up", priority: "4", tags: "crescent_moon", delay: String(Math.floor(wait / 1000)) }, "The next couple of hours are usually hard. Your plan: " + (S.profile.step || defaultStep()))
+      .then(function (r) { if (!r.ok) { S.hardPinged = ""; save(); } });
+  }
+
+  // ============ you and your brother: shared daily status, messages ============
+  // Each phone posts a small summary of its day to its own private ntfy channel; the other phone reads it.
+  // No accounts and no server of ours. Anyone with the channel name can read it, so names are random and long.
+  function hisName() { return S.partner.name || "him"; }
+  function HisName() { return S.partner.name || "Him"; }
+  function myStatus() {
+    var now = new Date(), st = todayStats(now), ck = checkedToday();
+    var open = S.tasks.filter(function (t) { return inToday(t, now) && !isDone(t, now); });
+    var o = { v: 1, n: S.name || "", at: Date.now(), day: dayKey(now), t: [st.done, st.total], c: [ck.length, S.checkins.length], f: focusToday(),
+      k: S.counters.slice(0, 8).map(function (c) { return [c.name, countOf(c.id), c.limit || 0]; }) };
+    if (S.share.names) { o.o = open.slice(0, 6).map(function (t) { return t.private ? "Private task" : t.title; }); o.ck = S.checkins.slice(0, 12).map(function (c) { return [c.text, ck.indexOf(c.id) >= 0 ? 1 : 0]; }); }
+    return o;
+  }
+  function cleanStatus(d) {
+    d = obj(d); if (!d || d.v !== 1) return null;
+    var pair = function (a) { return Array.isArray(a) ? [Math.max(0, Math.floor(+a[0] || 0)), Math.max(0, Math.floor(+a[1] || 0))] : [0, 0]; };
+    return { n: str(d.n, 40), at: +d.at || 0, day: DATE_RE.test(d.day || "") ? d.day : "", t: pair(d.t), c: pair(d.c), f: Math.max(0, Math.floor(+d.f || 0)),
+      k: (Array.isArray(d.k) ? d.k : []).filter(Array.isArray).slice(0, 8).map(function (x) { return [str(x[0], 30), Math.max(0, Math.floor(+x[1] || 0)), Math.max(0, Math.floor(+x[2] || 0))]; }).filter(function (x) { return x[0]; }),
+      o: (Array.isArray(d.o) ? d.o : []).slice(0, 6).map(function (x) { return str(x, 80); }).filter(Boolean),
+      ck: (Array.isArray(d.ck) ? d.ck : []).filter(Array.isArray).slice(0, 12).map(function (x) { return [str(x[0], 60), x[1] ? 1 : 0]; }).filter(function (x) { return x[0]; }) };
+  }
+  var stT = 0, stLast = 0, stBusy = false;
+  function queueStatus() {
+    if (!S.share || !S.share.on || !S.share.topic) return;
+    clearTimeout(stT); stT = setTimeout(sendStatus, Math.max(4000, 45000 - (Date.now() - stLast)));
+  }
+  function sendStatus(force) {
+    if (!S.share.on || !S.share.topic || stBusy) return Promise.resolve(false);
+    var body = JSON.stringify(myStatus()), key = body.replace(/"at":\d+,/, "");
+    if (!force && key === S.share.sent && Date.now() - S.share.at < 3 * 3600e3) return Promise.resolve(true);
+    stLast = Date.now(); stBusy = true;
+    return ntfy(S.share.topic, { title: "Ten Days status", priority: "1" }, body).then(function (r) {
+      stBusy = false;
+      if (r.ok) { S.share.at = Date.now(); S.share.sent = key; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+      if (ui.screen === "people") render(false);
+      return r.ok;
+    });
+  }
+  var ppT = null;
+  function pollPartner() {
+    var P = S.partner; if (!P.topic || !navigator.onLine || document.hidden) return Promise.resolve();
+    return fetch(NTFY + encodeURIComponent(P.topic) + "/json?poll=1&since=12h").then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
+      var best = null;
+      String(t || "").split("\n").forEach(function (line) {
+        if (!line.trim()) return;
+        try { var m = JSON.parse(line); if (m.event !== "message" || typeof m.time !== "number") return; var d = cleanStatus(JSON.parse(m.message)); if (d && (!best || m.time > best.time)) best = { time: m.time, d: d }; } catch (e) {}
+      });
+      P.checked = Date.now();
+      if (best && best.time * 1000 > (P.at || 0)) { P.last = best.d; P.at = best.time * 1000; if (!S.partner.name && best.d.n) S.partner.name = best.d.n; save(); if (ui.screen === "people" || ui.screen === "you" || ui.screen === "home") render(false); }
+    }).catch(function () {});
+  }
+  function schedulePartner() { clearTimeout(ppT); if (document.hidden || !S.partner.topic) return; ppT = setTimeout(function () { pollPartner().then(schedulePartner); }, ui.screen === "people" ? 20000 : 120000); }
+  function ensureShare() { if (!S.share.topic) { S.share.topic = randomTopic("ts-"); save(); } }
+  function myLink() {
+    ensureShare();
+    var q = "pair=1&s=" + encodeURIComponent(S.share.topic) + (S.topics.replies ? "&r=" + encodeURIComponent(S.topics.replies) : "") + (S.name ? "&n=" + encodeURIComponent(S.name) : "");
+    return location.origin + location.pathname + "#" + q;
+  }
+  function readPair(text) {
+    var s = String(text || "").trim(), i = s.indexOf("#"); if (i >= 0) s = s.slice(i + 1);
+    var p = {}; s.split("&").forEach(function (kv) { var j = kv.indexOf("="); if (j > 0) { try { p[kv.slice(0, j)] = decodeURIComponent(kv.slice(j + 1)); } catch (e) {} } });
+    if (!TOPIC_RE.test(p.s || "") || p.s === S.share.topic) return null;
+    return { s: p.s, r: TOPIC_RE.test(p.r || "") && KEYS.every(function (k) { return S.topics[k] !== p.r; }) ? p.r : "", n: str(p.n || "", 40).trim() };
+  }
+  function follow(p) {
+    S.partner.topic = p.s; if (p.r) S.partner.inbox = p.r; if (p.n) S.partner.name = p.n;
+    S.partner.last = null; S.partner.at = 0; save();
+    pollPartner().then(schedulePartner);
+  }
+  // "Tell Audi I finished the layout" → his phone, after a 4-second chance to undo
+  var msgT = null;
+  function sendMsg(body) {
+    var topic = S.partner.inbox || S.topics.alert, who = hisName();
+    if (!topic) { toast("Set up his phone first, then I can message him.", 6000); go("people"); return; }
+    clearTimeout(msgT);
+    var m = { at: Date.now(), text: body.slice(0, 300), ok: null };
+    ui.msgPending = m;
+    toast("To " + who + ": “" + m.text + "”", 4000, { label: "Undo", fn: function () { clearTimeout(msgT); ui.msgPending = null; toast("Not sent."); render(false); } });
+    msgT = setTimeout(function () {
+      ui.msgPending = null;
+      ntfy(topic, { title: S.name || "Ten Days", priority: "3", tags: "speech_balloon" }, m.text).then(function (r) {
+        m.ok = r.ok; S.msgs.push(m); if (S.msgs.length > 40) S.msgs.shift(); save();
+        toast(r.ok ? "Sent to " + who + "." : "Not sent to " + who + ". " + whyText(r.why), 5000);
+        render(false);
+      });
+    }, 4000);
+  }
+  function msgCommand(text) {
+    var s = normText(text).replace(/[ \t]+/g, " ").trim();
+    var names = ["my brother", "brother", "bro", "him"].concat(S.partner.name ? [S.partner.name.toLowerCase().replace(/[^a-z0-9 ]/g, "")] : []);
+    var who = "(" + names.filter(Boolean).join("|") + ")";
+    var m = s.match(new RegExp("^(?:tell|text|message|msg|ping|send) " + who + "(?: (?:a )?(?:message|text|msg))?[,:]?\\s+(?:that\\s+)?(.{1,300})$", "i"))
+      || s.match(new RegExp("^let " + who + " know(?: that)?[,:]?\\s+(.{1,300})$", "i"));
+    if (!m) return false;
+    var body = m[2].trim().replace(/^["“]|["”]$/g, "");
+    if (!body) return false;
+    // "tell him I need him" is the check-in, not a message
+    if (/^i need (?:him|you)\b/i.test(body)) { onSOS(null, true); return "nav"; }
+    sendMsg(cap(body));
+    return true;
+  }
+  function ago(ms) { var m = Math.round((Date.now() - ms) / 60000); return m < 1 ? "just now" : m < 60 ? m + " min ago" : m < 1440 ? Math.round(m / 60) + " h ago" : fmtDate(ms); }
+  function statBar(label, a, b, id) {
+    return h("div", { class: "sbar2", id: id }, h("span", { class: "sl", text: label }), h("span", { class: "track", "aria-hidden": "true" }, h("i", { style: "width:" + (b ? Math.round(100 * Math.min(1, a / b)) : 0) + "%" })), h("b", { text: b ? a + " of " + b : "—" }));
+  }
+  function statusView(d, idp, live) {
+    var today = d.day === dayKey();
+    return h("div", { class: "pstat" },
+      !today ? h("p", { class: "small", text: "This is from " + (d.day ? fmtDate(parseDay(d.day).getTime()) : "earlier") + "." }) : null,
+      statBar("Tasks", d.t[0], d.t[1], idp + "-tasks"),
+      d.c[1] ? statBar("Check-ins", d.c[0], d.c[1], idp + "-checks") : null,
+      d.k.length ? h("div", { class: "pcounts", id: idp + "-counts" }, d.k.map(function (x) { return h("span", { class: "pc" + (x[2] && x[1] > x[2] ? " over" : "") }, x[0] + " ", h("b", { text: String(x[1]) + (x[2] ? "/" + x[2] : "") })); })) : null,
+      h("p", { class: "small", text: "Focus " + (d.f ? durText(d.f) : "none yet") + (live ? "" : "") }),
+      d.o.length ? h("ul", { class: "plist" }, d.o.map(function (x) { return h("li", { text: x }); })) : null,
+      d.ck.length ? h("div", { class: "pcounts" }, d.ck.map(function (x) { return h("span", { class: "pc" + (x[1] ? " ok" : "") }, x[1] ? icon("check") : icon("circle"), " " + x[0]); })) : null);
+  }
+  function partnerSummary() {
+    var P = S.partner;
+    if (!P.topic) return S.partner.name ? "Messages to " + S.partner.name : "See his day and message him";
+    if (!P.last) return "Waiting for his first update";
+    return (P.last.day === dayKey() ? P.last.t[0] + " of " + P.last.t[1] + " tasks" : "No update today") + " · " + ago(P.at);
+  }
+  var SOS_WAITS = [[3, "3 seconds"], [60, "1 minute"], [120, "2 minutes"], [300, "5 minutes"], [0, "Only when I tap"]];
+
   var SCREENS = {
     a2hs: function () {
       return { title: "Add Ten Days to your Home Screen", body: [
@@ -4519,12 +4957,14 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         h("button", { class: "topline", type: "button", id: "strip", onclick: function () { go("progress"); }, "aria-label": now.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }) + ". " + (st0.total ? st0.done + " of " + st0.total + " done today" : "Nothing on today's list") + (S.fx.rpg ? ". Level " + L.level : "") + ". Open Progress" },
           h("span", { class: "ring", "aria-hidden": "true", style: "--p:" + p }), h("span", { class: "tl-date", "aria-hidden": "true", id: "today-date", text: now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }) }),
           h("span", { class: "tl-stat", "aria-hidden": "true", text: (st0.total ? st0.done + " of " + st0.total + " done" : "A clear day") + (S.fx.rpg ? " · Lv " + L.level : "") })),
+        nowNext(now),
         S.lastReply && Date.now() - S.lastReply.at < 12 * 3600e3 ? h("p", { class: "pill", id: "status-line", text: statusLine() }) : null,
         form,
         !S.tasks.length && !S.asst ? h("p", { class: "small", id: "qa-hint", text: "Type or tap the mic and say it all: “Groceries after class, call Mom, gym at 6.” Ten Days sorts it." }) : h("span", { id: "qa-hint", hidden: true, text: "Tasks, plans, thoughts, or how you feel." }),
         recCard(),
         asstView(),
         alertCard,
+        hardCard(now),
         intakePrompt(),
         doFirstCard(now),
         orgLine(),
@@ -4665,25 +5105,30 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       var item = function (id, ic, label, hint, to) {
         return h("button", { class: "btn", type: "button", id: id, onclick: function () { go(to); } }, h("span", { class: "ihead" }, icon(ic), h("span", { text: label })), hint ? h("span", { class: "hint", text: hint }) : null);
       };
-      var sect = function (id, label, kids) { return h("section", { class: "group", "aria-labelledby": id }, h("h2", { class: "sect-h", id: id, text: label }), h("div", { class: "group morelist" }, kids)); };
-      var nImg = S.collection.length, habit = S.profile.habit || (HABITS.filter(function (x) { return x[0] === S.profile.habitKey; })[0] || [])[1];
+      var sect = function (id, label, kids, cls) { return h("section", { class: "group", "aria-labelledby": id }, h("h2", { class: "sect-h", id: id, text: label }), h("div", { class: "group morelist" + (cls ? " " + cls : "") }, kids)); };
+      var nImg = S.collection.length, habit = S.profile.habit || (HABITS.filter(function (x) { return x[0] === S.profile.habitKey; })[0] || [])[1], P = S.partner;
       return { title: "You", body: [
-        h("p", { class: "sub", text: "Everything here stays on this phone unless a screen says otherwise." }),
+        h("button", { class: "card pteaser", type: "button", id: "y-people", onclick: function () { go("people"); } },
+          h("span", { class: "pav", "aria-hidden": "true", text: (P.name || "B").charAt(0).toUpperCase() }),
+          h("span", { class: "pt-main" }, h("b", { text: P.name ? "You and " + P.name : "You and your brother" }), h("span", { class: "hint", id: "y-people-hint", text: partnerSummary() }))),
         sect("y-s1", "Support", [
-          item("y-me", "heart", "What I'm working on", habit ? habit + " · " + cap(S.profile.style) + " support" : "Your habit, your reasons, how I talk to you", "me-support"),
-          item("y-col", "image", "My reminders", nImg ? nImg + (nImg === 1 ? " item" : " items") : "Photos, quotes and words that help", "collection"),
-          item("y-lib", "file", "Library", S.docs.length ? S.docs.length + (S.docs.length === 1 ? " document" : " documents") + " · " + S.cards.length + " cards" : "Turn a PDF into support cards", "library")]),
-        sect("y-s2", "Check-in", [item("y-checkin", "phone", "Check-in with him", statusLine(), "checkin")]),
-        sect("y-s3", "Tasks", [
+          item("y-me", "heart", "Working on", habit ? habit : "Habit, reasons, voice", "me-support"),
+          item("y-ck", "check", "Check-ins & counts", S.checkins.length + S.counters.length ? S.checkins.length + " check-ins · " + S.counters.length + " counts" : "Daily ticks, sugars…", "checkins"),
+          item("y-col", "image", "My reminders", nImg ? nImg + (nImg === 1 ? " item" : " items") : "Photos and words", "collection"),
+          item("y-lib", "file", "Library", S.docs.length ? S.docs.length + (S.docs.length === 1 ? " book" : " books") + " · " + S.cards.length + " cards" : "Your PDFs", "library")], "grid2"),
+        sect("y-s3", "Plan", [
           item("y-tasks", "list", "All tasks", S.tasks.length + (S.tasks.length === 1 ? " task" : " tasks"), "m-tasks"),
-          item("y-goals", "flag", "Goals and starter tasks", S.goals.map(function (g) { return (GOALS.filter(function (x) { return x[0] === g; })[0] || [])[1]; }).filter(Boolean).join(", ") || "None", "m-goals"),
-          item("y-notes", "note", "Notes", S.notes.length ? S.notes.length + (S.notes.length === 1 ? " note" : " notes") : "Thoughts that aren't tasks", "notes"),
-          item("y-contacts", "people", "Contacts", S.contacts.length ? S.contacts.length + " saved" : "Import or type them in", "contacts")]),
-        sect("y-s4", "App", [
-          item("y-mem", "brain", "What Ten Days remembers", S.memory.length ? S.memory.length + (S.memory.length === 1 ? " thing" : " things") : "Nothing yet", "memory"),
-          item("y-ai", "brain", "AI helper (Gemini)", !aiKey() ? "Off · add your free key" : S.ai.agreed ? "On · " + (S.ai.day === dayKey() ? S.ai.count : 0) + " requests today" : "Key saved · not turned on", "ai-set"),
-          item("y-feel", "sparkle", "Motion, sound and haptics", ["Motion " + { system: "follows your phone", on: "on", off: "reduced" }[S.fx.motion], S.fx.sound ? "sound on" : "sound off", S.haptics === false ? "haptics off" : "haptics on"].join(" · "), "feel"),
-          item("y-data", "shield", "Your data", "Backup, restore, delete", "data")])
+          item("y-routine", "clock", "Your week", S.blocks.length ? S.blocks.length + (S.blocks.length === 1 ? " class" : " classes") : "Classes, fixed times", "routine"),
+          item("y-notes", "note", "Notes", S.notes.length ? S.notes.length + (S.notes.length === 1 ? " note" : " notes") : "Thoughts", "notes"),
+          item("y-contacts", "people", "Contacts", S.contacts.length ? S.contacts.length + " saved" : "Numbers to call", "contacts")], "grid2"),
+        sect("y-s4", "Settings", [
+          item("y-checkin", "phone", "His phone", statusLine(), "checkin"),
+          item("y-ai", "brain", "AI helper", !aiKey() ? "Off · add your free key" : S.ai.agreed ? "On · " + (S.ai.day === dayKey() ? S.ai.count : 0) + " today" : "Key saved · off", "ai-set"),
+          item("y-feel", "sparkle", "Motion, sound, haptics", null, "feel"),
+          item("y-mem", "brain", "What Ten Days remembers", S.memory.length ? S.memory.length + (S.memory.length === 1 ? " thing" : " things") : null, "memory"),
+          item("y-goals", "flag", "Goals", null, "m-goals"),
+          item("y-data", "shield", "Your data", "Backup, restore, delete", "data")], "compact"),
+        h("p", { class: "small", text: "Everything stays on this phone unless a screen says otherwise." })
       ] };
     },
     support: function () {
@@ -5152,13 +5597,26 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       var inp = h("input", { type: "text", id: "ck-new", maxlength: "60", autocomplete: "off", placeholder: "Like “Breathwork, 5 minutes”" });
       var about = h("textarea", { id: "ck-about", rows: "4", maxlength: "3000", placeholder: "What you like, what calms you, your routines, what you struggle with…" });
       var ideas = CHECK_IDEAS.filter(function (x) { return !S.checkins.some(function (c) { return c.text.toLowerCase() === x.toLowerCase(); }); });
-      return { title: "Daily check-ins", body: [
+      return { title: "Check-ins & counts", body: [
         h("p", { text: "Not tasks: a short list you tick each day, like “Did you do your breathwork today?”" }),
         S.checkins.length ? h("div", { class: "group", id: "ck-list" }, S.checkins.map(function (c) {
           return h("div", { class: "row ckrow" }, h("span", { text: c.text }), h("button", { class: "btn link", type: "button", "data-ck-del": c.id, onclick: function () { var i = S.checkins.indexOf(c); S.checkins.splice(i, 1); save(); toast("Removed.", 5000, { label: "Undo", fn: function () { S.checkins.splice(i, 0, c); save(); render(false); } }); render(false); } }, "Remove"));
         })) : h("p", { class: "empty", text: "No check-ins yet." }),
         h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); if (addCheckins([inp.value])) { inp.value = ""; save(); render(false); } else toast("Type a new one first."); } }, h("label", { class: "sr-only", for: "ck-new", text: "New check-in" }), inp, h("button", { class: "btn", type: "submit", id: "ck-add" }, "Add")),
         ideas.length ? h("div", { class: "row", id: "ck-ideas" }, ideas.slice(0, 8).map(function (x, i) { return h("button", { class: "chip sm", type: "button", id: "ck-idea-" + i, onclick: function () { addCheckins([x]); save(); render(false); } }, "+ " + x); })) : null,
+        h("h2", { class: "sect-h", id: "cnt-h", text: "Things to count" }),
+        h("p", { class: "small", text: "Sugars, coffees, glasses of water. Tap one on Today to add 1, or type “had a sugar”." }),
+        S.counters.length ? h("div", { class: "group", id: "cnt-list" }, S.counters.map(function (c) {
+          return h("div", { class: "row ckrow" }, h("span", { text: c.name + (c.limit ? " · max " + c.limit + " a day" : "") }), h("button", { class: "btn link", type: "button", "data-cnt-del": c.id, onclick: function () { var i = S.counters.indexOf(c); S.counters.splice(i, 1); save(); toast("Removed.", 5000, { label: "Undo", fn: function () { S.counters.splice(i, 0, c); save(); render(false); } }); render(false); } }, "Remove"));
+        })) : null,
+        (function () {
+          var cn = h("input", { type: "text", id: "cnt-new", maxlength: "30", autocomplete: "off", placeholder: "Like Sugar", "aria-label": "What to count" });
+          var cl = h("input", { type: "number", id: "cnt-limit", min: "0", max: "99", inputmode: "numeric", placeholder: "Max", "aria-label": "Daily max (optional)" });
+          return h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); if (!cn.value.trim()) { toast("Type what to count."); return; } addCounter(cn.value, cl.value); save(); render(false); } }, cn, cl, h("button", { class: "btn", type: "submit", id: "cnt-add" }, "Add"));
+        })(),
+        h("div", { class: "row", id: "cnt-ideas" }, [["Sugar", 1], ["Coffee", 2], ["Water", 0], ["Eggs", 0]].filter(function (x) { return !counterBy(x[0]); }).map(function (x, i) {
+          return h("button", { class: "chip sm", type: "button", id: "cnt-idea-" + i, onclick: function () { addCounter(x[0], x[1]); save(); render(false); } }, "+ " + x[0] + (x[1] ? " (max " + x[1] + ")" : ""));
+        })),
         h("h2", { class: "sect-h", text: "Tell Ten Days about you" }),
         h("p", { class: "small", text: aiOn("tasks") ? "Speak or type freely. AI listens for what helps you and suggests check-ins." : "Turn on the AI helper in You to have this turned into check-ins automatically. You can still add them above." }),
         h("div", { class: "row" }, h("button", { class: "btn", type: "button", id: "ck-speak", disabled: !aiOn("tasks"), onclick: function () { go("home"); startRec("intake"); } }, icon("mic"), " Speak (up to 5 min)")),
@@ -5203,21 +5661,110 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         h("p", { class: "small", text: q.by === "ai" ? "Question written by AI from the page." : "Question made from a sentence on the page." })
       ] };
     },
+    people: function () {
+      back("you");
+      var P = S.partner, offer = ui.pairOffer;
+      var msg = h("input", { type: "text", id: "pp-msg", maxlength: "300", autocomplete: "off", autocapitalize: "sentences", enterkeyhint: "send", placeholder: "Message " + hisName() + "…", "aria-label": "Message " + hisName() });
+      var paste = h("input", { type: "text", id: "pp-paste", autocomplete: "off", autocapitalize: "off", spellcheck: "false", placeholder: "Paste his Ten Days link", "aria-label": "His Ten Days link" });
+      var nameIn = h("input", { type: "text", id: "pp-name", value: P.name, maxlength: "40", autocomplete: "off", placeholder: "Like Audi" });
+      var myName = h("input", { type: "text", id: "pp-myname", value: S.name, maxlength: "40", autocomplete: "off", placeholder: "Your first name" });
+      nameIn.addEventListener("change", function () { P.name = nameIn.value.trim().slice(0, 40); save(); render(false); });
+      myName.addEventListener("change", function () { S.name = myName.value.trim().slice(0, 40); save(); queueStatus(); });
+      var lastIn = S.lastReply && Date.now() - S.lastReply.at < 48 * 3600e3 ? S.lastReply : null, lastOut = S.msgs[S.msgs.length - 1] || null;
+      var hh = hardHours();
+      var tog = function (id, on, label, fn) { return h("label", { class: "toggle", for: id }, h("input", { type: "checkbox", id: id, checked: on, onchange: function (e) { fn(e.target.checked); } }), h("span", { text: label })); };
+      return { title: P.name ? "You and " + P.name : "You and your brother", body: [
+        offer ? h("div", { class: "card", id: "pair-offer", role: "group", "aria-labelledby": "pair-q" },
+          h("p", { class: "status", id: "pair-q", text: "Follow " + (offer.n || "this person") + "'s day?" }),
+          h("p", { class: "small", text: "You'll see their tasks, check-ins and counts here." + (offer.r ? " Messages you type to them go to their phone." : "") }),
+          h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "pair-yes", onclick: function () { follow(offer); ui.pairOffer = null; toast("Following " + (offer.n || "them") + "."); render(false); } }, "Follow"),
+            h("button", { class: "btn link", type: "button", id: "pair-no", onclick: function () { ui.pairOffer = null; render(false); } }, "No"))) : null,
+        h("section", { class: "card pcard", id: "pp-his", "aria-labelledby": "pp-his-h" },
+          h("div", { class: "phead" }, h("span", { class: "pav", "aria-hidden": "true", text: (P.name || "B").charAt(0).toUpperCase() }), h("h2", { id: "pp-his-h", text: HisName() }),
+            P.at ? h("span", { class: "small", id: "pp-ago", text: "Updated " + ago(P.at) }) : null),
+          P.topic ? (P.last ? statusView(P.last, "pp-h") : h("p", { class: "small", id: "pp-wait", text: "Connected. His day shows up here once he opens Ten Days and shares it." }))
+            : h("div", { class: "group" }, h("p", { class: "small", text: "To see his day: he opens your link (below) on his phone in Ten Days, turns on sharing, and sends you his link. Paste it here." }),
+              h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); var p = readPair(paste.value); if (!p) { toast("That doesn't look like a Ten Days link."); return; } follow(p); toast("Following " + (p.n || "him") + "."); render(false); } },
+                paste, h("button", { class: "btn", type: "submit", id: "pp-follow" }, "Follow"))),
+          lastIn ? h("p", { class: "msgline", id: "pp-in" }, h("b", { text: HisName() + ": " }), "“" + lastIn.text + "” · " + fmtTime(lastIn.at)) : null,
+          lastOut ? h("p", { class: "msgline", id: "pp-out" }, h("b", { text: "You: " }), "“" + lastOut.text + "” · " + (lastOut.ok ? "sent " : "not sent ") + fmtTime(lastOut.at)) : null,
+          ui.msgPending ? h("p", { class: "small", id: "pp-pending", text: "Sending “" + ui.msgPending.text + "”…" }) : null,
+          h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); var v = msg.value.trim(); if (!v) { toast("Type a message first."); return; } msg.value = ""; sendMsg(v); render(false); } },
+            msg, h("button", { class: "btn", type: "submit", id: "pp-send", "aria-label": "Send to " + hisName() }, icon("send"))),
+          h("div", { class: "row" }, callLink(false), P.topic ? h("button", { class: "btn link", type: "button", id: "pp-refresh", onclick: function () { pollPartner().then(function () { toast(P.last ? "Up to date." : "No update from him in the last 12 hours."); render(false); }); } }, "Refresh") : null,
+            P.topic ? (function () { var sb = confirmBtn("Stop following", "Tap again to stop", function () { S.partner.topic = ""; S.partner.inbox = ""; S.partner.last = null; S.partner.at = 0; save(); render(false); }); sb.classList.add("link"); sb.id = "pp-stop"; return sb; })() : null)),
+        h("section", { class: "card pcard", id: "pp-me", "aria-labelledby": "pp-me-h" },
+          h("div", { class: "phead" }, h("span", { class: "pav me", "aria-hidden": "true", text: (S.name || "Y").charAt(0).toUpperCase() }), h("h2", { id: "pp-me-h", text: "You" }),
+            S.share.on && S.share.at ? h("span", { class: "small", id: "share-ago", text: "Shared " + ago(S.share.at) }) : null),
+          statusView(cleanStatus(myStatus()), "pp-m", true),
+          tog("share-on", S.share.on, "Share my day with " + hisName(), function (v) { S.share.on = v; if (v) ensureShare(); save(); if (v) sendStatus(true); render(false); }),
+          S.share.on ? tog("share-names", S.share.names, "Include task and check-in names", function (v) { S.share.names = v; save(); sendStatus(true); render(false); }) : null,
+          S.share.on ? h("div", { class: "row" }, h("button", { class: "btn", type: "button", id: "share-link", onclick: function () { var l = myLink(); var c = $("share-code"); copyText(l, c); } }, "Copy my link"),
+            h("code", { id: "share-code", class: "small", text: myLink() })) : null,
+          h("p", { class: "small", text: "Shared through ntfy.sh on a long random channel. Anyone who has your link can see these numbers, so send it only to him. Private tasks never show their names." })),
+        h("section", { class: "card", id: "pp-sos", "aria-labelledby": "pp-sos-h" },
+          h("h2", { class: "sect-h", id: "pp-sos-h", text: "When I tap “I need you”" }),
+          h("p", { class: "small", text: "Ten Days stays with you first: breathing, your words, the deck. If you don't stop it, it tells " + hisName() + " after:" }),
+          h("div", { class: "row", id: "sos-wait", role: "group", "aria-labelledby": "pp-sos-h" }, SOS_WAITS.map(function (w) {
+            return h("button", { class: "chip", type: "button", id: "sw-" + w[0], "aria-pressed": S.sosWait === w[0] ? "true" : "false", onclick: function () { S.sosWait = w[0]; save(); render(false); } }, w[1]);
+          })),
+          h("p", { class: "small", text: S.sosWait === 0 ? "It will only tell him when you tap “Tell him”." : "The wait counts while Ten Days is open. If you leave the app, it sends when you come back if the time has passed. It can't place a phone call on its own; his alert has a button to call you." })),
+        hh ? h("p", { class: "pill", id: "pp-hard", text: "Hard hours: " + hardLabel(hh) + " (" + hh.days + " days in the last six weeks)" }) : null,
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "pp-name", text: "His name" }), nameIn),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "pp-myname", text: "Your name (shows on his phone)" }), myName),
+        h("button", { class: "btn", type: "button", id: "pp-setup", onclick: function () { go("checkin"); } }, "His phone: setup and tests")
+      ] };
+    },
+    routine: function () {
+      back("you");
+      var sel = ui.rtDays || (ui.rtDays = []);
+      var title = h("input", { type: "text", id: "rt-title", maxlength: "60", autocomplete: "off", placeholder: "Like ACCT 2301" });
+      var st = h("input", { type: "time", id: "rt-start", value: "10:00" }), en = h("input", { type: "time", id: "rt-end", value: "11:15" });
+      var keys = {}; S.habits.forEach(function (e) { keys[e.k] = 1; });
+      var known = Object.keys(keys).map(function (k) { return [k, learned(k)]; }).filter(function (x) { return x[1]; }).slice(0, 12);
+      return { title: "Your week", body: [
+        h("p", { text: "Classes and other fixed times. They aren't tasks to tick off, but Ten Days plans around them and shows what's on now." }),
+        S.blocks.length ? h("div", { class: "group", id: "rt-list" }, S.blocks.map(function (b) {
+          return h("div", { class: "row ckrow" }, h("span", null, h("b", { text: b.title }), " · " + blockLabel(b)),
+            h("button", { class: "btn link", type: "button", "data-rt-del": b.id, onclick: function () { var i = S.blocks.indexOf(b); S.blocks.splice(i, 1); save(); toast("Removed.", 5000, { label: "Undo", fn: function () { S.blocks.splice(i, 0, b); save(); render(false); } }); render(false); } }, "Remove"));
+        })) : h("p", { class: "empty", text: "Nothing yet. Add a class below, or type it on Today, like “ACCT class MW 10-11:15”." }),
+        h("div", { class: "card" },
+          h("div", { class: "field" }, h("label", { class: "lbl", for: "rt-title", text: "What" }), title),
+          h("p", { class: "lbl", id: "rt-days-l", text: "Days" }),
+          h("div", { class: "row", role: "group", "aria-labelledby": "rt-days-l" }, [1, 2, 3, 4, 5, 6, 0].map(function (d) {
+            return h("button", { class: "chip sm", type: "button", id: "rt-d" + d, "aria-pressed": sel.indexOf(d) >= 0 ? "true" : "false", onclick: function () { var i = sel.indexOf(d); if (i >= 0) sel.splice(i, 1); else sel.push(d); render(false); } }, DOW[d]);
+          })),
+          h("div", { class: "row" }, h("div", { class: "field" }, h("label", { class: "lbl", for: "rt-start", text: "Starts" }), st), h("div", { class: "field" }, h("label", { class: "lbl", for: "rt-end", text: "Ends" }), en)),
+          h("button", { class: "btn primary", type: "button", id: "rt-add", onclick: function () {
+            if (!title.value.trim()) { toast("Name it first."); title.focus(); return; }
+            if (!sel.length) { toast("Pick at least one day."); return; }
+            if (!TIME_RE.test(st.value) || !TIME_RE.test(en.value) || minsOf(en.value) <= minsOf(st.value)) { toast("The end has to be after the start."); return; }
+            addBlock({ title: cap(title.value.trim()).slice(0, 60), days: sel.slice().sort(), start: st.value, end: en.value }); ui.rtDays = null; render(false);
+          } }, "Add to my week")),
+        h("h2", { class: "sect-h", text: "What Ten Days has learned" }),
+        known.length ? h("ul", { class: "orglist", id: "rt-learned" }, known.map(function (x) {
+          return h("li", null, icon("clock"), h("span", { text: cap(x[0]) + ": " + [x[1].time ? "usually around " + hmText(x[1].time) : "", x[1].dur ? (x[1].real ? "really takes about " : "about ") + durText(x[1].dur) : ""].filter(Boolean).join(", ") }));
+        })) : h("p", { class: "small", text: "Nothing yet. Each time you give a task a time or finish it, Ten Days notices when you do that kind of thing. After two or three times it fills the time in for you." }),
+        S.learn ? null : h("p", { class: "small", text: "Learning is off in “What Ten Days remembers”." })
+      ] };
+    },
     checkin: function () {
       var item = function (id, label, hint, to) { return h("button", { class: "btn", type: "button", id: id, onclick: function () { go(to); } }, h("span", { text: label }), hint ? h("span", { class: "hint", text: hint }) : null); };
-      return { title: "Check-in with him", body: [
+      return { title: "His phone", body: [
         h("p", { class: "pill", id: "status-line", text: statusLine() }),
         S.alertTestedAt && Date.now() - S.alertTestedAt > 7 * 864e5 ? h("p", { class: "small", id: "last-tested", text: "Last tested " + Math.floor((Date.now() - S.alertTestedAt) / 864e5) + " days ago" }) : null,
         h("div", { class: "group morelist" },
           item("m-test", "Test with him", S.alertTestedAt ? "Tested " + fmtDate(S.alertTestedAt) : "Not tested yet", "ob-his"),
-          item("m-setup", "Channels and numbers", null, "m-setup"),
-          item("m-labels", "His reply buttons", S.labels.join(" · "), "m-labels"),
-          item("m-night", "Night test", S.nightTestedAt ? "Last run " + fmtDate(S.nightTestedAt) : "Not run yet", "m-night"),
-          item("m-mine", "My phone: replies and reminders", S.myTestedAt ? "Tested " + fmtDate(S.myTestedAt) : "Not tested yet", "ob-mine"),
-          item("m-allgood", "Send an all-good note", "For a mis-tap", "m-allgood"),
-          item("m-backtap", "Back Tap shortcut", null, "m-backtap"),
-          item("m-bypass", "Emergency Bypass", null, "m-bypass"),
-          item("m-log", "Private log", S.log.length + (S.log.length === 1 ? " entry" : " entries"), "m-log")),
+          item("m-setup", "Channels and numbers", null, "m-setup")),
+        h("details", { class: "adv", id: "ck-adv" }, h("summary", null, "More options"),
+          h("div", { class: "group morelist compact" },
+            item("m-labels", "His reply buttons", S.labels.join(" · "), "m-labels"),
+            item("m-night", "Night test", S.nightTestedAt ? "Last run " + fmtDate(S.nightTestedAt) : "Not run yet", "m-night"),
+            item("m-mine", "My phone: replies and reminders", S.myTestedAt ? "Tested " + fmtDate(S.myTestedAt) : "Not tested yet", "ob-mine"),
+            item("m-allgood", "Send an all-good note", "For a mis-tap", "m-allgood"),
+            item("m-backtap", "Back Tap shortcut", null, "m-backtap"),
+            item("m-bypass", "Emergency Bypass", null, "m-bypass"),
+            item("m-log", "Private log", S.log.length + (S.log.length === 1 ? " entry" : " entries"), "m-log"))),
         back("you")
       ] };
     },
@@ -5723,7 +6270,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   SCREENS.breath = SCREENS.support;   // older saved state
   SCREENS["m-free"] = SCREENS.progress;
   SCREENS.more = SCREENS.you;
-  var TAB_OF = { home: "home", breathe: "home", notes: "home", checkins: "home", quiz: "home", "m-tasks": "home", task: "home", "task-edit": "home", focus: "home", progress: "progress", "m-log": "progress" };
+  var TAB_OF = { people: "you", routine: "you", home: "home", breathe: "home", notes: "home", checkins: "home", quiz: "home", "m-tasks": "home", task: "home", "task-edit": "home", focus: "home", progress: "progress", "m-log": "progress" };
   var MODE_OF = { focus: "focus", breathe: "support", support: "support", line: "support", progress: "grow" };
   function updateChrome() {
     document.body.setAttribute("data-mode", MODE_OF[ui.screen] || "plan");
@@ -5818,12 +6365,15 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   $("minifocus").addEventListener("click", function () { go("focus"); });
   $("sos").addEventListener("click", onSOS);
   $("cd-cancel").addEventListener("click", cancelSOS);
+  $("cd-now").addEventListener("click", function () { if (!cdT) return; stopCountdown(); sendSOS(); });
   function measureBar() { document.documentElement.style.setProperty("--bar", $("sosbar").offsetHeight + "px"); }
   window.addEventListener("resize", measureBar);
   try { if (window.ResizeObserver) new ResizeObserver(measureBar).observe($("sosbar")); } catch (e) {}   // the bar grows with Text Size
   document.addEventListener("visibilitychange", function () {
-    if (document.hidden) { clearTimeout(pollT); return; }
+    if (document.hidden) { clearTimeout(pollT); clearTimeout(ppT); return; }
+    if (cdT) cdTick();
     pollReplies(); render(false); schedulePoll();
+    pollPartner().then(schedulePartner); sendStatus(); pingHard();
   });
   window.addEventListener("online", function () { if (!document.hidden) pollReplies(); });
   setInterval(function () {
@@ -5842,14 +6392,19 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     S.tasks.forEach(function (t) { t.pending = false; });   // a sort that was cut off by closing the app
     if (!S.milesInit) { afterProgress(true); S.milesInit = true; save(); }   // what you'd already done counts, without a burst of banners
     if (S.breathEnd > Date.now()) { ui.sup = { mode: "stay", since: Date.now(), g: -1 }; return go("support"); }
+    pingHard();
+    if (ui.pairOffer) return go("people");
     go("home");
   }
+  if (/(?:^#|&)pair=1/.test(location.hash)) ui.pairOffer = readPair(location.hash);
   if (location.hash) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
-  if (location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__td = { readScale: function (v) { READ_SCALE = v; }, parse: parseQuick, intent: intentOf, plan: planFor, fix: fixFields, next: nextQuestion, draft: newDraft, passages: passages, xp: xpTotal };   // local testing only
+  if (location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__td = { readScale: function (v) { READ_SCALE = v; }, block: parseBlock, learned: learned, hard: hardHours, parse: parseQuick, intent: intentOf, plan: planFor, fix: fixFields, next: nextQuestion, draft: newDraft, passages: passages, xp: xpTotal };   // local testing only
   measureBar();
   start();
   pollReplies();
   schedulePoll();
+  pollPartner().then(schedulePartner);
+  sendStatus();
 })();
 </script>
 </body>
