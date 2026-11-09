@@ -1,0 +1,11 @@
+{
+  "name": "ten-days-tests",
+  "private": true,
+  "description": "End-to-end checks for Ten Days (index.html) in headless Chromium.",
+  "scripts": { "test": "node app.test.js" },
+  "devDependencies": {
+    "axe-core": "4.10.2",
+    "pdfjs-dist": "3.11.174",
+    "playwright": "1.63.0"
+  }
+}
