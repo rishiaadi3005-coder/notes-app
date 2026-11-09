@@ -109,6 +109,7 @@ async function axe(page, name) {
       ok(!errors.length, "engine: no errors " + errors.join(" | "));
       await ctx.close();
     }
+    function posts_any(calls, t) { return calls.some(c => c.data.includes(t)); }
     function cleanPhone(p) { return (p || "").replace(/[^\d+]/g, ""); }
 
     // ---------- upgrade from saved data, home ----------
@@ -138,6 +139,9 @@ async function axe(page, name) {
       ok((await page.textContent("#asst-state")).includes("Preview"), "after undo it's a preview again");
       await page.click("#asst-discard");
       ok((await page.inputValue("#qa")) === "Buy milk", "discard puts text back in the box");
+      await page.click("#nav-progress"); await page.click("#mark-free");
+      ok(!(await page.textContent("#toast")).includes("null"), "toast without an action shows no stray text");
+      await page.click("#unmark-free"); await page.click("#nav-home");
       ok(!errors.length, "home: no errors " + errors.join(" | "));
       await ctx.close();
     }
@@ -510,6 +514,106 @@ async function axe(page, name) {
       await page.waitForTimeout(1600);
       ok(await page.evaluate(() => !localStorage.getItem("tendays.v1") || JSON.parse(localStorage.getItem("tendays.v1")).tasks.length === 0), "delete everything clears data");
       ok(!errors.filter(e => !/tendays-files/.test(e)).length, "you: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+
+
+    // ---------- AI helper (Gemini stubbed) ----------
+    console.log("ai");
+    {
+      const { page, errors, ctx } = await boot(browser);
+      const calls = []; let mode = "ok";
+      await page.route("https://generativelanguage.googleapis.com/**", r => {
+        const req = r.request(), body = JSON.parse(req.postData() || "{}");
+        const sys = body.system_instruction.parts[0].text, data = body.contents[0].parts[0].text;
+        calls.push({ url: req.url(), key: req.headers()["x-goog-api-key"], sys, data });
+        if (mode === "429") return r.fulfill({ status: 429, contentType: "application/json", body: JSON.stringify({ error: { message: "quota" } }) });
+        const today = new Date(); const dk = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+        let out;
+        if (sys.includes("Read the person's note")) out = JSON.stringify({ kind: "tasks", tasks: [{ title: "Grab protein powder", date: "", time: "", minutes: 0, repeat: "once", items: [] }, { title: "Email my TA about the quiz", date: dk, time: "", minutes: 0, repeat: "once", items: [] }], question: "" });
+        else if (sys.includes("Make a short, realistic plan")) out = JSON.stringify({ steps: [{ title: "Redo chapter 3 problems", date: dk, minutes: 40 }, { title: "Bad date step", date: "1999-01-01", minutes: 20 }] });
+        else if (sys.includes("Group related tasks")) { const ids = [...data.matchAll(/^(k\w+):/gm)].map(m => m[1]); out = JSON.stringify({ groups: [{ name: "daily", ids: ids.slice(0, 2).concat(["kfake"]) }] }); }
+        else if (sys.includes("From the numbered passages")) out = JSON.stringify({ picks: [{ n: 1, why: "About sitting with urges" }, { n: 99, why: "bad" }] });
+        else if (sys.includes("support screen")) out = "Breathe slowly. Put the phone in the other room for ten minutes.";
+        else if (sys.includes("Write 2 to 4 short sentences")) out = "You finished your workout. Tomorrow, start with reading.";
+        else out = "OK";
+        r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ candidates: [{ content: { parts: [{ text: out }] } }] }) });
+      });
+      const LONG = "After the gym I need to grab protein powder and also email my TA about the quiz tomorrow";
+      // off: nothing goes out
+      await ask(page, LONG);
+      ok(calls.length === 0, "no key: no AI request");
+      await page.click("#nav-you"); await page.click("#y-ai");
+      ok((await page.textContent("#ai-status")).includes("no key"), "AI off without a key");
+      ok(await page.isDisabled("#ai-agree"), "can't turn on without a key");
+      await page.fill("#ai-key", "AIzaTESTKEY000000000000000000000000"); await page.click("#ai-key-save");
+      ok(await page.isDisabled("#ai-agree") === false, "key saved");
+      ok(!(await page.isChecked("#ai-c-support")), "support moments off by default");
+      await page.click("#ai-agree");
+      ok((await page.textContent("#ai-status")).startsWith("On"), "AI on");
+      await page.click("#ai-test"); await page.waitForSelector("#ai-test-status.ok");
+      ok(calls.length === 1 && calls[0].key === "AIzaTESTKEY000000000000000000000000" && !calls[0].url.includes("key="), "key sent in a header, not the URL");
+      ok(calls[0].url.includes("models/gemini-flash-latest:generateContent"), "default model");
+      // messy note -> AI preview, nothing saved yet
+      await page.click("#nav-home");
+      const before = (await S(page)).tasks.length;
+      await ask(page, LONG);
+      await page.waitForSelector("#pl-steps");
+      ok((await page.textContent("#asst-state")).includes("Plan by AI"), "AI result labeled");
+      ok((await S(page)).tasks.length === before, "AI suggestion not saved until approved");
+      await page.click("#pl-add");
+      ok((await S(page)).tasks.some(t => t.title === "Email my TA about the quiz"), "approved AI tasks saved");
+      // simple input stays rule-based
+      const n0 = calls.length; await ask(page, "Buy milk"); ok(calls.length === n0, "clear input never calls AI");
+      await ask(page, "#private " + LONG); ok(calls.length === n0, "private input never sent");
+      // plans
+      await ask(page, "I have an exam Friday. Help me prepare.");
+      await page.click("#pl-ai"); await page.waitForSelector("#asst-state:has-text('Plan by AI')");
+      const ttl = await page.inputValue("#pl-t-0"), d1 = await page.inputValue("#pl-d-1");
+      ok(ttl === "Redo chapter 3 problems" && d1 > "2026-01-01", "AI plan applied, bad date replaced: " + d1);
+      ok((await page.locator(".pstep").last().locator("input[type=text]").inputValue()) === "Exam", "the exam itself kept");
+      await page.click("#asst-close");
+      // review + progress summaries
+      await ask(page, "how am I doing?"); await page.click("#rev-ai"); await page.waitForSelector("#rev-ai-text.aibox");
+      ok((await page.textContent("#rev-ai-text")).includes("Written by AI") && (await page.textContent("#rev-ai-text")).includes("workout"), "weekly AI summary labeled");
+      ok(!calls[calls.length - 1].data.includes("Free days"), "free days not sent without support consent");
+      await page.click("#nav-progress"); await page.click("#ai-day-go"); await page.waitForSelector("#ai-day-text.aibox");
+      ok((await page.textContent("#ai-day-text")).includes("Tomorrow"), "daily AI summary");
+      // support: needs its own consent
+      await page.click("#sos"); await page.waitForTimeout(800); await page.click("#cd-cancel");
+      ok(!(await page.$("#sup-ai")), "no AI on support without consent");
+      await page.click("#sup-ok"); await page.click("#nav-you"); await page.click("#y-ai");
+      await page.check("#ai-c-support"); await page.click("#ai-agree");
+      await page.click("#sos"); await page.waitForTimeout(800); await page.click("#cd-cancel");
+      await page.click("#sup-ai"); await page.waitForSelector("#sup-ai-text.aibox");
+      ok((await page.textContent("#sup-ai-text")).includes("not a person"), "support words labeled as AI");
+      ok(!posts_any(calls, "Check in"), "check-in text never sent to AI");
+      await page.click("#sup-ok");
+      // groups
+      await page.click("#nav-home"); await page.click("#all-tasks"); await page.click("#ai-group"); await page.waitForSelector("#ag-all");
+      await page.click("#ag-all");
+      let st = await S(page);
+      ok(st.tasks.filter(t => t.group === "Daily").length === 2, "AI groups applied, unknown ids ignored");
+      await page.click("#toast-act");
+      st = await S(page); ok(!st.tasks.some(t => t.group), "group undo");
+      // library picks
+      await page.click("#nav-you"); await page.click("#y-lib");
+      await page.setInputFiles("#pdf-in", FIX + "/book.pdf"); await page.waitForSelector("#passages", { timeout: 20000 });
+      await page.click("#doc-ai"); await page.waitForSelector(".passage.pick");
+      ok(await page.locator(".passage.pick").count() === 1 && (await page.textContent(".passage.pick")).includes("AI pick: About sitting with urges"), "AI passage pick shown, bad index ignored");
+      // errors fall back to rules
+      mode = "429";
+      await page.click("#nav-home"); await ask(page, LONG);
+      await page.waitForSelector("#asst-note");
+      ok((await page.textContent("#asst-note")).includes("free AI limit"), "rate limit falls back to rules with a note");
+      // the key never goes into the app's saved data or backups
+      st = await S(page);
+      ok(!JSON.stringify(st).includes("AIzaTESTKEY"), "key not in saved data or backup");
+      await page.click("#nav-you"); await page.click("#y-ai"); await page.click("#ai-off");
+      const n1 = calls.length; await page.click("#nav-home"); await ask(page, LONG + " again");
+      ok(calls.length === n1, "turned off: nothing sent");
+      await axe(page, "today-ai");
+      ok(!errors.filter(e => !/status of 429/.test(e)).length, "ai: no errors " + errors.join(" | "));
       await ctx.close();
     }
 
