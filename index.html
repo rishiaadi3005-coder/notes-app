@@ -462,6 +462,51 @@ input[type=search], input[type=number] { width: 100%; min-width: 0; min-height: 
 #screen { overflow-wrap: anywhere; }
 #screen .btn.link { overflow-wrap: break-word; flex: 0 1 auto; }
 
+/* rows: swipe, open in place, select, drag */
+.tswipe { position: relative; border-radius: 20px; transition: transform 160ms ease, opacity 160ms ease, box-shadow 160ms ease; }
+.tswipe .trow { position: relative; z-index: 1; touch-action: pan-y; transition: transform 180ms ease; }
+.tswipe.sw-left .trow, .tswipe.sw-right .trow { transition: none; background: var(--glass-solid); }
+.tbg { position: absolute; inset: 0; border-radius: 20px; display: none; align-items: center; gap: .4em; padding: 0 1.2em; font-weight: 800; }
+.tbg svg { width: 1.3em; height: 1.3em; }
+.tbg-done { background: var(--corner); color: var(--corner-ink); justify-content: flex-start; }
+.tbg-del { background: linear-gradient(180deg, var(--red-1), var(--red-2)); color: var(--signal-ink); justify-content: flex-end; }
+.tswipe.sw-right .tbg-done, .tswipe.sw-left .tbg-del { display: flex; }
+.tswipe.arm-del .tbg-del, .tswipe.arm-done .tbg-done { filter: brightness(1.15); }
+.tswipe.gone { transform: translateX(-110%); opacity: 0; }
+.tswipe.lifted { transform: scale(1.02); box-shadow: 0 14px 30px var(--shadow); z-index: 4; }
+.tswipe.dragging { z-index: 6; transition: none; opacity: .96; box-shadow: 0 18px 40px var(--shadow); }
+.tswipe.drop-before { box-shadow: 0 -3px 0 var(--corner); }
+.tswipe.drop-after { box-shadow: 0 3px 0 var(--corner); }
+.tswipe.open .trow { border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; border-color: var(--corner); }
+.rpanel { margin-top: 4px; padding: .8em .9em; border-radius: 6px 6px 20px 20px; border: 1px solid var(--line); background: var(--glass-solid); display: flex; flex-direction: column; gap: .6em; }
+.tnotes { white-space: pre-wrap; font-size: .92em; }
+.racts { display: flex; flex-wrap: wrap; gap: .4em; }
+.ract { min-height: 44px; min-width: 64px; flex: 1 1 auto; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: .15em; padding: .3em .5em; border-radius: 14px; border: 1px solid var(--line); background: var(--field); color: var(--ink); font-weight: 650; font-size: .78em; text-decoration: none; }
+.ract svg { width: 18px; height: 18px; }
+.spark { flex: none; width: 44px; height: 44px; border-radius: 14px; border: 1px solid var(--line); background: var(--field); color: var(--ty-custom); display: grid; place-items: center; padding: 0; }
+.spark svg { width: 20px; height: 20px; }
+.spark[aria-expanded="true"] { border-color: var(--ty-custom); }
+.tedit input { width: 100%; min-height: 44px; }
+.check.pick { border-radius: 12px; }
+.trow.picked { border-color: var(--corner); box-shadow: 0 0 0 2px var(--corner-soft); }
+.trow.pr-urgent::before { background: var(--bad-text); width: 4px; }
+.rm .tswipe, .rm .tswipe .trow { transition: none; }
+.rm .tswipe.lifted { transform: none; }
+.bulkacts { display: flex; flex-wrap: wrap; gap: .4em; }
+.bulkacts .btn, .bulkacts select { width: auto; flex: 1 1 auto; min-height: 44px; }
+.seg.four { grid-template-columns: repeat(4, 1fr); }
+/* ten days */
+.horizon { display: flex; gap: .4em; overflow-x: auto; padding: .1em .1em .4em; margin: 0 -.1em; scroll-snap-type: x proximity; scrollbar-width: none; }
+.horizon::-webkit-scrollbar { display: none; }
+.hday { flex: none; min-width: 58px; min-height: 64px; scroll-snap-align: start; border-radius: 16px; border: 1px solid var(--line); background: var(--field); color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: .3em .4em; }
+.hday .hd-dow { font-size: .7em; font-weight: 750; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.hday .hd-num { font-size: 1.1em; font-weight: 800; }
+.hday .hd-load { font-size: .68em; font-weight: 700; color: var(--muted); }
+.hday.busy .hd-load { color: var(--warn-text); }
+.hday[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.hday[aria-selected="true"] .hd-dow, .hday[aria-selected="true"] .hd-load { color: var(--bg); }
+.hint2 { text-align: center; }
+
 /* calmer Today */
 #screen[data-screen="home"] h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .topline { display: flex; align-items: center; gap: .7em; width: 100%; min-height: 48px; padding: .3em .2em; border: 0; background: none; color: var(--ink); text-align: left; }
@@ -621,10 +666,10 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   var TYPE_NAME = { READ: "Read", CALL: "Call", MEETING: "Meeting", ERRAND: "Errand", CUSTOM: "Custom" };
   var REPEATS = [["once", "Once"], ["daily", "Daily"], ["weekdays", "Weekdays"], ["days", "Certain days"], ["weekly", "Weekly"]];
   var REPEAT_KEYS = REPEATS.map(function (r) { return r[0]; });
-  var PRIOS = [["high", "High"], ["normal", "Normal"], ["low", "Low"]];
+  var PRIOS = [["urgent", "Urgent"], ["high", "High"], ["normal", "Normal"], ["low", "Low"]];
   var DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   var TYPE_ICON = { READ: "book", CALL: "phone", MEETING: "video", ERRAND: "bag", CUSTOM: "spark" };
-  var FOCUS_MINS = [10, 25, 50];
+  var FOCUS_MINS = [15, 25, 45, 60];
   var DATE_RE = /^\d{4}-\d{2}-\d{2}$/, TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/, LINK_RE = /^https?:\/\/[^\s"'<>]+$/i;
   // Starter tasks for the goals picked. Untimed, so only Pre-sleep and reading ever reach home on their own.
   var STARTERS = {
@@ -757,7 +802,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     s.memory = (Array.isArray(s.memory) ? s.memory : []).filter(obj).map(function (m) { return { id: str(m.id, 40) || newId(), key: str(m.key, 40), value: TIME_RE.test(m.value || "") ? m.value : "", text: str(m.text, 120), at: +m.at || Date.now() }; })
       .filter(function (m) { return m.key && m.value; }).slice(0, 50);
     var F = obj(s.fx) || {};
-    s.fx = { motion: ["system", "on", "off"].indexOf(F.motion) >= 0 ? F.motion : "system", sound: F.sound === true, celebrate: F.celebrate !== false, rpg: F.rpg !== false };
+    s.fx = { motion: ["system", "on", "off"].indexOf(F.motion) >= 0 ? F.motion : "system", sound: F.sound === true, timerSound: F.timerSound !== false, celebrate: F.celebrate !== false, rpg: F.rpg !== false };
     var B = obj(s.bank) || {};
     s.bank = { xp: Math.max(0, +B.xp || 0), done: Math.max(0, +B.done || 0), focus: Math.max(0, +B.focus || 0) };
     s.miles = obj(s.miles) || {}; s.milesInit = !!s.milesInit;
@@ -824,7 +869,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     t.days = (Array.isArray(t.days) ? t.days : []).map(Number).filter(function (d, i, a) { return d >= 0 && d <= 6 && d === Math.floor(d) && a.indexOf(d) === i; }).sort();
     if (t.repeat === "days" && !t.days.length) t.repeat = "daily";
     if (t.repeat !== "days") t.days = [];
-    t.priority = ["low", "normal", "high"].indexOf(t.priority) >= 0 ? t.priority : "normal";
+    t.priority = ["low", "normal", "high", "urgent"].indexOf(t.priority) >= 0 ? t.priority : "normal";
     t.hist = (Array.isArray(t.hist) ? t.hist : []).filter(function (k, i, a) { return typeof k === "string" && /^(?:w?\d{4}-\d{2}-\d{2}|once)$/.test(k) && a.indexOf(k) === i; }).slice(-120);
     t.doneAt = +t.doneAt || 0; t.snoozeUntil = +t.snoozeUntil || 0;
     t.date = DATE_RE.test(t.date || "") ? t.date : ""; t.time = TIME_RE.test(t.time || "") ? t.time : "";
@@ -840,6 +885,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     t.dur = Math.max(0, Math.min(600, Math.round(+t.dur || 0)));
     t.anchor = str(t.anchor, 40); t.place = str(t.place, 60); t.dep = str(t.dep, 60); t.depId = str(t.depId, 40); t.plan = str(t.plan, 40);
     t.remindAt = +t.remindAt || 0; t.group = str(t.group, 40); t.docId = str(t.docId, 40); t.pending = t.pending === true;
+    t.remindBefore = Math.max(0, Math.min(1440, Math.round(+t.remindBefore || 0))); t.remindWant = !!t.remindWant; t.alerted = +t.alerted || 0;
+    t.rank = typeof t.rank === "number" && isFinite(t.rank) ? t.rank : null; t.rankDay = DATE_RE.test(t.rankDay || "") ? t.rankDay : "";
     if (t.kind !== "presleep") delete t.kind;
     return t;
   }
@@ -1134,7 +1181,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   function taskMeta(t) {
     var d = dueAt(t), when = d !== null ? (t.repeat === "once" ? whenText(d) : fmtTime(d)) : t.date && t.repeat === "once" ? fmtDate(parseDay(t.date).getTime()) : t.time ? fmtTime(new Date(2000, 0, 1, +t.time.slice(0, 2), +t.time.slice(3)).getTime()) : "";
     return [TYPE_NAME[t.type], repeatText(t), when, t.dur ? durText(t.dur) : "", t.anchor ? cap(t.anchor) : "", t.place ? "At " + t.place : "", t.dep ? "After: " + t.dep : "",
-      t.priority === "high" ? "High priority" : t.priority === "low" ? "Low priority" : "", t.private ? "Private" : "", t.group ? "Group: " + t.group : ""].filter(Boolean).join(" · ");
+      t.priority === "urgent" ? "Urgent" : t.priority === "high" ? "High priority" : t.priority === "low" ? "Low priority" : "", t.remindWant ? (t.remindBefore ? "Reminder " + durText(t.remindBefore) + " before" : "Reminder at the time") : "", t.private ? "Private" : "", t.group ? "Group: " + t.group : ""].filter(Boolean).join(" · ");
   }
   function itemsLeftText(t) { var n = t.items.filter(function (i) { return itemDone(t, i); }).length; return n + " of " + t.items.length + " done"; }
   // Today: what belongs on today's list, open or finished today.
@@ -1179,7 +1226,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (S.session && dayKey(new Date(S.session.start)) === k) m += Math.floor((Math.min(Date.now(), S.session.end) - S.session.start) / 60000);
     return m;
   }
-  function taskXp(t) { return t.priority === "high" ? 15 : 10; }
+  function taskXp(t) { return t.priority === "high" || t.priority === "urgent" ? 15 : 10; }
   function addHist(t, k) { if (t.hist.indexOf(k) < 0) { t.hist.push(k); if (t.hist.length > 120) { t.hist.shift(); S.bank.xp += taskXp(t); S.bank.done++; } } }
   // A deleted task keeps the progress it earned.
   function bankTask(t, sign) { sign = sign || 1; S.bank.xp = Math.max(0, S.bank.xp + sign * t.hist.length * taskXp(t)); S.bank.done = Math.max(0, S.bank.done + sign * t.hist.length); }
@@ -1299,7 +1346,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     sparkle: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z", shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",
     help: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.7-2.5 2-2.5 4M12 17h.01", pin: "M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z",
     quote: "M9 7H5v5h4v1a3 3 0 0 1-3 3M19 7h-4v5h4v1a3 3 0 0 1-3 3", bell: "M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0",
-    up: "M6 15l6-6 6 6", down: "M6 9l6 6 6-6", left: "M15 5l-7 7 7 7", x: "M6 6l12 12M18 6L6 18", mic: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21", stop: "M7 7h10v10H7z", wind: "M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7", note: "M5 4h10l4 4v12H5zM15 4v4h4M8 12h8M8 16h5"
+    up: "M6 15l6-6 6 6", down: "M6 9l6 6 6-6", left: "M15 5l-7 7 7 7", x: "M6 6l12 12M18 6L6 18", mic: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21", stop: "M7 7h10v10H7z", trash: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13", wind: "M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7", note: "M5 4h10l4 4v12H5zM15 4v4h4M8 12h8M8 16h5"
   };
   function icon(name) {
     return svg("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": name === "more" ? "3.2" : "2", "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true", focusable: "false" },
@@ -1383,7 +1430,11 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (/\bremind me\b/i.test(s)) r.remind = true;
     take(/\s(https?:\/\/[^\s"'<>]+)(?=\s)/i, function (m) { r.link = m[1]; r.type = "MEETING"; r.found.push("link"); });
     take(/\s#p(?:rivate)?(?=\s)/i, function () { r.private = true; r.found.push("private"); });
-    if (!take(/\s(?:!!+|!high|#high|urgent|asap)(?=\s)/i, function () { r.priority = "high"; r.found.push("priority"); })) take(/\s(?:!low|#low)(?=\s)/i, function () { r.priority = "low"; r.found.push("priority"); });
+    var setP = function (v) { return function () { r.priority = v; r.found.push("priority"); }; };
+    take(/\s(?:!!!|urgent|urgently|asap|critical|#urgent|right away)(?=\s)/i, setP("urgent")) || take(/\s(?:!!|!high|#high|important|high priority)(?=\s)/i, setP("high"))
+      || take(/\s(?:!low|#low|low priority|not urgent|whenever|someday)(?=\s)/i, setP("low")) || take(/\s(?:normal priority|#normal)(?=\s)/i, setP("normal"));
+    take(/\sremind(?: me)? (\d{1,3}) ?(m|mins?|minutes?|h|hrs?|hours?) (?:before|early|earlier|ahead)(?=\s)/i, function (m) { r.remindBefore = Math.min(1440, +m[1] * (/^h/i.test(m[2]) ? 60 : 1)); r.remind = true; r.found.push("remind"); })
+      || take(/\sremind(?: me)? (?:at the time|on time)(?=\s)/i, function () { r.remindBefore = 0; r.remind = true; r.found.push("remind"); });
     take(/\s(\+?\d[\d ().-]{6,}\d)(?=\s)/, function (m) { r.contact.phone = m[1].trim(); });
     // "in 20 minutes" is a time; "for 20 minutes" is a length
     take(/\sin (an?|one|half an?|\d+(?:\.\d+)?) ?(minutes?|mins?|hours?|hrs?)(?=\s)/i, function (m) {
@@ -1391,7 +1442,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       var at = new Date(Math.ceil((now.getTime() + ms) / 300e3) * 300e3);
       hr = at.getHours(); mn = at.getMinutes(); r.date = dayKey(at); explicitDate = true; r.found.push("time");
     });
-    take(/\s(?:for )?(?:(an?|one|half an?|\d+(?:\.\d+)?) ?(hours?|hrs?|h)(?: and a half)?(?: (?:and )?(\d+) ?(?:minutes?|mins?|m))?|(\d+) ?(minutes?|mins?|m))(?=\s)/i, function (m) {
+    take(/\s(?:for )?(?:(an?|one|half an?|\d+(?:\.\d+)?) ?(hours?|hrs?|h)(?: and a half)?(?: (?:and )?(\d+) ?(?:minutes?|mins?|m))?|(\d+) ?(minutes?|mins?|m))(?: (?:timer|focus|session|block))?(?=\s)/i, function (m) {
       var mins;
       if (m[2]) { mins = (/^half/i.test(m[1]) ? .5 : /^(an?|one)$/i.test(m[1]) ? 1 : +m[1]) * 60 + (/and a half/i.test(m[0]) ? 30 : 0) + (+m[3] || 0); }
       else mins = +m[4];
@@ -1528,6 +1579,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     var r = parseQuick(text);
     if (!r) return null;
     delete r._explicitDate; delete r.found;
+    if (r.remind) r.remindWant = true; if (r.remindBefore == null) r.remindBefore = 0;
     r.asked = []; r.src = text; r.notes = "";
     return r;
   }
@@ -1556,7 +1608,11 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (r.found.indexOf("private") >= 0) { d.private = true; changed.push("private"); }
     if (r.found.indexOf("place") >= 0) { d.place = r.place; changed.push("place"); }
     if (r.found.indexOf("dep") >= 0) { d.dep = r.dep; changed.push("dep"); }
+    if (r.found.indexOf("remind") >= 0) { d.remindBefore = r.remindBefore || 0; d.remindWant = true; changed.push("remind"); }
     var left = sc.s.trim().replace(/[.!]+$/, "");
+    // in a quick edit, a bare "urgent", "high", "normal" or "low" means priority
+    var pm = changed.indexOf("priority") < 0 && left.match(/(?:^|[\s,])(urgent|high|normal|low)(?=$|[\s,])/i);
+    if (pm) { d.priority = pm[1].toLowerCase(); changed.push("priority"); left = left.replace(pm[0], " ").trim(); }
     if (!changed.length && /^\d{1,3}$/.test(left) && d.dur) { d.dur = Math.min(600, +left); changed.push("dur"); }
     if (!changed.length && /^(?:no time|any ?time|whenever|no rush)$/i.test(left)) { d.time = ""; d.asked.push("time", "anchor"); changed.push("time"); }
     return changed;
@@ -1628,7 +1684,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
 
   function draftToTask(d) {
     var o = { id: newId(), created: Date.now(), doneOn: "" };
-    ["title", "type", "repeat", "days", "date", "time", "dur", "anchor", "place", "dep", "depId", "items", "contact", "priority", "private", "link", "notes", "plan"].forEach(function (k) { if (d[k] !== undefined) o[k] = JSON.parse(JSON.stringify(d[k])); });
+    ["title", "type", "repeat", "days", "date", "time", "dur", "anchor", "place", "dep", "depId", "items", "contact", "priority", "private", "link", "notes", "plan", "remindBefore", "remindWant"].forEach(function (k) { if (d[k] !== undefined) o[k] = JSON.parse(JSON.stringify(d[k])); });
     return normTask(o);
   }
   function taskToDraft(t) {
@@ -1646,28 +1702,292 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   }
 
   // ============ rows and lists ============
-  function taskRow(t, now, mode) {
+  // ============ task rows: tap to open in place, swipe, hold to select, hold and drag to reorder ============
+  // Every gesture has a button too: the open row has Done, Delete, Move up/down; the check circle completes.
+  var lastTap = { id: "", at: 0 }, gest = null;
+  function focusMins(t) { return S.focusLog.filter(function (e) { return e.taskId === t.id; }).reduce(function (a, e) { return a + e.mins; }, 0); }
+  function taskRow(t, now, mode, ctx) {
+    ctx = ctx || {};
     var done = isDone(t, now), ms = now.getTime(), d = dueAt(t, now), snz = !done && t.snoozeUntil > ms, over = !done && d !== null && d < ms;
-    var meta = [], k = streak(t), it = t.items.length;
+    var meta = [], k = streak(t), it = t.items.length, open = ui.expanded === t.id, picking = !!ui.selecting, picked = picking && ui.picked.indexOf(t.id) >= 0;
     if (t.pending) meta.push(h("span", { class: "pending" }, h("span", { class: "dots", "aria-hidden": "true" }, h("i"), h("i"), h("i")), "Sorting…"));
-    if (mode === "upcoming") { if (t.time) meta.push(h("span", null, icon("clock"), fmtTime(new Date(2000, 0, 1, +t.time.slice(0, 2), +t.time.slice(3)).getTime()))); }
+    if (t.priority === "urgent") meta.push(h("span", { class: "ov" }, "Urgent"));
+    if (mode === "upcoming") { if (t.time) meta.push(h("span", null, icon("clock"), hmText(t.time))); }
     else if (snz) meta.push(h("span", null, icon("moon"), "Snoozed until " + whenText(t.snoozeUntil)));
     else if (d !== null) meta.push(h("span", { class: over ? "ov" : d - ms <= 3600e3 && !done ? "hot" : "" }, icon("clock"), (over ? "Overdue · " : "") + whenText(d)));
     else if (mode === "all" && t.repeat === "once" && t.date) meta.push(h("span", null, fmtDate(parseDay(t.date).getTime())));
     if (t.repeat !== "once") meta.push(h("span", null, repeatText(t)));
+    if (t.dur) meta.push(h("span", null, icon("timer"), durText(t.dur)));
+    if (t.remindAt > ms) meta.push(h("span", { "aria-label": "Reminder set" }, icon("bell")));
     if (k >= 2) meta.push(h("span", { class: "hot" }, icon("flame"), k + (t.repeat === "weekly" ? " wk" : " day") + " streak"));
     if (it) meta.push(h("span", null, icon("list"), t.items.filter(function (i) { return itemDone(t, i, now); }).length + "/" + it));
     if (t.type === "CALL" && t.contact.name) meta.push(h("span", null, t.contact.name));
     if (t.private) meta.push(h("span", { "aria-label": "Private" }, icon("lock")));
-    var row = h("div", { class: "trow pr-" + t.priority + (done ? " done" : "") + (over ? " over" : "") + (snz ? " snz" : "") + (ui.justDone === t.id ? " pop" : ""), "data-task": t.id },
-      mode === "upcoming" ? h("span", { class: "tdot", "aria-hidden": "true" }, h("span", { class: "tico ty-" + t.type.toLowerCase() }, icon(TYPE_ICON[t.type])))
-        : h("button", { class: "check", type: "button", "data-check": t.id, "aria-pressed": done ? "true" : "false", "aria-label": (done ? "Not done: " : "Done: ") + t.title, onclick: function () { toggleDone(t); } }, icon("check")),
-      h("button", { class: "tmain", type: "button", onclick: function () { go("task", t.id); } },
-        h("span", { class: "ttitle", text: t.title }), meta.length ? h("span", { class: "tmeta" }, meta) : null),
-      mode === "upcoming" ? null : h("span", { class: "tico ty-" + t.type.toLowerCase(), "aria-hidden": "true" }, icon(TYPE_ICON[t.type])));
-    return row;
+    var editing = ui.titleEdit === t.id;
+    var lead = picking
+      ? h("button", { class: "check pick", type: "button", "data-pick": t.id, "aria-pressed": picked ? "true" : "false", "aria-label": (picked ? "Unselect " : "Select ") + t.title, onclick: function () { togglePick(t.id); } }, icon("check"))
+      : mode === "upcoming" ? h("span", { class: "tdot", "aria-hidden": "true" }, h("span", { class: "tico ty-" + t.type.toLowerCase() }, icon(TYPE_ICON[t.type])))
+      : h("button", { class: "check", type: "button", "data-check": t.id, "aria-pressed": done ? "true" : "false", "aria-label": (done ? "Not done: " : "Done: ") + t.title, onclick: function () { toggleDone(t); } }, icon("check"));
+    var main = editing
+      ? h("form", { class: "tmain tedit", onsubmit: function (e) { e.preventDefault(); finishTitle(t, e.target.querySelector("input").value); } },
+          h("input", { type: "text", id: "te-" + t.id, value: t.title, maxlength: "80", "aria-label": "Task title", onkeydown: function (e) { if (e.key === "Escape") { ui.titleEdit = null; render(false); } }, onblur: function (e) { if (ui.titleEdit === t.id) finishTitle(t, e.target.value); } }))
+      : h("button", { class: "tmain", type: "button", "aria-expanded": open ? "true" : "false", "aria-label": t.title + (meta.length ? "" : ""), onclick: function () { rowTap(t); } },
+          h("span", { class: "ttitle", text: t.title }), meta.length ? h("span", { class: "tmeta" }, meta) : null);
+    var spark = picking ? null : h("button", { class: "spark", type: "button", "data-spark": t.id, "aria-label": "Change “" + t.title + "” by typing", "aria-expanded": ui.spark === t.id ? "true" : "false", onclick: function () {
+      ui.spark = ui.spark === t.id ? null : t.id; ui.expanded = ui.spark ? t.id : ui.expanded; render(false); var f = $("sp-" + t.id); if (f) f.focus();
+    } }, icon("sparkle"));
+    var row = h("div", { class: "trow pr-" + t.priority + (done ? " done" : "") + (over ? " over" : "") + (snz ? " snz" : "") + (ui.justDone === t.id ? " pop" : "") + (picked ? " picked" : "") }, lead, main, spark);
+    var wrap = h("div", { class: "tswipe" + (open ? " open" : ""), "data-task": t.id },
+      h("div", { class: "tbg tbg-done", "aria-hidden": "true" }, icon("check"), mode === "upcoming" ? "" : done ? "Not done" : "Done"),
+      h("div", { class: "tbg tbg-del", "aria-hidden": "true" }, "Delete", icon("trash")),
+      row, open && !picking ? rowPanel(t, now, mode, ctx) : null);
+    if (!editing) attachGestures(row, wrap, t, { swipeDone: mode !== "upcoming", reorder: !!ctx.reorder, list: ctx.list });
+    return wrap;
   }
-  var PR = { high: 0, normal: 1, low: 2 };
+  function rowTap(t) {
+    if (gest && gest.suppress) { gest.suppress = false; return; }
+    if (ui.selecting) { togglePick(t.id); return; }
+    var n = Date.now();
+    if (lastTap.id === t.id && n - lastTap.at < 330) { ui.expanded = lastTap.prev; ui.titleEdit = t.id; lastTap = { id: "", at: 0 }; render(false); var f = $("te-" + t.id); if (f) { f.focus(); f.select(); } return; }
+    lastTap = { id: t.id, at: n, prev: ui.expanded };
+    ui.expanded = ui.expanded === t.id ? null : t.id; if (ui.spark && ui.spark !== ui.expanded) ui.spark = null;
+    render(false);
+  }
+  function finishTitle(t, v) {
+    ui.titleEdit = null; v = String(v || "").trim().slice(0, 80);
+    if (v && v !== t.title) { pushHist("rename"); t.title = v; save(); toast("Renamed.", 5000, { label: "Undo", fn: undoHist }); }
+    render(false);
+  }
+  // The open row: details and quick actions, right in the list.
+  function rowPanel(t, now, mode, ctx) {
+    var fm = focusMins(t), kids = [];
+    var info = taskMeta(t);
+    if (info) kids.push(h("p", { class: "small", text: info }));
+    if (t.notes) kids.push(h("p", { class: "tnotes", text: t.notes }));
+    if (t.items.length) kids.push(h("div", { class: "group" }, t.items.map(function (it2, i) {
+      return h("label", { class: "toggle", for: "ri-" + t.id + "-" + i }, h("input", { type: "checkbox", id: "ri-" + t.id + "-" + i, checked: itemDone(t, it2), onchange: function (e) { setItem(t, it2, e.target.checked); } }), h("span", { text: it2.t }));
+    })));
+    if (fm) kids.push(h("p", { class: "small", text: "Focused " + durText(fm) + " on this so far." }));
+    if (ui.spark === t.id) {
+      var sp = h("input", { type: "text", id: "sp-" + t.id, maxlength: "200", autocomplete: "off", placeholder: "Tomorrow 2pm, urgent, 45 min, remind 15m before", "aria-label": "Change it by typing" });
+      kids.push(h("form", { class: "inline spark-form", onsubmit: function (e) { e.preventDefault(); sparkEdit(t, sp.value); } }, sp, h("button", { class: "btn", type: "submit", id: "sp-go-" + t.id }, "Apply")));
+    }
+    var act = function (id, ic, label, fn) { return h("button", { class: "ract", type: "button", id: id + "-" + t.id, onclick: fn }, icon(ic), h("span", { text: label })); };
+    var acts = [];
+    if (mode !== "upcoming" && !isDone(t)) acts.push(act("ra-focus", "timer", "Focus", function () { if (S.session) { go("focus"); return; } ui.focusMins = t.dur || null; go("focus", t.id); }));
+    if (t.type === "READ" && docOf(t)) acts.push(act("ra-read", "book", "Read", function () { openReading(t); }));
+    if (t.type === "CALL" && cleanPhone(t.contact.phone)) acts.push(h("a", { class: "ract", id: "ra-call-" + t.id, href: "tel:" + cleanPhone(t.contact.phone) }, icon("phone"), h("span", { text: "Call" })));
+    if (!isDone(t) && t.repeat === "once") acts.push(act("ra-tmrw", "moon", "Tomorrow", function () { pushHist("move"); t.date = dayKey(addDays(new Date(), 1)); t.snoozeUntil = 0; save(); toast("Moved to tomorrow.", 5000, { label: "Undo", fn: undoHist }); ui.expanded = null; render(false); }));
+    if (ctx.reorder) {
+      acts.push(act("ra-up", "up", "Up", function () { moveRank(t.id, ctx.list, -1); }));
+      acts.push(act("ra-down", "down", "Down", function () { moveRank(t.id, ctx.list, 1); }));
+    }
+    acts.push(act("ra-more", "list", "Details", function () { go("task", t.id); }));
+    acts.push(act("ra-del", "trash", "Delete", function () { deleteTask(t); }));
+    kids.push(h("div", { class: "racts" }, acts));
+    return h("div", { class: "rpanel", id: "panel-" + t.id }, kids);
+  }
+  // "Spark": change a task by typing, like "tomorrow 2pm, urgent, 45 min, remind 15m before".
+  function sparkEdit(t, text) {
+    text = normText(text); if (!text) return;
+    var d = taskToDraft(t), changed = fixFields(text, d);
+    if (!changed.length) { toast("I couldn't tell what to change. Try “tomorrow 2pm” or “urgent”."); return; }
+    ui.spark = null;
+    commitDraft(d, t.id, "Updated");
+    var n = taskById(t.id);
+    if (n && n.remindBefore >= 0 && changed.indexOf("remind") >= 0) autoRemind(n);
+    S.asst = null; save(); render(false);
+  }
+  function deleteTask(t) {
+    var at = S.tasks.indexOf(t); if (at < 0) { t = taskById(t.id); at = S.tasks.indexOf(t); } if (at < 0) return;
+    pushHist("delete"); bankTask(t);
+    S.tasks.splice(at, 1); if (S.session && S.session.taskId === t.id) S.session.taskId = "";
+    if (S.asst && S.asst.editing === t.id) S.asst = null;
+    ui.expanded = null; save(); haptic("warn");
+    toast("Deleted “" + t.title + "”.", 5000, { label: "Undo", fn: undoHist });
+    render(false);
+  }
+
+  // --- gestures (touch and mouse) ---
+  function attachGestures(row, wrap, t, opt) {
+    var onStart = function (x, y) {
+      if (ui.titleEdit) return;
+      gest = { t: t, row: row, wrap: wrap, sx: x, sy: y, dx: 0, mode: null, opt: opt, suppress: false };
+      gest.hold = setTimeout(function () { if (gest && gest.t === t && !gest.mode) { gest.mode = "held"; wrap.classList.add("lifted"); try { if (S.haptics !== false && HX.vibrate) navigator.vibrate(15); } catch (e) {} } }, 450);
+    };
+    row.addEventListener("touchstart", function (e) { if (e.touches.length === 1 && !e.target.closest("input")) onStart(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+    row.addEventListener("touchmove", function (e) { if (gest && gest.row === row && gestMove(e.touches[0].clientX, e.touches[0].clientY)) e.preventDefault(); }, { passive: false });
+    row.addEventListener("touchend", function (e) { if (gest && gest.row === row) { if (gestEnd()) e.preventDefault(); } });
+    row.addEventListener("touchcancel", function () { if (gest && gest.row === row) gestCancel(); });
+    // mouse and pen: pointer events; the pointer is captured only once a swipe, hold or drag has started,
+    // so ordinary clicks still reach the buttons in the row
+    var mine = function (e) { return e.pointerType !== "touch" && gest && gest.row === row; };
+    row.addEventListener("pointerdown", function (e) { if (e.pointerType === "touch" || e.button !== 0 || e.target.closest("input")) return; onStart(e.clientX, e.clientY); gest.pid = e.pointerId; });
+    row.addEventListener("pointermove", function (e) {
+      if (!mine(e)) return;
+      var owned = gestMove(e.clientX, e.clientY);
+      if (owned && gest && !gest.cap) { gest.cap = true; try { row.setPointerCapture(gest.pid); } catch (x) {} }
+    });
+    row.addEventListener("pointerup", function (e) { if (mine(e)) gestEnd(); });
+    row.addEventListener("pointercancel", function (e) { if (mine(e)) gestCancel(); });
+  }
+  // returns true when the gesture owns the move (so the page shouldn't scroll)
+  function gestMove(x, y) {
+    var g = gest, mx = x - g.sx, my = y - g.sy;
+    if (!g.mode) {
+      if (Math.abs(mx) > 12 && Math.abs(mx) > Math.abs(my) * 1.3) { g.mode = "swipe"; clearTimeout(g.hold); }
+      else if (Math.abs(my) > 10) { clearTimeout(g.hold); g.mode = "scroll"; }
+    }
+    if (g.mode === "held" && Math.abs(my) > 6 && g.opt.reorder) startDrag(g);
+    if (g.mode === "swipe") {
+      if (!g.opt.swipeDone && mx > 0) mx = 0;
+      g.dx = Math.max(-150, Math.min(150, mx));
+      g.row.style.transform = "translateX(" + g.dx + "px)";
+      g.wrap.classList.toggle("arm-del", g.dx <= -90); g.wrap.classList.toggle("arm-done", g.dx >= 90);
+      g.wrap.classList.toggle("sw-left", g.dx < 0); g.wrap.classList.toggle("sw-right", g.dx > 0);
+      return true;
+    }
+    if (g.mode === "drag") { moveDrag(g, y); return true; }
+    return g.mode === "held";
+  }
+  function gestEnd() {
+    var g = gest; if (!g) return false; gest = null; clearTimeout(g.hold);
+    var t = g.t, owned = !!g.mode && g.mode !== "scroll";
+    if (g.mode === "swipe") {
+      g.row.style.transform = "";
+      if (g.dx <= -90) { g.wrap.classList.add("gone"); setTimeout(function () { deleteTask(t); }, reduced() ? 0 : 160); }
+      else if (g.dx >= 90) toggleDone(t);
+      else { g.wrap.classList.remove("arm-del", "arm-done", "sw-left", "sw-right"); }
+      gest = { suppress: true }; setTimeout(function () { if (gest && gest.suppress) gest = null; }, 400);
+    } else if (g.mode === "held") {
+      g.wrap.classList.remove("lifted");
+      if (!ui.selecting) { ui.selecting = true; ui.picked = [t.id]; ui.expanded = null; render(false); announce("Selecting. 1 selected."); }
+      gest = { suppress: true }; setTimeout(function () { if (gest && gest.suppress) gest = null; }, 400);
+    } else if (g.mode === "drag") {
+      endDrag(g);
+      gest = { suppress: true }; setTimeout(function () { if (gest && gest.suppress) gest = null; }, 400);
+    }
+    return owned;
+  }
+  function gestCancel() { var g = gest; gest = null; if (!g) return; clearTimeout(g.hold); g.row.style.transform = ""; g.wrap.classList.remove("lifted", "arm-del", "arm-done", "sw-left", "sw-right", "dragging"); g.wrap.style.transform = ""; }
+  function startDrag(g) {
+    g.mode = "drag"; g.wrap.classList.add("dragging");
+    var list = g.wrap.parentNode, sibs = Array.prototype.filter.call(list.children, function (c) { return c.classList && c.classList.contains("tswipe"); });
+    g.sibs = sibs.map(function (el) { var r = el.getBoundingClientRect(); return { el: el, id: el.getAttribute("data-task"), mid: r.top + r.height / 2 }; });
+    g.from = sibs.indexOf(g.wrap); g.to = g.from;
+  }
+  function moveDrag(g, y) {
+    g.wrap.style.transform = "translateY(" + (y - g.sy) + "px)";
+    var to = 0; g.sibs.forEach(function (s, i) { if (i !== g.from && y > s.mid) to++; });
+    if (to !== g.to) { g.to = to; g.sibs.forEach(function (s) { s.el.classList.remove("drop-before", "drop-after"); }); var others = g.sibs.filter(function (s, i) { return i !== g.from; });
+      if (others[to]) others[to].el.classList.add("drop-before"); else if (others.length) others[others.length - 1].el.classList.add("drop-after"); }
+  }
+  function endDrag(g) {
+    g.sibs.forEach(function (s) { s.el.classList.remove("drop-before", "drop-after"); });
+    g.wrap.classList.remove("dragging", "lifted"); g.wrap.style.transform = "";
+    if (g.to === g.from) return;
+    var ids = g.sibs.map(function (s) { return s.id; }), seg = ids.slice(), id = ids.splice(g.from, 1)[0]; ids.splice(g.to, 0, id);
+    var full = (g.opt.list || seg).slice(), at = full.indexOf(seg[0]);
+    if (at >= 0) full.splice.apply(full, [at, seg.length].concat(ids)); else full = ids;
+    setRanks(full); toast("New order saved for today.", 5000, { label: "Undo", fn: undoHist });
+  }
+  function setRanks(ids) {
+    pushHist("reorder");
+    var k = dayKey(); ids.forEach(function (id, i) { var x = taskById(id); if (x) { x.rank = i; x.rankDay = k; } });
+    save(); render(false);
+  }
+  function moveRank(id, list, dir) {
+    var ids = (list || []).slice(), i = ids.indexOf(id), j = i + dir;
+    if (i < 0 || j < 0 || j >= ids.length) return;
+    ids.splice(i, 1); ids.splice(j, 0, id); setRanks(ids); announce(dir < 0 ? "Moved up." : "Moved down.");
+    var f = $((dir < 0 ? "ra-up-" : "ra-down-") + id); if (f) f.focus();
+  }
+
+  // --- selecting many ---
+  function togglePick(id) {
+    var i = ui.picked.indexOf(id); if (i >= 0) ui.picked.splice(i, 1); else ui.picked.push(id);
+    if (!ui.picked.length) ui.selecting = false;
+    render(false); announce(ui.picked.length + " selected.");
+  }
+  function endSelect() { ui.selecting = false; ui.picked = []; render(false); }
+  function selBar() {
+    if (!ui.selecting) return null;
+    var ids = ui.picked.slice(), n = ids.length, ts = ids.map(taskById).filter(Boolean);
+    var batch = function (label, fn, msg) { return function () { pushHist(label); ts.forEach(fn); save(); endSelect(); toast(msg, 5000, { label: "Undo", fn: undoHist }); afterProgress(); }; };
+    var shift = function (days) { return function (t) { if (t.repeat === "once") { t.date = dayKey(addDays(t.date ? parseDay(t.date) : new Date(), days)); t.snoozeUntil = 0; } else t.snoozeUntil = addDays(new Date(), days).setHours(6, 0, 0, 0); }; };
+    var pr = sel("bulk-prio", [["", "Priority…"], ["urgent", "Urgent"], ["high", "High"], ["normal", "Normal"], ["low", "Low"]], "");
+    pr.addEventListener("change", function () { if (!pr.value) return; var v = pr.value; batch("priority", function (t) { t.priority = v; }, "Set " + n + (n === 1 ? " task" : " tasks") + " to " + v + ".")(); });
+    return h("div", { class: "selbar", id: "bulkbar", role: "region", "aria-label": "Selected tasks" },
+      h("div", { class: "row" }, h("p", { class: "status", id: "bulk-n", "aria-live": "polite", text: n + " selected" }),
+        h("button", { class: "btn link", type: "button", id: "bulk-all", onclick: function () { ui.picked = Array.prototype.map.call(document.querySelectorAll("#screen [data-task]"), function (e) { return e.getAttribute("data-task"); }).filter(function (v, i, a) { return a.indexOf(v) === i; }); render(false); } }, "Select all"),
+        h("button", { class: "btn link", type: "button", id: "bulk-cancel", onclick: endSelect }, "Cancel")),
+      h("div", { class: "bulkacts" },
+        h("button", { class: "btn", type: "button", id: "bulk-done", disabled: !n, onclick: batch("done", function (t) { if (!isDone(t)) { var k = periodKey(t); t.doneOn = k; t.doneAt = Date.now(); addHist(t, k); } }, "Marked " + n + " done.") }, "Done"),
+        h("button", { class: "btn", type: "button", id: "bulk-day", disabled: !n, onclick: batch("move", shift(1), "Moved " + n + " by a day.") }, "+1 day"),
+        h("button", { class: "btn", type: "button", id: "bulk-week", disabled: !n, onclick: batch("move", shift(7), "Moved " + n + " by a week.") }, "+1 week"),
+        h("label", { class: "sr-only", for: "bulk-prio", text: "Set priority" }), pr,
+        h("button", { class: "btn danger", type: "button", id: "bulk-del", disabled: !n, onclick: function () { pushHist("delete"); ts.forEach(function (t) { bankTask(t); }); S.tasks = S.tasks.filter(function (t) { return ids.indexOf(t.id) < 0; }); save(); endSelect(); toast("Deleted " + n + ".", 5000, { label: "Undo", fn: undoHist }); } }, "Delete")));
+  }
+
+  // --- undo / redo history for list changes (this session) ---
+  var hist = [], redo = [];
+  function snapState() { return JSON.stringify({ tasks: S.tasks, bank: S.bank }); }
+  function pushHist(label) { hist.push({ label: label, snap: snapState() }); if (hist.length > 40) hist.shift(); redo = []; }
+  function restore(snap) { var o = JSON.parse(snap); S.tasks = o.tasks.map(normTask).filter(Boolean); S.bank = o.bank; }
+  function undoHist() { var h1 = hist.pop(); if (!h1) { toast("Nothing to undo."); return; } redo.push({ label: h1.label, snap: snapState() }); restore(h1.snap); save(); toast("Undid " + h1.label + "."); render(false); }
+  function redoHist() { var r = redo.pop(); if (!r) { toast("Nothing to redo."); return; } hist.push({ label: r.label, snap: snapState() }); restore(r.snap); save(); toast("Redid " + r.label + "."); render(false); }
+  document.addEventListener("keydown", function (e) {
+    if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== "z") return;
+    var a = document.activeElement; if (a && /^(INPUT|TEXTAREA)$/.test(a.tagName)) return;
+    e.preventDefault(); if (e.shiftKey) redoHist(); else undoHist();
+  });
+  function clearFinished() {
+    var gone = S.tasks.filter(function (t) { return t.repeat === "once" && isDone(t); });
+    if (!gone.length) { toast("No finished one-off tasks to clear."); return; }
+    pushHist("clear"); gone.forEach(function (t) { bankTask(t); });
+    S.tasks = S.tasks.filter(function (t) { return gone.indexOf(t) < 0; }); save();
+    toast("Cleared " + gone.length + " finished.", 5000, { label: "Undo", fn: undoHist }); render(false);
+  }
+
+  // --- the next ten days ---
+  function dayLoad(d) {
+    var list = d === 0 ? S.tasks.filter(function (t) { return inToday(t) && !isDone(t); }) : S.tasks.filter(function (t) { return occursOn(t, addDays(new Date(), d)); });
+    return { n: list.length, mins: list.reduce(function (a, t) { return a + (t.dur || 0); }, 0) };
+  }
+  function horizon() {
+    var cur = ui.day || 0;
+    return h("div", { class: "horizon", role: "tablist", "aria-label": "The next ten days", id: "horizon" }, Array.apply(null, Array(10)).map(function (_, i) {
+      var d = addDays(new Date(), i), L = dayLoad(i);
+      return h("button", { class: "hday" + (L.n >= 6 ? " busy" : ""), type: "button", role: "tab", id: "hd-" + i, "aria-selected": cur === i ? "true" : "false",
+        "aria-label": (i === 0 ? "Today" : i === 1 ? "Tomorrow" : fmtDate(d.getTime())) + ", " + L.n + (L.n === 1 ? " task" : " tasks") + (L.mins ? ", about " + durText(L.mins) : ""),
+        onclick: function () { ui.day = i; ui.expanded = null; render(false); var f = $("hd-" + i); if (f) f.focus(); } },
+        h("span", { class: "hd-dow", text: i === 0 ? "Today" : DOW[d.getDay()] }), h("span", { class: "hd-num", text: String(d.getDate()) }),
+        h("span", { class: "hd-load", text: L.n ? L.n + (L.mins ? " · " + (L.mins >= 60 ? Math.round(L.mins / 6) / 10 + "h" : L.mins + "m") : "") : "–" }));
+    }));
+  }
+  function dayView(i) {
+    var d = addDays(new Date(), i), list = S.tasks.filter(function (t) { return occursOn(t, d); }).sort(function (a, b) { return (a.time || "99") < (b.time || "99") ? -1 : (a.time || "99") > (b.time || "99") ? 1 : PR[a.priority] - PR[b.priority]; });
+    var L = dayLoad(i);
+    return [h("p", { class: "small", id: "day-sum", text: (i === 1 ? "Tomorrow" : fmtDate(d.getTime())) + ": " + L.n + (L.n === 1 ? " task" : " tasks") + (L.mins ? ", about " + durText(L.mins) + " of planned time" : "") + "." }),
+      list.length ? h("div", { class: "tlist", id: "day-list" }, list.map(function (t) { return taskRow(t, d, "upcoming"); })) : h("p", { class: "empty", id: "day-empty", text: "Nothing planned. Say “… on " + DOW[d.getDay()] + "” to add something." })];
+  }
+
+  // --- reminders: lead times, and an alert while the app is open ---
+  function remindTime(t) { var d = dueAt(t); return d === null ? null : d - (t.remindBefore || 0) * 60000; }
+  function autoRemind(t) { if (S.topics.reminders && canRemind(t) && !(t.remindAt > Date.now())) scheduleReminder(t); }
+  setInterval(function () {
+    if (document.hidden) return;
+    var now = Date.now();
+    S.tasks.forEach(function (t) {
+      if (isDone(t) || !(t.remindBefore >= 0) || !t.remindWant) return;
+      var r = remindTime(t); if (r === null || now < r || now - r > 90e3 || t.alerted === r) return;
+      t.alerted = r; save();
+      var msg = t.private ? "You have a reminder in Ten Days." : t.title + (t.remindBefore ? " in " + durText(t.remindBefore) : " now");
+      toast("⏰ " + msg, 8000); chime("big"); try { if (S.haptics !== false && HX.vibrate) navigator.vibrate([30, 60, 30]); } catch (e) {}
+      try { if (window.Notification && Notification.permission === "granted") new Notification("Ten Days", { body: msg }); } catch (e) {}
+    });
+  }, 20000);
+  var PR = { urgent: -1, high: 0, normal: 1, low: 2 };
   function byUrgency(now) {
     var ms = now.getTime();
     return function (a, b) {
@@ -1697,9 +2017,11 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (!any) out.unshift(h("p", { class: "empty", id: "no-upcoming", text: "Nothing planned for the next 7 days." }));
     return out;
   }
-  function allView(now, q) {
-    q = (q || "").trim().toLowerCase();
-    var l = S.tasks.filter(function (t) { return !q || (t.title + " " + t.contact.name + " " + t.notes + " " + TYPE_NAME[t.type] + " " + (t.group || "")).toLowerCase().indexOf(q) >= 0; });
+  function allView(now, q, f) {
+    q = (q || "").trim().toLowerCase(); f = f || "all";
+    var today = dayKey(now), ms = now.getTime();
+    var overdue = function (t) { var d = dueAt(t, now); return !isDone(t, now) && ((d !== null && d < ms) || (t.repeat === "once" && t.date && t.date < today)); };
+    var l = S.tasks.filter(function (t) { return f === "all" || (f === "active" && !isDone(t, now)) || (f === "overdue" && overdue(t)) || (f === "done" && isDone(t, now)); }).filter(function (t) { return !q || (t.title + " " + t.contact.name + " " + t.notes + " " + TYPE_NAME[t.type] + " " + (t.group || "")).toLowerCase().indexOf(q) >= 0; });
     var open = l.filter(function (t) { return !isDone(t, now); }).sort(byUrgency(now)), done = l.filter(function (t) { return isDone(t, now); });
     var out = [];
     if (!l.length) out.push(h("p", { class: "empty", id: "no-tasks", text: q ? "No task matches “" + q + "”." : "No tasks yet." }));
@@ -2084,10 +2406,10 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   function scene(i) { var s = SCENES[i % SCENES.length]; return svg("svg", { viewBox: "0 0 320 200", class: "scene", role: "img", "aria-label": "Illustration: " + s[0].toLowerCase(), preserveAspectRatio: "xMidYMid slice" }, s[1]()); }
 
   // ============ the assistant: one box, one small card, one next step ============
-  var FIELD_NAME = { date: "day", time: "time", dur: "length", anchor: "timing", repeat: "repeat", priority: "priority", private: "privacy", place: "place", dep: "order", title: "title" };
+  var FIELD_NAME = { remind: "reminder", date: "day", time: "time", dur: "length", anchor: "timing", repeat: "repeat", priority: "priority", private: "privacy", place: "place", dep: "order", title: "title" };
   var ANCHOR_MEM = { "after class": "Class ends around ", "after work": "Work ends around ", "after the gym": "Done at the gym around ", "after dinner": "Dinner is done around ",
     "after lunch": "Lunch is done around ", "when I get home": "Home around ", "before bed": "Bedtime around ", "when I wake up": "Wake up around " };
-  var EDIT_KEYS = ["title", "type", "repeat", "days", "date", "time", "dur", "anchor", "place", "dep", "depId", "items", "contact", "priority", "private", "link"];
+  var EDIT_KEYS = ["title", "type", "repeat", "days", "date", "time", "dur", "anchor", "place", "dep", "depId", "items", "contact", "priority", "private", "link", "remindBefore", "remindWant"];
   function cap(x) { return x ? x.charAt(0).toUpperCase() + x.slice(1) : ""; }
   function setAsst(a) { S.asst = a; ui.asstEdit = null; save(); }
   function lastTask() { var l = S.lastTask; return l && Date.now() - l.at < 30 * 60e3 ? taskById(l.id) : null; }
@@ -2140,6 +2462,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     S.asst = { kind: "task", d: nd, editing: n.id, fresh: !t };
     ui.asstEdit = null;
     if (!save()) return;
+    if (n.remindWant) autoRemind(n);   // you asked for a reminder: schedule it straight away
     var where = inToday(n) ? "Today" : n.date ? whenLabel(n) : "your list";
     toast((verb || "Saved") + ": " + n.title + (t ? "" : " (" + where + ")"), 6000, { label: "Undo", fn: function () {
       if (snap) { var old = JSON.parse(snap); S.tasks = S.tasks.map(function (x) { return x.id === old.id ? normTask(old) : x; }); S.asst = { kind: "task", d: taskToDraft(taskById(old.id)), editing: old.id }; }
@@ -2292,15 +2615,15 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       kids, h("div", { class: "row" }, h("button", { class: "btn", type: "submit", id: "ae-done" }, a.editing ? "Save change" : "Done"),
         h("button", { class: "btn link", type: "button", id: "ae-cancel", onclick: function () { ui.asstEdit = null; render(false); } }, "Cancel")));
   }
-  function canRemind(t) { var d = dueAt(t), now = Date.now(); return d !== null && d - now > 60e3 && d - now < 3 * 864e5 - 60e3; }
+  function canRemind(t) { var d = remindTime(t), now = Date.now(); return d !== null && d - now > 60e3 && d - now < 3 * 864e5 - 60e3; }
   var remindBusy = "";
   function scheduleReminder(t) {
-    var d = dueAt(t); if (d === null || remindBusy) return;
+    var d = remindTime(t); if (d === null || remindBusy) return;
     remindBusy = t.id; render(false);
     // ntfy holds the message and delivers it at the due time. Private tasks say nothing about the task.
-    ntfy(S.topics.reminders, { title: t.private ? "Ten Days" : "Reminder", priority: "4", tags: "bell", delay: String(Math.floor(d / 1000)) }, t.private ? "You have a reminder in Ten Days." : t.title).then(function (r) {
+    ntfy(S.topics.reminders, { title: t.private ? "Ten Days" : "Reminder", priority: "4", tags: "bell", delay: String(Math.floor(d / 1000)) }, t.private ? "You have a reminder in Ten Days." : t.title + (t.remindBefore ? " (in " + durText(t.remindBefore) + ")" : "")).then(function (r) {
       remindBusy = "";
-      if (r.ok) { var tt = taskById(t.id); if (tt) { tt.remindAt = d; save(); } toast("Reminder scheduled for " + whenText(d) + "."); }
+      if (r.ok) { var tt = taskById(t.id); if (tt) { tt.remindAt = d; tt.remindWant = true; save(); } toast("Reminder scheduled for " + whenText(d) + "."); }
       else toast("Reminder not scheduled. " + whyText(r.why), 6000);
       render(false);
     });
@@ -2314,8 +2637,13 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     else if (due === null) kids.push(h("p", { class: "small", id: "remind-off", text: d.remind ? "You asked for a reminder. Add a time and I can schedule one." : "No reminder. Add a time if you want one." }));
     else if (!canRemind(t)) kids.push(h("p", { class: "small", id: "remind-off", text: due < now ? "No reminder: that time has passed." : "No reminder yet. Phone reminders can be scheduled up to 3 days ahead." }));
     var acts = [];
-    if (!(t.remindAt > now) && S.topics.reminders && canRemind(t)) acts.push(h("button", { class: d.remind ? "btn primary" : "btn", type: "button", id: "remind-me", disabled: !!remindBusy, onclick: function () { scheduleReminder(t); } },
-      remindBusy === t.id ? "Scheduling…" : "Remind me at " + fmtTime(due)));
+    if (!(t.remindAt > now) && S.topics.reminders && due !== null && due - now > 120e3) {
+      var leadSel = sel("remind-lead", [["0", "At the time"], ["5", "5 min before"], ["15", "15 min before"], ["30", "30 min before"], ["60", "1 hour before"]], String(t.remindBefore || 0));
+      leadSel.addEventListener("change", function () { t.remindBefore = +leadSel.value; save(); });
+      kids.push(h("div", { class: "row" }, h("label", { class: "sr-only", for: "remind-lead", text: "When to remind you" }), leadSel));
+      acts.push(h("button", { class: d.remind ? "btn primary" : "btn", type: "button", id: "remind-me", disabled: !!remindBusy || !canRemind(t), onclick: function () { t.remindBefore = +leadSel.value; t.remindWant = true; scheduleReminder(t); } },
+        remindBusy === t.id ? "Scheduling…" : "Remind me"));
+    }
     if (due !== null) acts.push(h("button", { class: "btn", type: "button", id: "asst-ics", onclick: function () { downloadIcs(t); toast("Calendar file made. Open it to add the event; Ten Days can't see your calendar."); } }, "Calendar file"));
     if (t.dur && !isDone(t)) acts.push(h("button", { class: "btn", type: "button", id: "asst-focus", onclick: function () { ui.focusMins = t.dur; go("focus", t.id); } }, "Focus " + durText(t.dur)));
     if (S.topics.reminders && !S.myTestedAt && !(t.remindAt > now)) kids.push(h("p", { class: "small", text: "Your reminders channel isn't tested yet, so a reminder might not arrive." }));
@@ -3223,22 +3551,32 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   }
   function todayView(now) {
     var list = S.tasks.filter(function (t) { return inToday(t, now); });
-    var open = list.filter(function (t) { return !isDone(t, now) && !(t.snoozeUntil > now.getTime()); }).sort(byTop(now));
+    var k0 = dayKey(now), rk = function (t) { return t.rankDay === k0 && t.rank !== null ? t.rank : null; }, bt = byTop(now);
+    // your own order (from dragging) wins, except something due within two hours still comes first
+    var open = list.filter(function (t) { return !isDone(t, now) && !(t.snoozeUntil > now.getTime()); }).sort(function (a, b) {
+      var ra = rk(a), rb = rk(b);
+      if (ra !== null && rb !== null) return ra - rb;
+      if (ra !== null) return topScore(b, now) === 0 ? 1 : -1;
+      if (rb !== null) return topScore(a, now) === 0 ? -1 : 1;
+      return bt(a, b);
+    });
+    var openIds = open.map(function (t) { return t.id; });
     var later = list.filter(function (t) { return !isDone(t, now) && t.snoozeUntil > now.getTime(); });
     var done = list.filter(function (t) { return isDone(t, now); }).sort(function (a, b) { return (b.doneAt || 0) - (a.doneAt || 0); });
     var out = [], top = open.slice(0, 3), rest = open.slice(3).concat(later);
     if (!list.length) out.push(h("p", { class: "empty", id: "no-today", text: S.tasks.length ? "Nothing on today's list." : "Nothing here yet. Type or say anything above." }));
     else if (!open.length) out.push(h("p", { class: "empty", id: "all-done", text: later.length ? "Your top tasks are done. The rest are snoozed." : "All done for today." }));
-    out.push(h("div", { class: "tlist", id: "today-list" }, top.map(function (t) { return taskRow(t, now, "today"); })));
+    out.push(h("div", { class: "tlist", id: "today-list" }, top.map(function (t) { return taskRow(t, now, "today", { reorder: true, list: openIds }); })));
     if (rest.length) {
       out.push(h("button", { class: "btn disc", type: "button", id: "toggle-rest", "aria-expanded": ui.showRest ? "true" : "false", "aria-controls": "rest-list", onclick: function () { ui.showRest = !ui.showRest; render(false); } },
         h("span", { text: "Everything else today (" + rest.length + ")" }), icon(ui.showRest ? "up" : "down")));
-      if (ui.showRest) out.push(h("div", { class: "tlist", id: "rest-list" }, rest.map(function (t) { return taskRow(t, now, "today"); })));
+      if (ui.showRest) out.push(h("div", { class: "tlist", id: "rest-list" }, rest.map(function (t) { return taskRow(t, now, "today", { reorder: openIds.indexOf(t.id) >= 0, list: openIds }); })));
     }
     if (done.length) {
       out.push(h("button", { class: "btn link", type: "button", id: "toggle-done", "aria-expanded": ui.showDone ? "true" : "false", onclick: function () { ui.showDone = !ui.showDone; render(false); } },
         (ui.showDone ? "Hide done" : "Show done") + " (" + done.length + ")"));
-      if (ui.showDone) out.push(h("div", { class: "tlist", id: "done-list" }, done.map(function (t) { return taskRow(t, now, "today"); })));
+      if (ui.showDone) out.push(h("div", { class: "tlist", id: "done-list" }, done.map(function (t) { return taskRow(t, now, "today"); })),
+        done.some(function (t) { return t.repeat === "once"; }) ? h("button", { class: "btn link", type: "button", id: "clear-done", onclick: clearFinished }, "Clear finished") : null);
     }
     return out;
   }
@@ -3486,16 +3824,15 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         ns.step !== "clear" ? stepCard(ns) : null,
         orgLine(),
         noticedCard(),
-        h("div", { class: "sect" }, h("h2", { text: st0.total - st0.done > 3 ? "Top 3" : "Today" }), h("button", { class: "btn link", type: "button", id: "all-tasks", onclick: function () { go("m-tasks"); } }, "All tasks")),
-        h("div", { class: "group", id: "task-area" }, todayView(now)),
+        horizon(),
+        h("div", { class: "sect" }, h("h2", { text: ui.day ? (ui.day === 1 ? "Tomorrow" : fmtDate(addDays(now, ui.day).getTime())) : st0.total - st0.done > 3 ? "Top 3" : "Today" }), h("button", { class: "btn link", type: "button", id: "all-tasks", onclick: function () { go("m-tasks"); } }, "All tasks")),
+        h("div", { class: "group", id: "task-area" }, ui.day ? dayView(ui.day) : todayView(now)),
         h("div", { class: "tools", role: "group", "aria-label": "Tools" },
           tool("t-breathe", "wind", "Breathe", function () { go("breathe"); }),
           tool("t-focus", "timer", S.session ? "Focus · on" : "Focus", function () { go("focus"); }),
           tool("t-notes", "note", "Notes", function () { go("notes"); })),
-        h("button", { class: "btn disc", type: "button", id: "toggle-up", "aria-expanded": upOpen ? "true" : "false", "aria-controls": "up-area", onclick: function () { ui.showUp = !ui.showUp; render(false); } },
-          h("span", { text: "Coming up" }), icon(upOpen ? "up" : "down")),
-        upOpen ? h("div", { class: "group", id: "up-area" }, upcomingView(now)) : null
-      ] };
+        h("p", { class: "small hint2", text: "Tap a task to open it. Swipe right for done, left to delete. Hold to select several; hold and drag to reorder." })
+      ], float: selBar() };
     },
     breathe: function () {
       back("home");
@@ -4004,7 +4341,12 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         h("p", { class: "small", text: HX.vibrate ? "This device supports vibration." : hxOk ? "On iPhone, haptics use a workaround that works on some iOS versions only." : "This device doesn't offer haptics to web apps." }),
         tog("sound-toggle", S.fx.sound, "Sound (off by default)", function (v) { S.fx.sound = v; if (v) chime("soft", true); }),
         S.fx.sound ? h("button", { class: "btn", type: "button", id: "sound-test", onclick: function () { chime("big", true); } }, "Play a test sound") : null,
+        tog("timer-sound-toggle", S.fx.timerSound !== false, "Sound when a focus timer ends", function (v) { S.fx.timerSound = v; }),
         tog("celebrate-toggle", S.fx.celebrate, "Celebrations for milestones", function (v) { S.fx.celebrate = v; }),
+        h("p", { class: "lbl", text: "Notifications while the app is open" }),
+        window.Notification ? h("button", { class: "btn", type: "button", id: "notif-ask", disabled: Notification.permission === "granted", onclick: function () { try { Notification.requestPermission().then(function () { render(false); }); } catch (e) { toast("This browser didn't allow it."); } } },
+          Notification.permission === "granted" ? "Notifications allowed" : Notification.permission === "denied" ? "Blocked in your settings" : "Allow notifications")
+          : h("p", { class: "small", id: "notif-none", text: "This browser doesn't offer notifications to web apps here. Phone reminders still come through ntfy." }),
         tog("rpg-toggle", S.fx.rpg, "Levels, XP and quests", function (v) { S.fx.rpg = v; }),
         h("button", { class: "btn", type: "button", id: "celebrate-test", onclick: function () { celebrate("This is a celebration", "It never blocks the screen"); } }, "Preview a celebration"),
         h("div", { class: "group push" }, back("you"))
@@ -4189,12 +4531,16 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     "m-tasks": function () {
       var now = new Date();
       var search = h("input", { type: "text", id: "task-search", placeholder: "Search tasks", autocomplete: "off", value: ui.search || "", "aria-label": "Search tasks" });
-      search.addEventListener("input", function () { ui.search = search.value; var box = $("all-box"); if (box) box.replaceChildren.apply(box, allView(new Date(), ui.search)); });
-      return { title: "All tasks", body: [
+      search.addEventListener("input", function () { ui.search = search.value; var box = $("all-box"); if (box) box.replaceChildren.apply(box, allView(new Date(), ui.search, ui.filter)); });
+      var fb = function (k, label) { return h("button", { type: "button", id: "f-" + k, "aria-pressed": (ui.filter || "all") === k ? "true" : "false", onclick: function () { ui.filter = k; render(false); } }, label); };
+      return { float: selBar(), title: "All tasks", body: [
         h("p", { text: "Tasks stay on this phone. Tap the circle to finish one. The quickest way to add one is the box on Today." }),
         h("button", { class: "btn", type: "button", id: "org-go2", disabled: orgBusy, onclick: function () { organize(false); go("home"); } }, icon("sparkle"), " Organize my list"),
         search,
-        h("div", { class: "group", id: "all-box" }, allView(now, ui.search)),
+        h("div", { class: "seg four", role: "group", "aria-label": "Show" }, fb("all", "All"), fb("active", "Active"), fb("overdue", "Overdue"), fb("done", "Done")),
+        h("div", { class: "group", id: "all-box" }, allView(now, ui.search, ui.filter)),
+        h("div", { class: "row links" }, h("button", { class: "btn link", type: "button", id: "clear-done2", onclick: clearFinished }, "Clear finished"),
+          h("button", { class: "btn link", type: "button", id: "hist-undo", disabled: !hist.length, onclick: undoHist }, "Undo"), h("button", { class: "btn link", type: "button", id: "hist-redo", disabled: !redo.length, onclick: redoHist }, "Redo")),
         h("div", { class: "group push" },
           h("button", { class: "btn primary", type: "button", id: "new-task", onclick: function () { go("task-edit", null); } }, "New task with a form"),
           back("home"))
@@ -4609,7 +4955,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     $("float").replaceChildren.apply($("float"), out.float ? [out.float] : []);
     root.setAttribute("data-screen", ui.screen);                       // style hook only
     updateChrome();
-    if (moveFocus) { root.classList.remove("enter"); void root.offsetWidth; root.classList.add("enter"); }
+    // the entrance animation plays when you arrive on a screen, not on every refresh (no flicker after a tap)
+    if (moveFocus) { root.classList.remove("enter"); void root.offsetWidth; root.classList.add("enter"); } else root.classList.remove("enter");
     if (!moveFocus) {
       // keep what the person was typing across live refreshes
       Object.keys(vals).forEach(function (id) { var i = $(id); if (i) i.value = vals[id]; });
@@ -4627,7 +4974,11 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     focusT = setTimeout(function () {
       if (ui.screen !== "focus" || !S.session) return;
       var se = S.session, left = se.end - Date.now(), c = $("focus-left"), arc = $("f-arc");
-      if (left <= 0) { render(false); return; }
+      if (left <= 0) {
+        if (!se.cued) { se.cued = true; chime("big", S.fx.timerSound !== false); try { if (S.haptics !== false && HX.vibrate) navigator.vibrate([60, 80, 60, 80, 120]); } catch (e) {}
+          try { if (document.hidden && window.Notification && Notification.permission === "granted") new Notification("Ten Days", { body: "Focus session done." }); } catch (e) {} }
+        render(false); return;
+      }
       if (c) c.textContent = mmss(left);
       if (arc) { var C = 2 * Math.PI * 46; arc.setAttribute("stroke-dasharray", (C * Math.max(0, Math.min(1, 1 - left / (se.end - se.start)))).toFixed(2) + " " + C.toFixed(2)); }
       tickFocus();
