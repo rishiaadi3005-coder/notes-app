@@ -58,7 +58,7 @@ async function axe(page, name) {
 (async () => {
   await new Promise(r => server.listen(0, "127.0.0.1", r));
   APP = "http://127.0.0.1:" + server.address().port + "/index.html";
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"] });
   try {
     // ---------- engine ----------
     console.log("engine");
@@ -550,11 +550,15 @@ async function axe(page, name) {
         const sys = body.system_instruction.parts[0].text, data = body.contents[0].parts[0].text;
         calls.push({ url: req.url(), key: req.headers()["x-goog-api-key"], sys, data });
         if (mode === "flaky" && req.headers()["x-goog-api-key"]) return r.abort("failed");
-        if (mode === "404" && req.url().includes("gemini-flash-latest")) return r.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: { message: "models/gemini-flash-latest is not found" } }) });
+        if (mode === "think" && body.generationConfig.thinkingConfig && body.generationConfig.thinkingConfig.thinkingLevel === "minimal") return r.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ error: { message: "thinking_level MINIMAL is not supported for this model" } }) });
+        if (mode === "404" && req.url().includes("-latest")) return r.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: { message: "models/gemini-flash-latest is not found" } }) });
         if (mode === "429") return r.fulfill({ status: 429, contentType: "application/json", body: JSON.stringify({ error: { message: "quota" } }) });
         const today = new Date(); const dk = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
         let out;
-        if (sys.includes("Read the person's note")) out = JSON.stringify({ kind: "tasks", tasks: [{ title: "Grab protein powder", date: "", time: "", minutes: 0, repeat: "once", items: [] }, { title: "Email my TA about the quiz", date: dk, time: "", minutes: 0, repeat: "once", items: [] }], question: "" });
+        const audio = body.contents[0].parts[1] && body.contents[0].parts[1].inline_data;
+        if (audio) calls[calls.length - 1].audio = audio.mime_type + ":" + audio.data.length;
+        if (sys.includes("A voice note is attached")) out = JSON.stringify({ transcript: "pay rent today and someday clean the garage", kind: "tasks", tasks: [{ title: "Pay rent", date: dk, priority: "high" }, { title: "Clean the garage", priority: "low" }] });
+        else if (sys.includes("Read the person's note")) out = JSON.stringify({ kind: "tasks", tasks: [{ title: "Grab protein powder", date: "", time: "", minutes: 0, repeat: "once", items: [] }, { title: "Email my TA about the quiz", date: dk, time: "", minutes: 0, repeat: "once", items: [] }], question: "" });
         else if (sys.includes("Make a short, realistic plan")) out = JSON.stringify({ steps: [{ title: "Redo chapter 3 problems", date: dk, minutes: 40 }, { title: "Bad date step", date: "1999-01-01", minutes: 20 }] });
         else if (sys.includes("Group related tasks")) { const ids = [...data.matchAll(/^(k\w+):/gm)].map(m => m[1]); out = JSON.stringify({ groups: [{ name: "daily", ids: ids.slice(0, 2).concat(["kfake"]) }] }); }
         else if (sys.includes("You manage the person's to-do list")) { const ids = [...data.matchAll(/^(k\w+) \|/gm)].map(m => m[1]); out = JSON.stringify({ summary: "A couple of tweaks.", changes: [{ type: "group", ids: ids.slice(0, 2), name: "school", why: "Same class" }, { type: "add", title: "Stretch", repeat: "daily", why: "You move most days" }, { type: "date", id: "kfake", date: dk }] }); }
@@ -578,24 +582,35 @@ async function axe(page, name) {
       await page.click("#ai-agree");
       await page.waitForSelector("#ai-status:has-text('connection works')");
       ok(calls.length === 1 && calls[0].key === KEY && !calls[0].url.includes("key="), "one tap saves the key (dots, spaces stripped), turns on and checks; key in a header");
-      ok(calls[0].url.includes("models/gemini-flash-latest:generateContent"), "default model");
+      ok(calls[0].url.includes("models/gemini-flash-lite-latest:generateContent"), "default model is the fast one");
       ok(await page.isVisible("#ai-key-ok"), "key shown as saved");
       // a network that blocks the normal request: retried without the pre-check
       mode = "flaky"; await page.click("#ai-agree"); await page.waitForSelector("#ai-status:has-text('connection works')");
       ok(calls[calls.length - 1].url.includes("key=") && !calls[calls.length - 1].key, "blocked request retried in the simple form");
       // a retired model name: Ten Days asks Google for a current Flash model
       mode = "404"; await page.click("#ai-agree"); await page.waitForSelector("#ai-status:has-text('connection works')");
-      ok((await S(page)).ai.model === "gemini-9-flash", "model found automatically");
+      ok((await S(page)).ai.model === "gemini-9-flash-lite", "fast model found automatically");
+      // a model that doesn't allow minimal thinking: steps down once and remembers
+      mode = "think"; await page.click("#ai-agree"); await page.waitForSelector("#ai-status:has-text('connection works')");
+      ok((await S(page)).ai.think["gemini-9-flash-lite"] === "low", "thinking setting stepped down and remembered");
       mode = "ok";
       // messy note -> AI preview, nothing saved yet
       await page.click("#nav-home");
       const before = (await S(page)).tasks.length;
       await ask(page, LONG);
-      await page.waitForSelector("#pl-steps");
-      ok((await page.textContent("#asst-state")).includes("Plan by AI"), "AI result labeled");
-      ok((await S(page)).tasks.length === before, "AI suggestion not saved until approved");
-      await page.click("#pl-add");
-      ok((await S(page)).tasks.some(t => t.title === "Email my TA about the quiz"), "approved AI tasks saved");
+      await page.waitForSelector("#ai-saved");
+      ok((await page.textContent("#asst")).includes("Added by AI · 2 tasks"), "AI result saved and labeled");
+      ok((await S(page)).tasks.length === before + 2 && (await S(page)).tasks.some(t => t.title === "Email my TA about the quiz"), "AI tasks created straight away");
+      await page.click("#ai-undo"); ok((await S(page)).tasks.length === before, "AI tasks undo");
+      await ask(page, LONG); await page.waitForSelector("#ai-saved");
+      // voice note: record, stop, tasks appear by urgency
+      await page.click("#qa-mic"); await page.waitForSelector("#rec-time"); await page.waitForTimeout(1500);
+      await page.click("#rec-stop"); await page.waitForSelector("#ai-heard");
+      const vc = calls[calls.length - 1];
+      ok(vc.audio && vc.audio.startsWith("audio/wav:"), "voice note sent as WAV audio");
+      const vs = await S(page);
+      ok(vs.tasks.some(t => t.title === "Pay rent" && t.priority === "high") && vs.tasks.some(t => t.title === "Clean the garage" && t.priority === "low"), "voice note became tasks with urgency");
+      ok((await page.textContent("#ai-heard")).includes("pay rent today"), "shows what it heard");
       // simple input stays rule-based
       const n0 = calls.length; await ask(page, "Buy milk"); ok(calls.length === n0, "clear input never calls AI");
       await ask(page, "#private " + LONG); ok(calls.length === n0, "private input never sent");
@@ -622,17 +637,15 @@ async function axe(page, name) {
       ok((await page.textContent("#sup-ai-text")).includes("not a person"), "support words labeled as AI");
       ok(!posts_any(calls, "Check in"), "check-in text never sent to AI");
       await page.click("#sup-ok");
-      // the manager: proposes, nothing changes until applied; private tasks never sent
+      // organize: one tap, applied, listed, undoable; private tasks never sent
       await page.click("#nav-home"); await ask(page, "#private Secret appointment");
-      await page.click("#org-go"); await page.waitForSelector("#org-apply");
-      ok((await page.textContent("#org")).includes("not applied yet") && (await page.locator("#org-list .toggle").count()) === 2, "organizer proposes; bad ids dropped");
+      const pre = JSON.stringify((await S(page)).tasks.map(t => [t.id, t.title, t.group, t.repeat]));
+      await page.click("#org-go"); await page.waitForSelector("#org-list");
       ok(!calls[calls.length - 1].data.includes("Secret appointment"), "private task not sent to the organizer");
-      ok(!(await S(page)).tasks.some(t => t.title === "Stretch"), "nothing applied yet");
-      await page.click("#org-apply");
       let st = await S(page);
-      ok(st.tasks.some(t => t.title === "Stretch" && t.repeat === "daily") && st.tasks.filter(t => t.group === "School").length === 2, "organizer changes applied");
-      await page.click("#toast-act"); st = await S(page);
-      ok(!st.tasks.some(t => t.title === "Stretch") && !st.tasks.some(t => t.group), "organizer undo");
+      ok(st.tasks.some(t => t.title === "Stretch" && t.repeat === "daily") && st.tasks.filter(t => t.group === "School").length >= 2 && (await page.locator("#org-list li").count()) === 2, "organize applied straight away; bad ids dropped");
+      await page.click("#org-undo"); st = await S(page);
+      ok(JSON.stringify(st.tasks.map(t => [t.id, t.title, t.group, t.repeat])) === pre, "organize undo puts everything back");
       // library picks
       await page.click("#nav-you"); await page.click("#y-lib");
       await page.setInputFiles("#pdf-in", FIX + "/book.pdf"); await page.waitForSelector("#passages", { timeout: 20000 });
@@ -651,7 +664,7 @@ async function axe(page, name) {
       const n1 = calls.length; await page.click("#nav-home"); await ask(page, LONG + " again");
       ok(calls.length === n1, "turned off: nothing sent");
       await axe(page, "today-ai");
-      ok(!errors.filter(e => !/status of (429|404)/.test(e)).length, "ai: no errors " + errors.join(" | "));
+      ok(!errors.filter(e => !/status of (429|404|400)/.test(e)).length, "ai: no errors " + errors.join(" | "));
       await ctx.close();
     }
 
@@ -677,15 +690,28 @@ async function axe(page, name) {
       await ask(page, "I want to read a book");
       ok(await page.isVisible("#read-block"), "reading offers to add the book");
       await page.setInputFiles("#rb-file", FIX + "/book.pdf");
-      await page.waitForSelector("#passages", { timeout: 20000 });
+      await page.waitForSelector("#pdf-page canvas", { timeout: 20000 });
       s = await S(page);
       ok(s.tasks.some(t => t.title === "Read a book" && t.docId), "book linked to the reading task");
+      ok((await page.textContent("#read-page")) === "Page 1 of 2" && await page.evaluate(() => document.querySelector("#pdf-page canvas").width > 100), "the real page is drawn");
+      await page.click("#rd-next"); await page.waitForSelector("#pdf-page[data-ready='2']");
+      ok((await S(page)).docs[0].pos === 2, "place kept");
+      await page.click("#read-done");
+      s = await S(page); ok(s.tasks.find(t => t.title === "Read a book").doneOn, "Completed finishes the reading task");
+      ok((await page.textContent("#screen h1")) !== "book", "Completed closes the book");
+      await page.click("#nav-you"); await page.click("#y-lib"); await page.click("[data-doc]");
+      await page.click("#sel-all");
+      ok((await page.textContent("#sel-n")).match(/\d+ passages? selected/), "select all on this page");
+      await page.click("#sel-clear");
+      await page.click("#pg-prev");
       await page.locator(".passage.sel").nth(0).click(); await page.locator(".passage.sel").nth(1).click(); await page.click("#sel-save");
       await page.click("#pg-next"); await page.click("#nav-home");
       await page.click("#sos"); await page.waitForTimeout(800); await page.click("#cd-cancel");
       ok(await page.isVisible("#sup-more") && (await page.locator("#sup-more [data-readon]").count()) >= 1, "support: keep reading with a way back into the book");
       await page.locator("#sup-more [data-readon]").first().click();
-      ok(await page.isVisible("#passages"), "read on from the passage");
+      await page.waitForSelector("#pdf-page canvas", { timeout: 20000 });
+      ok(await page.isVisible("#read-close"), "read on opens the book itself");
+      await page.click("#read-close");
       await page.click("#nav-you"); await page.click("#y-mem");
       ok(await page.isVisible("#learn-toggle"), "learning can be switched off");
       ok(!errors.length, "manager: no errors " + errors.join(" | "));
