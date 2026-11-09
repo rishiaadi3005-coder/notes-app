@@ -462,9 +462,38 @@ input[type=search], input[type=number] { width: 100%; min-width: 0; min-height: 
 #screen { overflow-wrap: anywhere; }
 #screen .btn.link { overflow-wrap: break-word; flex: 0 1 auto; }
 
+/* voice */
+.qa .mic { width: 48px; height: 48px; flex: none; border-radius: 17px; border: 1px solid var(--line); background: var(--field); color: var(--ink); display: grid; place-items: center; padding: 0; }
+.qa .mic svg { width: 22px; height: 22px; }
+.qa .mic.on { background: linear-gradient(180deg, var(--red-1), var(--red-2)); color: var(--signal-ink); border-color: transparent; }
+.rec { border-color: var(--signal-line); }
+.recdot { display: inline-block; width: .7em; height: .7em; border-radius: 50%; background: var(--red-1); margin-right: .5em; animation: recblink 1s ease-in-out infinite alternate; }
+@keyframes recblink { from { opacity: 1; } to { opacity: .25; } }
+/* working on it */
+.aispin { display: flex; align-items: center; gap: .6em; color: var(--muted); font-weight: 650; margin: 0; }
+.aispin .dots { display: inline-flex; gap: 4px; }
+.aispin .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--ty-meeting); animation: dotup 900ms ease-in-out infinite; }
+.aispin .dots i:nth-child(2) { animation-delay: 150ms; } .aispin .dots i:nth-child(3) { animation-delay: 300ms; }
+@keyframes dotup { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(-5px); opacity: 1; } }
+.rm .aispin .dots i, .rm .recdot { animation: none; }
+.orglist { list-style: none; padding: 0; gap: .45em; }
+.orglist li { display: flex; gap: .5em; align-items: flex-start; }
+.orglist li svg { width: 1.1em; height: 1.1em; flex: none; margin-top: .2em; color: var(--ok-text); }
+/* the book */
+.readbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 25; display: flex; align-items: center; gap: .6em; padding: .4em 0; background: var(--bg); margin-top: -.6em; }
+.readbar .lbl { flex: 1; text-align: center; margin: 0; }
+.readbar .btn { width: auto; min-height: 44px; padding: .3em 1em; }
+.iconbtn { width: 44px; height: 44px; flex: none; border-radius: 50%; border: 1px solid var(--line); background: var(--field); color: var(--ink); display: grid; place-items: center; padding: 0; }
+.iconbtn svg { width: 22px; height: 22px; }
+#screen[data-screen="read"] h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.pdfwrap { background: #fff; border-radius: 12px; overflow: hidden; min-height: 50vh; display: grid; place-items: center; box-shadow: 0 10px 30px var(--shadow); touch-action: pan-y pinch-zoom; }
+.pdfwrap.zoomed { overflow: auto; place-items: start; touch-action: auto; }
+.pdfwrap canvas { display: block; }
+.pdfwrap .aispin { color: #555; }
+
 /* one Back button, always at the top of inner screens */
 .topback { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 6px); z-index: 25; align-self: flex-start; display: inline-flex; align-items: center; gap: .25em; min-height: 44px;
-  padding: .3em .95em .3em .6em; margin: -.6em 0 -.5em -.2em; border-radius: 99px; border: 1px solid var(--line); background: var(--bar-bg); color: var(--ink); font-weight: 700;
+  padding: .3em .95em .3em .6em; margin: -.6em 0 -.5em -.2em; border-radius: 99px; border: 1px solid var(--line); background: var(--glass-solid); color: var(--ink); font-weight: 700; box-shadow: 0 6px 18px var(--shadow);
   -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
 .topback svg { width: 1.2em; height: 1.2em; }
 /* reader: passages are toggles */
@@ -697,7 +726,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     s.docs = (Array.isArray(s.docs) ? s.docs : []).filter(obj).map(function (d) {
       var rd = {}; Object.keys(obj(d.read) || {}).filter(function (k) { return DATE_RE.test(k) && Array.isArray(d.read[k]); }).sort().slice(-60).forEach(function (k) { rd[k] = d.read[k].map(Number).filter(function (n) { return n >= 1 && n === Math.floor(n); }).slice(0, 2000); });
       return { id: str(d.id, 40), name: str(d.name, 80) || "Untitled", pages: Math.max(0, Math.floor(+d.pages || 0)), chars: +d.chars || 0, at: +d.at || 0, status: d.status === "scanned" ? "scanned" : "ready", truncated: !!d.truncated,
-        pos: Math.max(1, Math.floor(+d.pos || 1)), goal: Math.max(1, Math.min(200, Math.floor(+d.goal || 5))), read: rd };
+        hasFile: !!d.hasFile, pos: Math.max(1, Math.floor(+d.pos || 1)), goal: Math.max(1, Math.min(200, Math.floor(+d.goal || 5))), read: rd };
     }).filter(function (d) { return d.id; });
     s.cards = (Array.isArray(s.cards) ? s.cards : []).filter(obj).map(function (c) {
       return { id: str(c.id, 40) || newId(), docId: str(c.docId, 40), docName: str(c.docName, 80), page: Math.max(0, Math.floor(+c.page || 0)), quote: str(c.quote, 600), typed: !!c.typed,
@@ -705,7 +734,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         items: (Array.isArray(c.items) ? c.items : []).filter(obj).map(function (i) { return { kind: ["prompt", "action", "encourage", "own"].indexOf(i.kind) >= 0 ? i.kind : "own", by: i.by === "you" ? "you" : "template", text: str(i.text, 300) }; }).filter(function (i) { return i.text; }) };
     }).filter(function (c) { return c.quote; });
     s.asst = obj(s.asst);
-    if (s.asst && ["task", "plan", "planned", "overwhelm", "encourage", "review", "unsure", "nofix"].indexOf(s.asst.kind) < 0) s.asst = null;
+    if (s.asst && ["task", "plan", "planned", "overwhelm", "encourage", "review", "unsure", "nofix", "aiSaved"].indexOf(s.asst.kind) < 0) s.asst = null;
     if (s.asst && s.asst.kind === "task") {
       var D = obj(s.asst.d);
       if (!D) s.asst = null;
@@ -722,15 +751,19 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       }
     }
     if (s.asst && s.asst.kind === "plan" && !(obj(s.asst.p) && Array.isArray(s.asst.p.steps))) s.asst = null;
+    if (s.asst && s.asst.kind === "aiSaved" && !Array.isArray(s.asst.ids)) s.asst = null;
     if (s.asst && !s.asst.src) s.asst.src = "";
     s.askText = str(s.askText, 300);
     // what Ten Days has learned, and suggestions you've set aside
     s.learn = s.learn !== false; s.patNo = obj(s.patNo) || {}; s.sugNo = obj(s.sugNo) || {}; s.lastLink = str(s.lastLink, 40);
-    s.org = obj(s.org) && DATE_RE.test(s.org.day || "") && Array.isArray(s.org.changes) && !s.org.busy ? s.org : null;
+    s.org = obj(s.org) && DATE_RE.test(s.org.day || "") && Array.isArray(s.org.done) && !s.org.busy ? s.org : null;
     var lt = obj(s.lastTask); s.lastTask = lt && typeof lt.at === "number" ? { id: str(lt.id, 40), at: lt.at } : null;
     // AI helper settings. The key itself is kept outside this object, so backups never contain it.
     var A = obj(s.ai) || {}, AC = obj(A.consent) || {};
-    s.ai = { model: /^[A-Za-z0-9._-]{3,60}$/.test(A.model || "") ? A.model : "gemini-flash-latest", agreed: A.agreed === true,
+    // the old default was a slower model; switch it to the fast one unless you picked a model yourself
+    var okModel = /^[A-Za-z0-9._-]{3,60}$/.test(A.model || "") && (A.modelPinned || A.model !== "gemini-flash-latest");
+    var TH = {}; Object.keys(obj(A.think) || {}).forEach(function (k) { if (["minimal", "low", "zero", "none"].indexOf(A.think[k]) >= 0) TH[k] = A.think[k]; });
+    s.ai = { model: okModel ? A.model : "gemini-flash-lite-latest", modelPinned: !!A.modelPinned, think: TH, agreed: A.agreed === true,
       consent: { tasks: AC.tasks !== false, summaries: AC.summaries !== false, library: AC.library !== false, support: AC.support === true },
       day: DATE_RE.test(A.day || "") ? A.day : "", count: Math.max(0, Math.floor(+A.count || 0)), lastOk: +A.lastOk || 0 };
     return s;
@@ -1219,7 +1252,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     sparkle: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z", shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",
     help: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.7-2.5 2-2.5 4M12 17h.01", pin: "M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z",
     quote: "M9 7H5v5h4v1a3 3 0 0 1-3 3M19 7h-4v5h4v1a3 3 0 0 1-3 3", bell: "M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0",
-    up: "M6 15l6-6 6 6", down: "M6 9l6 6 6-6", left: "M15 5l-7 7 7 7"
+    up: "M6 15l6-6 6 6", down: "M6 9l6 6 6-6", left: "M15 5l-7 7 7 7", x: "M6 6l12 12M18 6L6 18", mic: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21", stop: "M7 7h10v10H7z"
   };
   function icon(name) {
     return svg("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": name === "more" ? "3.2" : "2", "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true", focusable: "false" },
@@ -1604,7 +1637,13 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     var out = [];
     if (!list.length) out.push(h("p", { class: "empty", id: "no-today", text: S.tasks.length ? "Nothing on today's list. Tell me something above, or open Coming up." : "No tasks yet. Type one above, like “Workout 6pm daily”." }));
     else if (!open.length) out.push(h("p", { class: "empty", id: "all-done", text: "All done for today." }));
-    out.push(h("div", { class: "tlist", id: "today-list" }, open.map(function (t) { return taskRow(t, now, "today"); })));
+    // grouped: what needs you now, what has a time later today, and anytime
+    var ms = now.getTime(), soon = [], later = [], any = [];
+    open.forEach(function (t) { var d = dueAt(t, now); if (t.priority === "high" || (d !== null && d - ms < 2 * 3600e3)) soon.push(t); else if (d !== null) later.push(t); else any.push(t); });
+    var groups = [["Now", soon], ["Later today", later], ["Anytime", any]].filter(function (g) { return g[1].length; });
+    out.push(h("div", { class: "tlist", id: "today-list" }, groups.map(function (g) {
+      return [groups.length > 1 ? h("p", { class: "dayhead", text: g[0] }) : null].concat(g[1].map(function (t) { return taskRow(t, now, "today"); }));
+    })));
     if (done.length) {
       out.push(h("button", { class: "btn link", type: "button", id: "toggle-done", "aria-expanded": ui.showDone ? "true" : "false", onclick: function () { ui.showDone = !ui.showDone; render(false); } },
         (ui.showDone ? "Hide done" : "Show done") + " (" + done.length + ")"));
@@ -1863,8 +1902,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     var id = newId(), name = file.name.replace(/\.pdf$/i, "").slice(0, 80) || "Untitled";
     if (file.size > 60e6) { pdfJob = { name: name, error: "That PDF is over 60 MB, which is too big to read on this phone." }; render(false); return; }
     pdfJob = { name: name, step: "Loading the PDF reader…" }; render(false); announce("Loading the PDF reader.");
-    var buf;
-    file.arrayBuffer().then(function (b) { buf = b; return loadPdfJs(); }).then(function (lib) {
+    var buf, keep;
+    file.arrayBuffer().then(function (b) { buf = b; keep = new Blob([b], { type: "application/pdf" }); return loadPdfJs(); }).then(function (lib) {
       pdfJob.step = "Opening " + name + "…"; render(false);
       return lib.getDocument({ data: new Uint8Array(buf), isEvalSupported: false }).promise;
     }).then(function (doc) {
@@ -1884,13 +1923,14 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       return next().then(function () {
         var scanned = chars < 40 * n;
         var meta = { id: id, name: name, pages: n, chars: chars, at: Date.now(), status: scanned ? "scanned" : "ready", truncated: doc.numPages > n };
-        return (scanned ? Promise.resolve() : idbPut("docs", id, { id: id, pages: pages })).then(function () {
+        meta.hasFile = !scanned;
+        return (scanned ? Promise.resolve() : idbPut("docs", id, { id: id, pages: pages }).then(function () { return idbPut("blobs", "pdf:" + id, keep); })).then(function () {
           S.docs.push(meta);
           var lt = opts.task ? taskById(opts.task) : null;
           if (lt && !scanned) { lt.docId = id; lt.type = "READ"; }
           save();
           pdfJob = null; announce(scanned ? "That PDF has no readable text." : "Done. " + n + " pages read.");
-          go("doc", { id: id });
+          if (lt && !scanned) openBook(meta, 1); else go("doc", { id: id });
         });
       });
     }).catch(function (e) {
@@ -1979,11 +2019,12 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   // Everything that can appear on the support screen, your own things first.
   function supportPool() {
     var pool = [];
-    S.collection.forEach(function (c) { if (c.kind !== "image") pool.push({ text: c.text, label: c.kind === "quote" ? (c.source ? "Saved by you · " + c.source : "Saved by you") : "Your reminder", by: "you" }); });
     S.cards.filter(function (c) { return c.link === "urge"; }).concat(S.cards.filter(function (c) { return c.link !== "urge"; })).forEach(function (c) {
       pool.push({ text: c.quote, label: "Exact quote · " + c.docName + (c.page ? ", p. " + c.page : ""), by: "quote" });
     });
-    (REFRAMES[S.profile.style] || REFRAMES.gentle).forEach(function (t) { pool.push({ text: t, label: "From Ten Days", by: "app" }); });
+    S.collection.forEach(function (c) { if (c.kind !== "image") pool.push({ text: c.text, label: c.kind === "quote" ? (c.source ? "Saved by you · " + c.source : "Saved by you") : "Your reminder", by: "you" }); });
+    // your own passages come up first; Ten Days' lines fill in only when you have few
+    if (pool.length < 3) (REFRAMES[S.profile.style] || REFRAMES.gentle).forEach(function (t) { pool.push({ text: t, label: "From Ten Days", by: "app" }); });
     return pool;
   }
   // Original illustrations drawn in code, used when you haven't added your own images.
@@ -2258,7 +2299,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   function asstView() {
     var a = S.asst; if (!a) return null;
     try {
-      var body = a.kind === "thinking" ? thinkingCard(a) : a.kind === "task" ? taskCard(a) : a.kind === "plan" ? planCard(a) : a.kind === "planned" ? plannedCard(a) : a.kind === "overwhelm" ? overwhelmCard(a)
+      var body = a.kind === "thinking" ? thinkingCard(a) : a.kind === "aiSaved" ? aiSavedCard(a) : a.kind === "task" ? taskCard(a) : a.kind === "plan" ? planCard(a) : a.kind === "planned" ? plannedCard(a) : a.kind === "overwhelm" ? overwhelmCard(a)
         : a.kind === "encourage" ? encourageCard(a) : a.kind === "review" ? reviewCard(a) : a.kind === "nofix" ? nofixCard(a) : unsureCard(a);
       if (!body) return null;
       return h("section", { class: "card asst k-" + a.kind, id: "asst", "aria-labelledby": "asst-state", onkeydown: function (e) { if (e.key === "Escape" && !ui.asstEdit) { setAsst(null); render(false); var q = $("qa"); if (q) q.focus(); } } }, body);
@@ -2454,7 +2495,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       pick.map(function (c) {
         var d = S.docs.filter(function (x) { return x.id === c.docId && x.status === "ready"; })[0];
         return h("div", { class: "card more" }, h("blockquote", { class: "quote sm", text: c.quote }), h("p", { class: "src" }, icon("quote"), "Exact quote · " + c.docName + (c.page ? ", p. " + c.page : "")),
-          d ? h("button", { class: "btn link", type: "button", "data-readon": c.id, onclick: function () { go("doc", { id: d.id, page: c.page || 1 }); } }, "Read on from here") : null);
+          d ? h("button", { class: "btn link", type: "button", "data-readon": c.id, onclick: function () { openBook(d, c.page || 1); } }, "Read on from here") : null);
       }),
       list.length > 3 ? h("button", { class: "btn", type: "button", id: "sup-more-next", onclick: function () { sup.more = (sup.more || 0) + 3; render(false); var f = $("sup-more-h"); if (f) { f.setAttribute("tabindex", "-1"); f.focus(); } } }, "More passages") : null);
   }
@@ -2467,8 +2508,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   // You can paste a key here instead of in the app (You → AI helper). Anyone who opens the page can read it,
   // and Google may switch off keys it finds in public GitHub repositories.
   var BUILTIN_AI_KEY = "";
-  var AI_DEFAULT_MODEL = "gemini-flash-latest";
-  var AI_AREAS = [["tasks", "Tasks and plans", "What you type in the box when the rules can't read it, plan names and dates, and your open task titles when you ask for groups."],
+  var AI_DEFAULT_MODEL = "gemini-flash-lite-latest";   // the fast one
+  var AI_AREAS = [["tasks", "Tasks, voice notes and plans", "Voice notes you record, what you type when the rules can't read it, plan names and dates, and your open task titles when organizing."],
     ["summaries", "Summaries", "Counts and titles of tasks you finished or still have open. Private tasks are left out."],
     ["library", "Library", "The passages on the PDF page you're looking at, and your goal names."],
     ["support", "Support moments", "Your habit, your reasons, your go-to step and your support style, when you tap Words from AI on the support screen."]];
@@ -2483,15 +2524,15 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   var AI_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
   // One request. With simple=true it skips the custom header and JSON content type, so the browser sends it
   // without a pre-check; that's only a retry for networks that block the normal request.
-  function aiSend(model, body, key, simple) {
-    var ctrl = typeof AbortController === "function" ? new AbortController() : null, timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 30000);
+  function aiSend(model, body, key, simple, wait) {
+    var ctrl = typeof AbortController === "function" ? new AbortController() : null, timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, wait || 25000);
     var url = AI_BASE + "/" + encodeURIComponent(model) + ":generateContent" + (simple ? "?key=" + encodeURIComponent(key) : "");
     return fetch(url, { method: "POST", headers: simple ? { "Content-Type": "text/plain;charset=UTF-8" } : { "Content-Type": "application/json", "x-goog-api-key": key }, body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) { clearTimeout(timer); return r.json().catch(function () { return null; }).then(function (j) { return { r: r, j: j }; }); }, function (e) { clearTimeout(timer); throw e; });
   }
   // If the saved model name is gone, ask Google which Flash models this key can use and switch to the best one.
   function findModel(key) {
-    var score = function (n) { return (/latest/.test(n) ? 0 : 10) + (/lite/.test(n) ? 3 : 0) + (/preview|exp/.test(n) ? 5 : 0); };
+    var score = function (n) { return (/lite/.test(n) ? 0 : 4) + (/latest/.test(n) ? 0 : 2) + (/preview|exp/.test(n) ? 5 : 0); };   // fastest first
     return fetch(AI_BASE + "?pageSize=200&key=" + encodeURIComponent(key)).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
       var ms = (j && Array.isArray(j.models) ? j.models : []).filter(function (m) { return /flash/i.test(m.name || "") && (m.supportedGenerationMethods || []).indexOf("generateContent") >= 0 && !/image|tts|audio|live|embed|thinking|vision/i.test(m.name); })
         .map(function (m) { return m.name.replace(/^models\//, ""); });
@@ -2499,35 +2540,255 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       return ms[0] || "";
     }).catch(function () { return ""; });
   }
-  function aiCall(task, input, opts, retried) {
+  // Speed: newer Flash models "think" before answering, which can take 30+ seconds. Ask for the least thinking
+  // the model allows; if Google says a setting isn't supported, step down and remember what worked.
+  var THINK_ORDER = ["minimal", "low", "zero", "none"], THINK = { minimal: { thinkingLevel: "minimal" }, low: { thinkingLevel: "low" }, zero: { thinkingBudget: 0 } };
+  function aiCall(task, input, opts) {
     opts = opts || {};
     var key = aiKey();
     if (!key) return Promise.resolve({ ok: false, why: "nokey" });
     if (!navigator.onLine) return Promise.resolve({ ok: false, why: "offline" });
-    var me = aboutMe(opts.area);
-    var body = { system_instruction: { parts: [{ text: AI_RULES + (me ? "\n\nWhat you know about the person:\n" + me : "") + "\n\n" + task }] }, contents: [{ role: "user", parts: [{ text: "<data>\n" + input + "\n</data>" }] }],
-      generationConfig: { temperature: opts.temp != null ? opts.temp : .3, maxOutputTokens: opts.max || 1200 } };
-    if (opts.json) body.generationConfig.responseMimeType = "application/json";
-    if (!retried) { countAi(); save(); }
-    var model = S.ai.model || AI_DEFAULT_MODEL;
-    return aiSend(model, body, key, false)
-      .catch(function (e) { if (e && e.name === "AbortError") throw e; return aiSend(model, body, key, true); })
-      .then(function (x) {
-        if (!x.r.ok) {
-          var st = x.r.status, err = x.j && x.j.error || {}, msg = String(err.message || ""), reason = JSON.stringify(err.details || "");
-          if (st === 404 && !retried) return findModel(key).then(function (m) {
-            if (m && m !== model) { S.ai.model = m; save(); return aiCall(task, input, opts, true); }
-            return { ok: false, why: "model", msg: msg.slice(0, 200) };
-          });
-          return { ok: false, msg: msg.slice(0, 200), why: st === 429 ? "ratelimit" : /API_KEY_INVALID|API key not valid|API_KEY/i.test(msg + reason) ? "badkey" : st === 403 ? "denied" : st === 404 ? "model" : st >= 500 ? "server" : st === 400 ? "request" : "error" };
-        }
-        var c = x.j && x.j.candidates && x.j.candidates[0], text = c && c.content && Array.isArray(c.content.parts) ? c.content.parts.map(function (p) { return p.thought ? "" : p.text || ""; }).join("") : "";
-        if (!text.trim()) return { ok: false, why: (c && c.finishReason === "SAFETY") || (x.j && x.j.promptFeedback && x.j.promptFeedback.blockReason) ? "safety" : "empty" };
-        S.ai.lastOk = Date.now(); save();
-        if (!opts.json) return { ok: true, text: text.trim().slice(0, 2000) };
-        try { return { ok: true, data: JSON.parse(text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "")) }; } catch (e) { return { ok: false, why: "format" }; }
-      }, function (e) { return { ok: false, why: e && e.name === "AbortError" ? "timeout" : "network", msg: String(e && e.message || "").slice(0, 120) }; });
+    var me = aboutMe(opts.area), parts = [{ text: "<data>\n" + input + "\n</data>" }];
+    if (opts.audio) parts.push({ inline_data: { mime_type: opts.audio.mime, data: opts.audio.b64 } });
+    countAi(); save();
+    var steps = 0, modelFixed = false;
+    var build = function (model) {
+      var b = { system_instruction: { parts: [{ text: AI_RULES + (me ? "\n\nWhat you know about the person:\n" + me : "") + "\n\n" + task }] }, contents: [{ role: "user", parts: parts }],
+        generationConfig: { temperature: opts.temp != null ? opts.temp : .3, maxOutputTokens: opts.max || 1200 } };
+      if (opts.json) b.generationConfig.responseMimeType = "application/json";
+      var tm = S.ai.think[model] || THINK_ORDER[0];
+      if (THINK[tm]) b.generationConfig.thinkingConfig = THINK[tm];
+      return b;
+    };
+    var once = function () {
+      var model = S.ai.model || AI_DEFAULT_MODEL, b = build(model), wait = opts.wait || 25000;
+      return aiSend(model, b, key, false, wait)
+        .catch(function (e) { if (e && e.name === "AbortError") throw e; return aiSend(model, b, key, true, wait); })
+        .then(function (x) {
+          if (!x.r.ok) {
+            var st = x.r.status, err = x.j && x.j.error || {}, msg = String(err.message || ""), reason = JSON.stringify(err.details || "");
+            if (st === 400 && /think/i.test(msg) && steps++ < 3) {
+              var cur = S.ai.think[model] || THINK_ORDER[0];
+              S.ai.think[model] = THINK_ORDER[Math.min(THINK_ORDER.length - 1, THINK_ORDER.indexOf(cur) + 1)]; save();
+              return once();
+            }
+            if (st === 404 && !modelFixed) { modelFixed = true; return findModel(key).then(function (m) { if (m && m !== model) { S.ai.model = m; save(); return once(); } return { ok: false, why: "model", msg: msg.slice(0, 200) }; }); }
+            return { ok: false, msg: msg.slice(0, 200), why: st === 429 ? "ratelimit" : /API_KEY_INVALID|API key not valid|API_KEY/i.test(msg + reason) ? "badkey" : st === 403 ? "denied" : st === 404 ? "model" : st >= 500 ? "server" : st === 400 ? "request" : "error" };
+          }
+          var c = x.j && x.j.candidates && x.j.candidates[0], text = c && c.content && Array.isArray(c.content.parts) ? c.content.parts.map(function (p) { return p.thought ? "" : p.text || ""; }).join("") : "";
+          if (!text.trim()) return { ok: false, why: (c && c.finishReason === "SAFETY") || (x.j && x.j.promptFeedback && x.j.promptFeedback.blockReason) ? "safety" : "empty" };
+          S.ai.lastOk = Date.now(); save();
+          if (!opts.json) return { ok: true, text: text.trim().slice(0, 2000) };
+          try { return { ok: true, data: JSON.parse(text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "")) }; } catch (e) { return { ok: false, why: "format" }; }
+        }, function (e) { return { ok: false, why: e && e.name === "AbortError" ? "timeout" : "network", msg: String(e && e.message || "").slice(0, 120) }; });
+    };
+    return once();
   }
+  // A small "working on it" line with moving dots (still dots with reduced motion).
+  function aiSpin(text, id) { return h("p", { class: "aispin", id: id || null, role: "status" }, h("span", { class: "dots", "aria-hidden": "true" }, h("i"), h("i"), h("i")), h("span", { text: text })); }
+
+  // ============ voice notes: talk, and Ten Days turns it into tasks ============
+  var rec = null, sr = null;
+  function srClass() { return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
+  function micTap() {
+    if (rec) { stopRec(true); return; }
+    if (sr) { try { sr.stop(); } catch (e) {} return; }
+    if (aiOn("tasks")) { startRec(); return; }
+    var SR = srClass();
+    if (SR) { startDictation(SR); return; }
+    toast("Turn on the AI helper in You for voice notes, or tap the mic on your keyboard to dictate.", 6000);
+  }
+  function startRec() {
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { toast("This browser can't record. Tap the mic on your keyboard to dictate instead.", 6000); return; }
+    var AC = window.AudioContext || window.webkitAudioContext; if (!AC) { toast("This browser can't record audio."); return; }
+    var ctx = new AC();   // made inside the tap, so iPhone lets it run
+    rec = { ctx: ctx, chunks: [], start: Date.now(), rate: ctx.sampleRate, pending: true };
+    render(false);
+    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }).then(function (stream) {
+      if (!rec) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
+      var src = ctx.createMediaStreamSource(stream), proc = ctx.createScriptProcessor(4096, 1, 1);
+      proc.onaudioprocess = function (e) { if (rec) rec.chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); };
+      src.connect(proc); proc.connect(ctx.destination);
+      if (ctx.state === "suspended") ctx.resume();
+      rec.stream = stream; rec.src = src; rec.proc = proc; rec.pending = false; rec.start = Date.now(); rec.rate = ctx.sampleRate;
+      rec.timer = setInterval(function () { var t = $("rec-time"); if (t && rec) t.textContent = mmss(Date.now() - rec.start); if (rec && Date.now() - rec.start > 120e3) stopRec(true); }, 250);
+      render(false); announce("Recording. Tap stop when you're done.");
+    }, function (err) {
+      try { ctx.close(); } catch (e) {} rec = null; render(false);
+      toast(err && err.name === "NotAllowedError" ? "Microphone access is off. Allow it for Ten Days in Settings, then try again." : "Couldn't start the microphone.", 6000);
+    });
+  }
+  function stopRec(send) {
+    var r = rec; rec = null; if (!r) return;
+    clearInterval(r.timer);
+    try { r.proc && r.proc.disconnect(); r.src && r.src.disconnect(); } catch (e) {}
+    try { r.stream && r.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
+    try { r.ctx.close(); } catch (e) {}
+    render(false);
+    if (!send) return;
+    var n = r.chunks.reduce(function (a, c) { return a + c.length; }, 0);
+    if (n < r.rate * .6) { toast("That was too short. Hold on a moment longer next time."); return; }
+    var b64 = wavB64(r.chunks, n, r.rate);
+    aiVoice(b64);
+  }
+  // 16 kHz mono WAV: small, and a format Gemini reads.
+  function wavB64(chunks, n, rate) {
+    var all = new Float32Array(n), o = 0; chunks.forEach(function (c) { all.set(c, o); o += c.length; });
+    var out = 16000, ratio = rate / out, len = Math.floor(n / ratio), pcm = new Int16Array(len);
+    for (var i = 0; i < len; i++) { var s = all[Math.floor(i * ratio)]; s = Math.max(-1, Math.min(1, s)); pcm[i] = s < 0 ? s * 0x8000 : s * 0x7fff; }
+    var buf = new ArrayBuffer(44 + pcm.length * 2), v = new DataView(buf);
+    var ws = function (p, t) { for (var k = 0; k < t.length; k++) v.setUint8(p + k, t.charCodeAt(k)); };
+    ws(0, "RIFF"); v.setUint32(4, 36 + pcm.length * 2, true); ws(8, "WAVE"); ws(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, out, true); v.setUint32(28, out * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); ws(36, "data"); v.setUint32(40, pcm.length * 2, true);
+    new Int16Array(buf, 44).set(pcm);
+    var bytes = new Uint8Array(buf), str2 = "";
+    for (var j = 0; j < bytes.length; j += 0x8000) str2 += String.fromCharCode.apply(null, bytes.subarray(j, j + 0x8000));
+    return btoa(str2);
+  }
+  var AI_VOICE = "A voice note is attached. Transcribe it, then do what the note asks: turn everything they need to do into tasks. Reply with JSON only: " +
+    '{"transcript":"","kind":"tasks|overwhelm|encourage|review|support|unclear","tasks":[{"title":"","date":"","time":"","minutes":0,"repeat":"once","priority":"normal","items":[]}],"question":""}. ' +
+    "kind is support if they describe an urge, a craving, a relapse or a crisis. Each separate thing to do is its own task with a short title in their words. " +
+    "priority is high when it's urgent or due within a day, low when it's a someday thing, otherwise normal. date as YYYY-MM-DD and time as 24-hour HH:MM only if they say or clearly imply it. Never invent details.";
+  function aiVoice(b64) {
+    setAsst({ kind: "thinking", src: "Your voice note", voice: true });
+    render(false);
+    aiCall(AI_VOICE + " " + nowLine(), "Voice note follows.", { json: true, audio: { mime: "audio/wav", b64: b64 }, wait: 45000, max: 1500 }).then(function (r) {
+      var a = S.asst;
+      if (!a || a.kind !== "thinking" || !a.voice) return;
+      if (!r.ok) { setAsst({ kind: "unsure", src: "Voice note", aiq: "AI not available: " + aiWhy(r) + " Type it instead, or try again." }); render(false); return; }
+      var d = obj(r.data) || {};
+      applyAiParse(str(d.transcript, 400) || "Voice note", d, str(d.transcript, 400));
+      render(false);
+      var st = $("asst-state"); if (st) { st.setAttribute("tabindex", "-1"); st.focus(); }
+    });
+  }
+  // Without AI: the browser's own speech recognition, where the phone offers it, fills the box.
+  function startDictation(SR) {
+    try {
+      sr = new SR(); sr.lang = navigator.language || "en-US"; sr.interimResults = true; sr.continuous = false;
+      var base = ($("qa") && $("qa").value) || "", heard = "";
+      sr.onresult = function (e) { heard = ""; for (var i = 0; i < e.results.length; i++) heard += e.results[i][0].transcript; var q = $("qa"); if (q) q.value = (base ? base + " " : "") + heard; ui.askText = q ? q.value : heard; };
+      sr.onerror = function (e) { sr = null; render(false); toast(e && e.error === "not-allowed" ? "Speech access is off. Tap the mic on your keyboard to dictate instead." : "Couldn't hear that. Try again, or use the mic on your keyboard.", 6000); };
+      sr.onend = function () { sr = null; render(false); var q = $("qa"); if (q && heard.trim()) { var f = $("qa-form"); if (f && f.requestSubmit) f.requestSubmit(); } };
+      sr.start(); render(false); announce("Listening.");
+    } catch (e) { sr = null; toast("Speech isn't available here. Tap the mic on your keyboard to dictate."); }
+  }
+  function recCard() {
+    if (!rec && !sr) return null;
+    return h("div", { class: "card rec", id: "rec", role: "status" },
+      h("p", { class: "status" }, h("span", { class: "recdot", "aria-hidden": "true" }), rec && rec.pending ? "Starting the microphone…" : sr ? "Listening…" : "Recording ", rec && !rec.pending ? h("span", { id: "rec-time", text: mmss(Date.now() - rec.start) }) : null),
+      h("p", { class: "small", text: rec ? "Say everything on your mind. Ten Days turns it into tasks, most urgent first." : "Speak, and the words go in the box." }),
+      h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "rec-stop", onclick: micTap }, rec ? "Done, organize it" : "Stop"),
+        rec ? h("button", { class: "btn link", type: "button", id: "rec-cancel", onclick: function () { stopRec(false); } }, "Cancel") : null));
+  }
+
+  // ============ AI results are saved straight away, with Undo ============
+  function aiSavedCard(a) {
+    var ts = (a.ids || []).map(taskById).filter(Boolean);
+    if (!ts.length) return null;
+    var now = new Date();
+    return [cardHead("sparkle", "Added by AI · " + ts.length + (ts.length === 1 ? " task" : " tasks"), "ai"),
+      a.heard ? h("p", { class: "small", id: "ai-heard", text: "You said: “" + a.heard + "”" }) : null,
+      a.note ? h("p", { class: "small", id: "asst-note", text: a.note }) : null,
+      h("div", { class: "tlist", id: "ai-saved" }, ts.sort(byUrgency(now)).map(function (t) { return taskRow(t, now, "all"); })),
+      h("div", { class: "row links" }, h("button", { class: "btn", type: "button", id: "ai-undo", onclick: function () {
+        S.tasks = S.tasks.filter(function (t) { return a.ids.indexOf(t.id) < 0; }); setAsst(null); toast("Removed those tasks."); render(false);
+      } }, "Undo"), closeLink("Done"))];
+  }
+  function saveAiTasks(text, tasks, note, heard) {
+    var ids = [];
+    tasks.forEach(function (x) {
+      var d = aiTask(x), p = obj(x) && x.priority;
+      d.priority = ["high", "normal", "low"].indexOf(p) >= 0 ? p : "normal";
+      var t = draftToTask(d); if (t) { S.tasks.push(t); ids.push(t.id); }
+    });
+    if (ids.length) S.lastTask = { id: ids[ids.length - 1], at: Date.now() };
+    setAsst({ kind: "aiSaved", ids: ids, src: text, note: note || "", heard: heard || "" });
+    chime(); announce("Added " + ids.length + " tasks.");
+  }
+
+  // ============ organize: one tap, done, with Undo ============
+  // Quick rules that work with or without AI.
+  function localChanges() {
+    var today = dayKey(), now = new Date(), out = [];
+    S.tasks.forEach(function (t) {
+      if (isDone(t)) return;
+      if (t.repeat === "once" && t.date && t.date < today) out.push({ type: "date", id: t.id, date: today, time: "", why: "It was from an earlier day" });
+
+    });
+    return out.slice(0, 12);
+  }
+  function organize(auto) {
+    if (orgBusy) return;
+    S.ai.orgDay = dayKey();
+    var applyAll = function (changes, summary, note) {
+      var before = JSON.stringify(S.tasks), lines = changes.map(describe).filter(Boolean);
+      changes.forEach(applyChange);
+      S.org = { day: dayKey(), done: lines, summary: summary || "", note: note || "", undo: lines.length ? before : "", auto: !!auto, at: Date.now() };
+      save(); render(false);
+      if (!auto) announce(lines.length ? "Organized: " + lines.length + " changes." : "Your list is already in order.");
+    };
+    if (!aiOn("tasks")) { applyAll(localChanges(), "", ""); return; }
+    orgBusy = true; S.ai.orgDay = dayKey(); S.org = { day: dayKey(), busy: true, auto: !!auto }; save(); render(false);
+    aiCall(AI_ORG + " " + nowLine(), orgInput(), { json: true, max: 1600 }).then(function (r) {
+      orgBusy = false;
+      if (!r.ok) { applyAll(localChanges(), "", "AI not available: " + aiWhy(r) + " Used quick rules instead."); return; }
+      var ch = cleanChanges(r.data);
+      if (!ch.length) ch = localChanges();
+      applyAll(ch, str(obj(r.data) && r.data.summary, 200), "");
+    });
+  }
+  function orgCard() {
+    var o = S.org; if (!o || o.day !== dayKey() || o.closed) return null;
+    if (o.busy) return h("section", { class: "card noticed", id: "org" }, aiSpin("Organizing your list…", "org-busy"));
+    var close = h("button", { class: "btn link", type: "button", id: "org-close", onclick: function () { S.org.closed = true; save(); render(false); } }, "OK");
+    if (!o.done || !o.done.length) return o.auto ? null : h("section", { class: "card ok", id: "org" }, h("p", { class: "status ok", text: o.summary || "Your list is already in order." }), o.note ? h("p", { class: "small", text: o.note }) : null, h("div", { class: "row links" }, close));
+    return h("section", { class: "card noticed", id: "org", "aria-labelledby": "org-h" },
+      h("p", { class: "state ai", id: "org-h" }, icon("sparkle"), (o.auto ? "Organized your list this morning" : "Organized your list") + " · " + o.done.length + (o.done.length === 1 ? " change" : " changes")),
+      o.summary ? h("p", { text: o.summary }) : null,
+      o.note ? h("p", { class: "small", text: o.note }) : null,
+      h("ul", { class: "orglist", id: "org-list" }, o.done.map(function (l) { return h("li", null, icon("check"), h("span", { text: l })); })),
+      h("div", { class: "row links" }, o.undo ? h("button", { class: "btn", type: "button", id: "org-undo", onclick: function () {
+        S.tasks = JSON.parse(o.undo).map(normTask).filter(Boolean); S.org.closed = true; save(); toast("Put everything back."); render(false);
+      } }, "Undo") : null, close));
+  }
+
+  // ============ the book itself: real pages, your place kept ============
+  var pdfDocs = {};
+  function pdfDoc(d) {
+    if (pdfDocs[d.id]) return pdfDocs[d.id];
+    var p = idbGet("blobs", "pdf:" + d.id).then(function (b) {
+      if (!b) throw new Error("nofile");
+      return Promise.all([loadPdfJs(), b.arrayBuffer ? b.arrayBuffer() : new Response(b).arrayBuffer()]);
+    }).then(function (x) { return x[0].getDocument({ data: new Uint8Array(x[1]), isEvalSupported: false }).promise; });
+    pdfDocs[d.id] = p; p.catch(function () { delete pdfDocs[d.id]; });
+    return p;
+  }
+  var pageTask = null;
+  function drawPage(d, n, wrap) {
+    var note = $("read-note");
+    pdfDoc(d).then(function (doc) { return doc.getPage(Math.min(n, doc.numPages)); }).then(function (pg) {
+      if (!wrap.isConnected) return;
+      var dpr = Math.min(3, window.devicePixelRatio || 1), w = wrap.clientWidth || 340, zoom = ui.zoom || 1;
+      var vp1 = pg.getViewport({ scale: 1 }), scale = (w * zoom) / vp1.width, vp = pg.getViewport({ scale: scale * dpr });
+      var c = document.createElement("canvas"); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+      c.style.width = Math.floor(vp.width / dpr) + "px"; c.style.height = Math.floor(vp.height / dpr) + "px";
+      c.setAttribute("role", "img"); c.setAttribute("aria-label", "Page " + n + " of " + d.name);
+      if (pageTask) { try { pageTask.cancel(); } catch (e) {} }
+      pageTask = pg.render({ canvasContext: c.getContext("2d"), viewport: vp });
+      return pageTask.promise.then(function () { if (wrap.isConnected) { wrap.replaceChildren(c); wrap.setAttribute("data-ready", String(n)); } });
+    }).catch(function (e) {
+      if (e && e.name === "RenderingCancelledException") return;
+      if (!wrap.isConnected) return;
+      wrap.replaceChildren(h("p", { class: "small", id: "read-err", role: "status", text: e && e.message === "nofile" ? "This book was added before Ten Days kept the file. Add the PDF again below to see its real pages." : e && e.message === "reader" ? "The PDF reader couldn't load. Check your connection." : "This page couldn't be shown." }));
+      if (note) note.hidden = false;
+    });
+  }
+  function attachFile(d, f) {
+    idbPut("blobs", "pdf:" + d.id, new Blob([f], { type: "application/pdf" })).then(function () { d.hasFile = true; delete pdfDocs[d.id]; save(); toast("Added. Here's the book."); render(false); })
+      .catch(function () { toast("This phone wouldn't store the file."); });
+  }
+  function openBook(d, page) { if (ui.screen !== "read") ui.readPrev = ui.screen; go("read", { id: d.id, page: page || d.pos || 1 }); }
   function aiWhy(r) {
     return { nokey: "No AI key is saved yet.", offline: "You're offline.", ratelimit: "The free AI limit is used up for now. Try again later.", badkey: "Google says this key isn't valid. Copy it again from AI Studio.",
       denied: "Google refused this key. In AI Studio, check the key is enabled for the Gemini API.", model: "Google couldn't find a model for this key. Try another name under Advanced.",
@@ -2539,7 +2800,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   // A small "busy / result / error" block for an AI answer kept on some object.
   function aiBlock(slot, id) {
     if (!slot) return null;
-    if (slot.busy) return h("p", { class: "small", id: id, role: "status", text: "Asking Gemini…" });
+    if (slot.busy) return aiSpin("Writing…", id);
     if (slot.err) return h("p", { class: "small", id: id, role: "status", text: "AI not available: " + slot.err });
     return h("div", { class: "aibox", id: id }, aiLabel(), h("p", { text: slot.text }));
   }
@@ -2555,9 +2816,10 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     return !newDraft(text) || words >= 14 || /[.!?;]\s+\S/.test(text) || /\b(?:and then|and also|plus|as well as)\b/i.test(text);
   }
   var AI_PARSE = "Read the person's note and reply with JSON only, in this shape: " +
-    '{"kind":"tasks|overwhelm|encourage|review|support|unclear","tasks":[{"title":"","date":"","time":"","minutes":0,"repeat":"once","items":[]}],"question":""}. ' +
+    '{"kind":"tasks|overwhelm|encourage|review|support|unclear","tasks":[{"title":"","date":"","time":"","minutes":0,"repeat":"once","priority":"normal","items":[]}],"question":""}. ' +
     "kind is support if they describe an urge, a craving, a relapse or a crisis. For tasks, give each separate thing to do as its own task: a short title in their words (under 60 characters), " +
-    "date as YYYY-MM-DD only if the note says or clearly implies a day, time as 24-hour HH:MM only if the note gives one, minutes only if it gives a length, repeat as once, daily, weekdays or weekly, and items for a shopping list. " +
+    "date as YYYY-MM-DD only if the note says or clearly implies a day, time as 24-hour HH:MM only if the note gives one, minutes only if it gives a length, repeat as once, daily, weekdays or weekly, items for a shopping list, " +
+    "and priority as high when it's urgent or due within a day, low for someday things, otherwise normal. " +
     "Never invent dates, times or details. If something essential is missing, put one short question in question.";
   function aiThink(text, intent) {
     setAsst({ kind: "thinking", src: text, intent: intent });
@@ -2590,20 +2852,17 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     d.asked = ["anchor", "when", "items", "time"]; d.ai = true;
     return d;
   }
-  function applyAiParse(text, data) {
+  function applyAiParse(text, data, heard) {
     var kind = data.kind, tasks = (Array.isArray(data.tasks) ? data.tasks : []).slice(0, 12), q = str(data.question, 200).trim();
     if (kind === "support") { setAsst({ kind: "unsure", src: text, aiq: "That sounds like a hard moment. Want the support screen?" }); return; }
     if (kind === "overwhelm" || kind === "encourage" || kind === "review") { setAsst({ kind: kind, src: text, i: 0 }); return; }
     if (!tasks.length) { setAsst({ kind: "unsure", src: text, aiq: q || "" }); return; }
-    if (tasks.length === 1) { setAsst({ kind: "task", d: Object.assign(aiTask(tasks[0]), { src: text }), editing: "", note: q }); return; }
-    var steps = tasks.map(function (x) { var d = aiTask(x); return { on: true, title: d.title, date: d.repeat === "once" ? d.date : "", time: d.time, dur: d.dur, items: d.items.map(function (i) { return i.t; }) }; });
-    setAsst({ kind: "plan", src: text, p: { name: "From your note", kind: "goal", due: "", nodue: true, steps: steps, ai: true, the: "it" }, note: q });
+    saveAiTasks(text, tasks, q, heard);
   }
   function thinkingCard(a) {
-    return [cardHead("sparkle", "Asking Gemini…", "ai"),
-      h("p", { text: "“" + a.src + "”" }),
-      h("p", { class: "small", role: "status", text: "This can take a few seconds. You can keep using the app." }),
-      h("div", { class: "row links" }, h("button", { class: "btn link", type: "button", id: "ai-skip", onclick: function () { ruleRoute(a.src, a.intent || "task"); render(false); } }, "Skip AI this time"))];
+    return [aiSpin(a.voice ? "Listening to your note and making tasks…" : "Organizing that into tasks…", "asst-state"),
+      a.voice ? null : h("p", { text: "“" + a.src + "”" }),
+      a.voice ? null : h("div", { class: "row links" }, h("button", { class: "btn link", type: "button", id: "ai-skip", onclick: function () { ruleRoute(a.src, a.intent || "task"); render(false); } }, "Skip AI this time"))];
   }
 
   // --- 3 and 6. summaries ---
@@ -2874,34 +3133,6 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (t) normTask(t);
   }
   var orgBusy = false;
-  function aiOrganize(auto) {
-    if (orgBusy || !aiOn("tasks")) return;
-    orgBusy = true; S.ai.orgDay = dayKey(); S.org = { day: dayKey(), busy: true, auto: !!auto }; save(); render(false);
-    aiCall(AI_ORG + " " + nowLine(), orgInput(), { json: true, max: 2000 }).then(function (r) {
-      orgBusy = false;
-      S.org = { day: dayKey(), auto: !!auto, at: Date.now(), summary: r.ok ? str(obj(r.data) && r.data.summary, 200) : "", changes: r.ok ? cleanChanges(r.data) : [], err: r.ok ? "" : aiWhy(r) };
-      save(); render(false);
-    });
-  }
-  function orgCard() {
-    var o = S.org; if (!o || o.day !== dayKey() || o.applied) return null;
-    var close = h("button", { class: "btn link", type: "button", id: "org-close", onclick: function () { S.org.applied = true; save(); render(false); } }, o.changes && o.changes.length ? "Not now" : "Close");
-    if (o.busy) return h("section", { class: "card noticed", id: "org", role: "status" }, h("p", { class: "state ai" }, icon("sparkle"), "Organizing your list…"), h("p", { class: "small", text: "Gemini is looking at your tasks. Nothing changes until you say so." }));
-    if (o.err) return o.auto ? null : h("section", { class: "card", id: "org" }, h("p", { class: "small", role: "status", text: "AI not available: " + o.err }), h("div", { class: "row links" }, close));
-    if (!o.changes.length) return o.auto ? null : h("section", { class: "card ok", id: "org" }, h("p", { class: "status ok", text: o.summary || "Your list already looks organized." }), h("div", { class: "row links" }, close));
-    var n = o.changes.filter(function (c) { return c.on; }).length;
-    return h("section", { class: "card noticed", id: "org", "aria-labelledby": "org-h" },
-      h("p", { class: "state ai", id: "org-h" }, icon("sparkle"), "Ten Days organized your list · not applied yet"),
-      o.summary ? h("p", { text: o.summary }) : null,
-      h("div", { class: "group", id: "org-list" }, o.changes.map(function (c, i) {
-        return h("label", { class: "toggle", for: "org-" + i }, h("input", { type: "checkbox", id: "org-" + i, checked: c.on, onchange: function (e) { c.on = e.target.checked; save(); render(false); } }),
-          h("span", null, h("b", { text: describe(c) }), c.why ? h("span", { class: "small block", text: c.why }) : null));
-      })),
-      h("div", { class: "row links" }, h("button", { class: "btn primary", type: "button", id: "org-apply", disabled: !n, onclick: function () {
-        var u = snapTasks(); o.changes.forEach(function (c) { if (c.on) applyChange(c); }); S.org.applied = true; save();
-        toast("Applied " + n + (n === 1 ? " change." : " changes."), 6000, { label: "Undo", fn: function () { S.org.applied = false; u(); } }); render(false);
-      } }, "Apply " + n), close));
-  }
 
   // ============ reading: Ten Days keeps your place and counts pages per day ============
   function readToday(d) { return d && d.read && d.read[dayKey()] || []; }
@@ -2915,12 +3146,12 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     save();
     if (list.length === goal) { if (link && inToday(link)) markDone(link); else toast("Today's reading goal is done: " + goal + " pages."); }
   }
-  function openReading(t) { var d = docOf(t); if (d) go("doc", { id: d.id, page: d.pos || 1 }); else go("task", t.id); }
+  function openReading(t) { var d = docOf(t); if (d) openBook(d); else go("task", t.id); }
   function readBlock(t) {
     var d = docOf(t);
     if (d) return h("div", { class: "mini", id: "read-block" }, h("p", { class: "lbl", text: "Reading: " + d.name }),
       h("p", { class: "small", text: "Today: " + readToday(d).length + " of " + (d.goal || 5) + " pages · you're on page " + (d.pos || 1) + " of " + d.pages }),
-      h("button", { class: "btn primary", type: "button", id: "read-go", onclick: function () { go("doc", { id: d.id, page: d.pos || 1 }); } }, "Continue reading"));
+      h("button", { class: "btn primary", type: "button", id: "read-go", onclick: function () { openBook(d); } }, "Continue reading"));
     return h("div", { class: "mini", id: "read-block" }, h("p", { class: "lbl", text: "Read it in Ten Days" }),
       h("p", { class: "small", text: "Add the book as a PDF. Ten Days keeps your place and counts your pages each day." }), bookPicker(t, "rb"));
   }
@@ -3035,10 +3266,11 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         if (r === "nav") return;
         render(false);
         var st = $("asst-state"); if (st && !$("aq-first")) { st.setAttribute("tabindex", "-1"); st.focus(); } else if ($("aq-first")) $("aq-first").focus();
-      } }, qa, h("button", { class: "add", type: "submit", id: "qa-add", "aria-label": "Send" }, icon("send")));
+      } }, qa, h("button", { class: "mic" + (rec || sr ? " on" : ""), type: "button", id: "qa-mic", "aria-pressed": rec || sr ? "true" : "false", "aria-label": rec || sr ? "Stop recording" : "Record a voice note", onclick: micTap }, icon(rec || sr ? "stop" : "mic")),
+        h("button", { class: "add", type: "submit", id: "qa-add", "aria-label": "Send" }, icon("send")));
       var showHint = !S.asst && S.tasks.length < 4;
       // once a day, with AI on, the manager looks over the list by itself (it only proposes; you apply)
-      if (aiOn("tasks") && S.ai.orgDay !== dayKey() && !orgBusy && S.tasks.filter(function (t) { return !t.private && !isDone(t); }).length >= 3) setTimeout(function () { if (ui.screen === "home") aiOrganize(true); }, 800);
+      if (S.ai.orgDay !== dayKey() && !orgBusy && S.tasks.filter(function (t) { return !t.private && !isDone(t); }).length >= 3) { S.ai.orgDay = dayKey(); setTimeout(function () { if (ui.screen === "home" && !(S.org && S.org.day === dayKey())) organize(true); }, 800); }
       // next step
       var ns = nextStep(), st0 = todayStats(now), left = st0.total - st0.done, stepNode;
       if (ns.step === "clear") stepNode = h("p", { class: "clear", id: "next-step" }, icon("check"), left ? "Nothing due in the next 2 hours." : st0.total ? "You're clear. Everything on today's list is done." : "You're clear.");
@@ -3054,6 +3286,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         S.lastReply && Date.now() - S.lastReply.at < 12 * 3600e3 ? h("p", { class: "pill", id: "status-line", text: statusLine() }) : null,
         form,
         showHint ? h("p", { class: "small", id: "qa-hint", text: "Try “Study calculus for an hour tomorrow”, “I have an exam Friday, help me prepare” or “I'm overwhelmed”." }) : h("span", { id: "qa-hint", hidden: true, text: "Type a task, a plan, or how you feel." }),
+        recCard(),
         asstView(),
         alertCard,
         stepNode,
@@ -3061,7 +3294,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         noticedCard(),
         strip,
         h("div", { class: "sect" }, h("h2", { text: "Today" }), h("div", { class: "row" },
-          aiOn("tasks") ? h("button", { class: "btn link", type: "button", id: "org-go", disabled: orgBusy, onclick: function () { aiOrganize(false); } }, "Organize") : null,
+          h("button", { class: "btn link", type: "button", id: "org-go", disabled: orgBusy, onclick: function () { organize(false); } }, "Organize"),
           h("button", { class: "btn link", type: "button", id: "all-tasks", onclick: function () { go("m-tasks"); } }, "All tasks"))),
         h("div", { class: "group", id: "task-area" }, todayView(now)),
         h("button", { class: "btn disc", type: "button", id: "toggle-up", "aria-expanded": upOpen ? "true" : "false", "aria-controls": "up-area", onclick: function () { ui.showUp = !ui.showUp; render(false); } },
@@ -3311,12 +3544,49 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         h("div", { class: "group push" }, back("you"))
       ] };
     },
+    read: function (arg) {
+      var d = S.docs.filter(function (x) { return x.id === (arg && arg.id); })[0];
+      if (!d) { back("library"); return { title: "Book", body: [h("p", { text: "This book isn't here anymore." })] }; }
+      var n = Math.max(1, Math.min(d.pages || 1, (arg && arg.page) || d.pos || 1));
+      if (d.pos !== n) { d.pos = n; save(); }
+      var link = S.tasks.filter(function (t) { return t.docId === d.id && t.type === "READ"; })[0], goal = d.goal || 5, readN = readToday(d).length;
+      var close = function () { go(ui.readPrev && ui.readPrev !== "read" ? ui.readPrev : "home"); };
+      var goPage = function (m, read) { if (read) markRead(d, n); ui.arg = { id: d.id, page: m }; render(false); window.scrollTo(0, 0); };
+      var wrap = h("div", { class: "pdfwrap" + ((ui.zoom || 1) > 1 ? " zoomed" : ""), id: "pdf-page" }, aiSpin("Opening page " + n + "…", "pdf-loading"));
+      var sx = null;
+      wrap.addEventListener("touchstart", function (e) { sx = e.touches.length === 1 ? e.touches[0].clientX : null; }, { passive: true });
+      wrap.addEventListener("touchend", function (e) { if (sx === null || (ui.zoom || 1) > 1) return; var dx = e.changedTouches[0].clientX - sx; sx = null; if (dx < -60 && n < d.pages) goPage(n + 1, true); else if (dx > 60 && n > 1) goPage(n - 1); }, { passive: true });
+      setTimeout(function () { drawPage(d, n, wrap); }, 0);
+      var file = h("input", { type: "file", accept: "application/pdf,.pdf", hidden: true, id: "read-file", onchange: function (e) { var f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) attachFile(d, f); } });
+      return { title: d.name, body: [
+        h("div", { class: "readbar", id: "readbar" },
+          h("button", { class: "iconbtn", type: "button", id: "read-close", "aria-label": "Close the book", onclick: close }, icon("x")),
+          h("p", { class: "lbl", id: "read-page", "aria-live": "polite", text: "Page " + n + " of " + d.pages }),
+          h("button", { class: "btn primary", type: "button", id: "read-done", onclick: function () {
+            var was = link && isDone(link);
+            markRead(d, n);
+            if (link && !isDone(link) && inToday(link)) markDone(link); else if (!link || was) toast("Saved your place: page " + n + ".");
+            close();
+          } }, "Completed")),
+        h("div", { class: "prog", role: "progressbar", "aria-label": "Pages read today", "aria-valuemin": "0", "aria-valuemax": String(goal), "aria-valuenow": String(Math.min(readN, goal)) }, h("i", { style: "width:" + Math.min(100, Math.round(readN / goal * 100)) + "%" })),
+        h("p", { class: "small", id: "read-today", text: "Today: " + readN + " of " + goal + " pages" + (link ? " · " + link.title : "") + ". Swipe or use the buttons to turn pages." }),
+        wrap,
+        h("div", { class: "pager", role: "group", "aria-label": "Pages" },
+          h("button", { class: "btn", type: "button", id: "rd-prev", disabled: n <= 1, onclick: function () { goPage(n - 1); } }, "Previous"),
+          h("p", { class: "lbl", text: n + " / " + d.pages }),
+          n < d.pages ? h("button", { class: "btn primary", type: "button", id: "rd-next", onclick: function () { goPage(n + 1, true); } }, "Next") : h("button", { class: "btn", type: "button", id: "rd-end", onclick: function () { markRead(d, n); toast("That's the last page."); render(false); } }, "Last page")),
+        h("div", { class: "row" },
+          h("button", { class: "btn", type: "button", id: "rd-zoom", "aria-pressed": (ui.zoom || 1) > 1 ? "true" : "false", onclick: function () { ui.zoom = (ui.zoom || 1) > 1 ? 1 : 1.7; render(false); } }, (ui.zoom || 1) > 1 ? "Fit width" : "Zoom in"),
+          h("button", { class: "btn", type: "button", id: "rd-passages", onclick: function () { go("doc", { id: d.id, page: n }); } }, "Pick passages")),
+        h("div", { class: "small", id: "read-note", hidden: true }, file, h("button", { class: "btn", type: "button", id: "read-attach", onclick: function () { file.click(); } }, "Add the PDF again"))
+      ] };
+    },
     doc: function (arg) {
       var d = S.docs.filter(function (x) { return x.id === (arg && arg.id); })[0];
       back("library");
       if (!d) return { title: "Document", body: [h("p", { text: "This document isn't here anymore." })] };
       var del = confirmBtn("Delete document and its cards", "Tap again to delete", function () {
-        idbDel("docs", d.id).catch(function () {});
+        idbDel("docs", d.id).catch(function () {}); idbDel("blobs", "pdf:" + d.id).catch(function () {}); delete pdfDocs[d.id];
         S.docs = S.docs.filter(function (x) { return x !== d; }); S.cards = S.cards.filter(function (c) { return c.docId !== d.id; }); delete docCache[d.id];
         S.tasks.forEach(function (t) { if (t.docId === d.id) t.docId = ""; });
         if (save()) toast("Deleted the document and its cards."); go("library");
@@ -3395,7 +3665,9 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
               var t = normTask({ id: newId(), created: Date.now(), title: "Read " + d.name, type: "READ", repeat: "daily", docId: d.id, doneOn: "" });
               S.tasks.push(t); save(); toast("Added a daily reading task. It's done when you hit your page goal.", 6000, { label: "Undo", fn: function () { S.tasks = S.tasks.filter(function (x) { return x !== t; }); save(); render(false); } }); render(false);
             } }, "Read it every day"))),
-        h("p", { class: "small", id: "doc-hint", text: "Tap passages to select them, on this page or others, then save them all as cards." }),
+        h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "doc-read", onclick: function () { openBook(d, pg); } }, icon("book"), " Read the book"),
+          ps && ps.some(function (t) { return !saved(t) && !chosen(t); }) ? h("button", { class: "btn", type: "button", id: "sel-all", onclick: function () { ps.forEach(function (t) { if (!saved(t) && !chosen(t)) selS.items.push({ text: t, page: pg }); }); render(false); } }, "Select all on this page") : null),
+        h("p", { class: "small", id: "doc-hint", text: "Tap passages to select them, on this page or others, then save them all as cards. Saved cards come up when you tap I need you." }),
         search,
         q.length >= 3 ? h("p", { class: "lbl", "aria-live": "polite", text: "Search results" }) : pager(""),
         aiOn("library") && ps && ps.length ? h("button", { class: "btn", type: "button", id: "doc-ai", disabled: !!(ui.aiPicks && ui.aiPicks.busy), onclick: function () { ui.autoSel = true; aiPicks(d.id, pg, ps); } },
@@ -3545,11 +3817,11 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         on ? h("button", { class: "btn link", type: "button", id: "ai-off", onclick: function () { S.ai.agreed = false; save(); toast("AI is off. Nothing more is sent."); render(false); } }, "Turn AI off") : null,
         h("details", { class: "card", id: "ai-adv" }, h("summary", { class: "lbl", text: "Advanced: model" }),
           h("div", { class: "field" }, h("label", { class: "lbl", for: "ai-model", text: "Model name" }), model),
-          h("p", { class: "small", text: "Default: gemini-flash-latest. If Google retires a name, Ten Days asks Google for a current Flash model by itself." }),
+          h("p", { class: "small", text: "Default: gemini-flash-lite-latest, the fastest. If Google retires a name, Ten Days asks Google for a current fast model by itself." }),
           h("button", { class: "btn", type: "button", id: "ai-model-save", onclick: function () {
             var v = model.value.trim();
             if (!/^[A-Za-z0-9._-]{3,60}$/.test(v)) { toast("Use letters, numbers, dots and dashes."); return; }
-            S.ai.model = v; ui.aiTest = null; if (save()) toast("Model saved."); render(false);
+            S.ai.model = v; S.ai.modelPinned = true; ui.aiTest = null; if (save()) toast("Model saved."); render(false);
           } }, "Save model"))
       ] };
     },
@@ -3578,7 +3850,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         h("h2", { class: "sect-h", text: "Delete" }),
         confirmBtn("Delete all PDFs, photos and cards", "Tap again to delete them", function () {
           var ids = S.docs.map(function (d) { return d.id; }), blobs = S.collection.filter(function (c) { return c.blobId; }).map(function (c) { return c.blobId; });
-          ids.forEach(function (id) { idbDel("docs", id).catch(function () {}); }); blobs.forEach(function (id) { idbDel("blobs", id).catch(function () {}); });
+          ids.forEach(function (id) { idbDel("docs", id).catch(function () {}); idbDel("blobs", "pdf:" + id).catch(function () {}); }); blobs.forEach(function (id) { idbDel("blobs", id).catch(function () {}); });
           S.docs = []; S.cards = []; S.collection = S.collection.filter(function (c) { return !c.blobId; }); docCache = {};
           if (save()) toast("Deleted.");
           render(false);
@@ -3679,7 +3951,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       search.addEventListener("input", function () { ui.search = search.value; var box = $("all-box"); if (box) box.replaceChildren.apply(box, allView(new Date(), ui.search)); });
       return { title: "All tasks", body: [
         h("p", { text: "Tasks stay on this phone. Tap the circle to finish one. The quickest way to add one is the box on Today." }),
-        aiOn("tasks") ? h("button", { class: "btn", type: "button", id: "org-go2", disabled: orgBusy, onclick: function () { aiOrganize(false); go("home"); } }, icon("sparkle"), " Organize my list with AI") : null,
+        h("button", { class: "btn", type: "button", id: "org-go2", disabled: orgBusy, onclick: function () { organize(false); go("home"); } }, icon("sparkle"), " Organize my list"),
         search,
         h("div", { class: "group", id: "all-box" }, allView(now, ui.search)),
         h("div", { class: "group push" },
