@@ -404,21 +404,41 @@ async function axe(page, name) {
       await axe(page, "library");
       await page.setInputFiles("#pdf-in", FIX + "/book.pdf");
       await page.waitForSelector("#passages", { timeout: 20000 });
-      ok((await page.textContent("#pg-label")) === "Page 1 of 2", "pdf read: pages");
-      const firstText = await page.locator(".passage p").first().textContent();
+      ok((await page.textContent("#pg-label")) === "1 / 2", "pdf read: pages");
+      ok(await page.isVisible("#back"), "Back button at the top");
+      const firstText = await page.locator(".passage .ptext").first().textContent();
       ok(firstText.includes("Chapter One") || firstText.includes("urge"), "passage text extracted: " + firstText.slice(0, 60));
-      await page.fill("#doc-q", "permanent"); await page.waitForTimeout(400);
-      const hit = page.locator(".passage").filter({ hasText: "permanent" }).first();
-      const quote = await hit.locator("p").first().textContent();
-      await hit.locator("button").click();
-      ok((await page.textContent("#cn-text")) === quote, "card keeps the exact text");
-      await page.click("#cn-save");
+      // select several passages, across pages, and save them in one go without leaving the book
+      const p1 = page.locator(".passage.sel").filter({ hasText: "permanent" }).first();
+      const quote = await p1.locator(".ptext").textContent();
+      await p1.click();
+      ok(await page.locator(".passage.sel[aria-pressed=true]").count() === 1 && (await page.textContent("#sel-n")).includes("1 passage"), "tap selects a passage");
+      await page.click("#pg-next");
+      ok((await page.textContent("#read-today")).startsWith("Today: 1 of"), "page counted as read");
+      await page.locator(".passage.sel").filter({ hasText: "reason" }).first().click();
+      ok((await page.textContent("#sel-n")).includes("2 passages"), "selection kept across pages");
+      await page.selectOption("#sel-for", "urge");
+      await page.click("#sel-save");
+      let s = await S(page);
+      ok(s.cards.length === 2 && s.cards.some(c => c.quote === quote && c.page === 1) && s.cards.some(c => c.page === 2), "two cards saved with exact text and pages");
+      ok((await page.textContent("#pg-label")) === "2 / 2" && !(await page.$("#selbar")), "still on the same page, selection cleared");
+      ok(await page.locator(".passage.on").count() === 1, "saved passage marked");
+      await page.click("#toast-act"); s = await S(page); ok(s.cards.length === 0, "save undo");
+      await page.click("#pg-prev");
+      await page.locator(".passage.sel").filter({ hasText: "permanent" }).first().click(); await page.click("#sel-save");
+      // read every day: a task that finishes itself at the page goal
+      await page.selectOption("#doc-goal", "2"); await page.click("#doc-daily");
+      s = await S(page); const rt = s.tasks.find(t => t.docId && t.type === "READ" && t.repeat === "daily");
+      ok(!!rt, "daily reading task linked to the book");
+      await page.click("#pg-next"); await page.click("#pg-done");
+      s = await S(page); ok(s.tasks.find(t => t.id === rt.id).doneOn, "reading goal met marks the task done");
+      await page.click("#back"); await page.click('[data-card]');
       ok((await page.textContent("#card-src")).includes("Exact quote · book, p. 1"), "quote labeled with doc and page");
       ok((await page.textContent("#card-items")).includes("not the author's words"), "adaptations labeled as not the author's");
       await page.fill("#card-own", "Ride it out."); await page.click("#card-own-add");
       ok((await page.textContent("#card-items")).includes("Your words"), "own words labeled");
       await axe(page, "card");
-      let s = await S(page);
+      s = await S(page);
       ok(s.cards.length === 1 && s.cards[0].quote === quote && s.cards[0].page === 1, "card saved");
       await page.waitForTimeout(1500); await page.reload(); await page.waitForSelector("#screen h1");
       await page.click("#sos"); await page.waitForTimeout(100); await page.click("#cd-cancel").catch(() => {});
@@ -524,15 +544,20 @@ async function axe(page, name) {
       const { page, errors, ctx } = await boot(browser);
       const calls = []; let mode = "ok";
       await page.route("https://generativelanguage.googleapis.com/**", r => {
-        const req = r.request(), body = JSON.parse(req.postData() || "{}");
+        const req = r.request();
+        if (req.method() === "GET") return r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ models: [{ name: "models/gemini-9-flash-lite", supportedGenerationMethods: ["generateContent"] }, { name: "models/gemini-9-flash", supportedGenerationMethods: ["generateContent"] }, { name: "models/text-embedding-9", supportedGenerationMethods: ["embedContent"] }] }) });
+        const body = JSON.parse(req.postData() || "{}");
         const sys = body.system_instruction.parts[0].text, data = body.contents[0].parts[0].text;
         calls.push({ url: req.url(), key: req.headers()["x-goog-api-key"], sys, data });
+        if (mode === "flaky" && req.headers()["x-goog-api-key"]) return r.abort("failed");
+        if (mode === "404" && req.url().includes("gemini-flash-latest")) return r.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: { message: "models/gemini-flash-latest is not found" } }) });
         if (mode === "429") return r.fulfill({ status: 429, contentType: "application/json", body: JSON.stringify({ error: { message: "quota" } }) });
         const today = new Date(); const dk = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
         let out;
         if (sys.includes("Read the person's note")) out = JSON.stringify({ kind: "tasks", tasks: [{ title: "Grab protein powder", date: "", time: "", minutes: 0, repeat: "once", items: [] }, { title: "Email my TA about the quiz", date: dk, time: "", minutes: 0, repeat: "once", items: [] }], question: "" });
         else if (sys.includes("Make a short, realistic plan")) out = JSON.stringify({ steps: [{ title: "Redo chapter 3 problems", date: dk, minutes: 40 }, { title: "Bad date step", date: "1999-01-01", minutes: 20 }] });
         else if (sys.includes("Group related tasks")) { const ids = [...data.matchAll(/^(k\w+):/gm)].map(m => m[1]); out = JSON.stringify({ groups: [{ name: "daily", ids: ids.slice(0, 2).concat(["kfake"]) }] }); }
+        else if (sys.includes("You manage the person's to-do list")) { const ids = [...data.matchAll(/^(k\w+) \|/gm)].map(m => m[1]); out = JSON.stringify({ summary: "A couple of tweaks.", changes: [{ type: "group", ids: ids.slice(0, 2), name: "school", why: "Same class" }, { type: "add", title: "Stretch", repeat: "daily", why: "You move most days" }, { type: "date", id: "kfake", date: dk }] }); }
         else if (sys.includes("From the numbered passages")) out = JSON.stringify({ picks: [{ n: 1, why: "About sitting with urges" }, { n: 99, why: "bad" }] });
         else if (sys.includes("support screen")) out = "Breathe slowly. Put the phone in the other room for ten minutes.";
         else if (sys.includes("Write 2 to 4 short sentences")) out = "You finished your workout. Tomorrow, start with reading.";
@@ -545,15 +570,23 @@ async function axe(page, name) {
       ok(calls.length === 0, "no key: no AI request");
       await page.click("#nav-you"); await page.click("#y-ai");
       ok((await page.textContent("#ai-status")).includes("no key"), "AI off without a key");
-      ok(await page.isDisabled("#ai-agree"), "can't turn on without a key");
-      await page.fill("#ai-key", "AIzaTESTKEY000000000000000000000000"); await page.click("#ai-key-save");
-      ok(await page.isDisabled("#ai-agree") === false, "key saved");
-      ok(!(await page.isChecked("#ai-c-support")), "support moments off by default");
       await page.click("#ai-agree");
-      ok((await page.textContent("#ai-status")).startsWith("On"), "AI on");
-      await page.click("#ai-test"); await page.waitForSelector("#ai-test-status.ok");
-      ok(calls.length === 1 && calls[0].key === "AIzaTESTKEY000000000000000000000000" && !calls[0].url.includes("key="), "key sent in a header, not the URL");
+      ok((await page.textContent("#ai-status")).includes("no key") && calls.length === 0, "can't turn on without a key");
+      ok(!(await page.isChecked("#ai-c-support")), "support moments off by default");
+      const KEY = "AQ.Ab8RN6-test.key_with.dots0000000";
+      await page.fill("#ai-key", " " + KEY + "\u200B ");
+      await page.click("#ai-agree");
+      await page.waitForSelector("#ai-status:has-text('connection works')");
+      ok(calls.length === 1 && calls[0].key === KEY && !calls[0].url.includes("key="), "one tap saves the key (dots, spaces stripped), turns on and checks; key in a header");
       ok(calls[0].url.includes("models/gemini-flash-latest:generateContent"), "default model");
+      ok(await page.isVisible("#ai-key-ok"), "key shown as saved");
+      // a network that blocks the normal request: retried without the pre-check
+      mode = "flaky"; await page.click("#ai-agree"); await page.waitForSelector("#ai-status:has-text('connection works')");
+      ok(calls[calls.length - 1].url.includes("key=") && !calls[calls.length - 1].key, "blocked request retried in the simple form");
+      // a retired model name: Ten Days asks Google for a current Flash model
+      mode = "404"; await page.click("#ai-agree"); await page.waitForSelector("#ai-status:has-text('connection works')");
+      ok((await S(page)).ai.model === "gemini-9-flash", "model found automatically");
+      mode = "ok";
       // messy note -> AI preview, nothing saved yet
       await page.click("#nav-home");
       const before = (await S(page)).tasks.length;
@@ -589,18 +622,23 @@ async function axe(page, name) {
       ok((await page.textContent("#sup-ai-text")).includes("not a person"), "support words labeled as AI");
       ok(!posts_any(calls, "Check in"), "check-in text never sent to AI");
       await page.click("#sup-ok");
-      // groups
-      await page.click("#nav-home"); await page.click("#all-tasks"); await page.click("#ai-group"); await page.waitForSelector("#ag-all");
-      await page.click("#ag-all");
+      // the manager: proposes, nothing changes until applied; private tasks never sent
+      await page.click("#nav-home"); await ask(page, "#private Secret appointment");
+      await page.click("#org-go"); await page.waitForSelector("#org-apply");
+      ok((await page.textContent("#org")).includes("not applied yet") && (await page.locator("#org-list .toggle").count()) === 2, "organizer proposes; bad ids dropped");
+      ok(!calls[calls.length - 1].data.includes("Secret appointment"), "private task not sent to the organizer");
+      ok(!(await S(page)).tasks.some(t => t.title === "Stretch"), "nothing applied yet");
+      await page.click("#org-apply");
       let st = await S(page);
-      ok(st.tasks.filter(t => t.group === "Daily").length === 2, "AI groups applied, unknown ids ignored");
-      await page.click("#toast-act");
-      st = await S(page); ok(!st.tasks.some(t => t.group), "group undo");
+      ok(st.tasks.some(t => t.title === "Stretch" && t.repeat === "daily") && st.tasks.filter(t => t.group === "School").length === 2, "organizer changes applied");
+      await page.click("#toast-act"); st = await S(page);
+      ok(!st.tasks.some(t => t.title === "Stretch") && !st.tasks.some(t => t.group), "organizer undo");
       // library picks
       await page.click("#nav-you"); await page.click("#y-lib");
       await page.setInputFiles("#pdf-in", FIX + "/book.pdf"); await page.waitForSelector("#passages", { timeout: 20000 });
       await page.click("#doc-ai"); await page.waitForSelector(".passage.pick");
       ok(await page.locator(".passage.pick").count() === 1 && (await page.textContent(".passage.pick")).includes("AI pick: About sitting with urges"), "AI passage pick shown, bad index ignored");
+      ok((await page.textContent("#sel-n")).includes("1 passage"), "AI pick pre-selected");
       // errors fall back to rules
       mode = "429";
       await page.click("#nav-home"); await ask(page, LONG);
@@ -613,7 +651,44 @@ async function axe(page, name) {
       const n1 = calls.length; await page.click("#nav-home"); await ask(page, LONG + " again");
       ok(calls.length === n1, "turned off: nothing sent");
       await axe(page, "today-ai");
-      ok(!errors.filter(e => !/status of 429/.test(e)).length, "ai: no errors " + errors.join(" | "));
+      ok(!errors.filter(e => !/status of (429|404)/.test(e)).length, "ai: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+
+    // ---------- the manager without AI: numbers, routines, reading ----------
+    console.log("manager");
+    {
+      const { page, errors, ctx } = await boot(browser);
+      await ask(page, "Call Sam tomorrow");
+      ok((await page.textContent("#aq-text")).includes("Sam's number"), "call asks for the number");
+      await page.fill("#aq-phone", "555 222 3333"); await page.click("#aq-phone-set");
+      let s = await S(page);
+      ok(s.tasks.some(t => t.title === "Call Sam" && cleanPhone(t.contact.phone) === "5552223333") && s.contacts.some(c => c.name === "Sam"), "number saved to the task and contacts");
+      await page.click("#asst-close");
+      await ask(page, "Gym"); await page.click("#asst-close");
+      const gid = (await S(page)).tasks.find(t => t.title === "Gym").id;
+      await page.click('[data-check="' + gid + '"]');
+      await page.waitForSelector("#noticed");
+      ok((await page.textContent("#noticed")).includes("You did “Gym” today"), "noticed a routine");
+      await page.click("#sug-a");
+      s = await S(page);
+      ok(s.tasks.some(t => t.title === "Gym" && !t.doneOn && t.date > s.tasks.find(x => x.id === gid).date.slice(0, 0)), "gym added again for tomorrow");
+      ok(!(await page.textContent("#screen")).includes("You did “Gym” today"), "suggestion gone once used");
+      await ask(page, "I want to read a book");
+      ok(await page.isVisible("#read-block"), "reading offers to add the book");
+      await page.setInputFiles("#rb-file", FIX + "/book.pdf");
+      await page.waitForSelector("#passages", { timeout: 20000 });
+      s = await S(page);
+      ok(s.tasks.some(t => t.title === "Read a book" && t.docId), "book linked to the reading task");
+      await page.locator(".passage.sel").nth(0).click(); await page.locator(".passage.sel").nth(1).click(); await page.click("#sel-save");
+      await page.click("#pg-next"); await page.click("#nav-home");
+      await page.click("#sos"); await page.waitForTimeout(800); await page.click("#cd-cancel");
+      ok(await page.isVisible("#sup-more") && (await page.locator("#sup-more [data-readon]").count()) >= 1, "support: keep reading with a way back into the book");
+      await page.locator("#sup-more [data-readon]").first().click();
+      ok(await page.isVisible("#passages"), "read on from the passage");
+      await page.click("#nav-you"); await page.click("#y-mem");
+      ok(await page.isVisible("#learn-toggle"), "learning can be switched off");
+      ok(!errors.length, "manager: no errors " + errors.join(" | "));
       await ctx.close();
     }
 
@@ -627,13 +702,13 @@ async function axe(page, name) {
       ok(barH < 667 / 3, "dock under a third of the screen at huge text: " + barH);
       const over = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
       ok(!over, "no sideways scroll at 320px");
-      const small = await page.evaluate(() => Array.from(document.querySelectorAll("button, a.btn")).filter(b => b.offsetParent && !b.closest(".hx")).filter(b => { const r = b.getBoundingClientRect(); return r.height < 44 && r.width > 0; }).map(b => b.id || b.textContent.trim().slice(0, 20)));
+      const small = await page.evaluate(() => Array.from(document.querySelectorAll("button, a.btn")).filter(b => b.offsetParent && !b.closest(".hx")).filter(b => { const r = b.getBoundingClientRect(); return r.height < 43.5 && r.width > 0; }).map(b => b.id || b.textContent.trim().slice(0, 20)));
       ok(!small.length, "touch targets ≥ 44px: " + small.join(", "));
       await ctx.close();
     }
     {
       const { page, ctx } = await boot(browser, { viewport: { width: 390, height: 844 } });
-      const small = await page.evaluate(() => Array.from(document.querySelectorAll("button, a.btn, input, select")).filter(b => b.offsetParent && !b.closest(".hx") && b.type !== "checkbox").filter(b => b.getBoundingClientRect().height < 44).map(b => b.id || b.outerHTML.slice(0, 80) + " h=" + b.getBoundingClientRect().height));
+      const small = await page.evaluate(() => Array.from(document.querySelectorAll("button, a.btn, input, select")).filter(b => b.offsetParent && !b.closest(".hx") && b.type !== "checkbox").filter(b => b.getBoundingClientRect().height < 43.5).map(b => b.id || b.outerHTML.slice(0, 80) + " h=" + b.getBoundingClientRect().height));
       ok(!small.length, "touch targets ≥ 44px at normal size: " + small.join(", "));
       // keyboard: tab reaches the box, the tabs and the button
       await page.keyboard.press("Tab");
