@@ -5796,9 +5796,9 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
 
   // ============ the hosted app: one address for the app and its server ============
   // Served by the Ten Days Worker, the server is this same address. An old copy (like GitHub Pages) uses TD_HOME.
-  var TD_HOME = "";   // set to the deployed address (https://ten-days.<name>.workers.dev) after the first deploy
+  var TD_HOME = "https://ten-days.rishiaadi3005.workers.dev";   // where Ten Days lives; old copies (like GitHub Pages) point here
   function hostedHere() { return !!(S.mo.auto && S.mo.auto === location.origin); }
-  function moSrvDefault() { return S.mo.srv || (hostedHere() ? location.origin : "") || TD_HOME; }
+  function moSrvDefault() { return S.mo.srv || (hostedHere() ? location.origin : "") || (localDev() ? "" : TD_HOME); }
   function probeHost() {
     if (!/^https?:$/.test(location.protocol)) return Promise.resolve(false);
     return fetch(location.origin + "/v1", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
@@ -5820,7 +5820,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   }
   // An old copy points people to the new home
   function movedNote() {
-    if (!TD_HOME || location.origin === TD_HOME.replace(/\/+$/, "") || skipped("moved")) return null;
+    if (!TD_HOME || localDev() || hostedHere() || location.origin === TD_HOME.replace(/\/+$/, "") || skipped("moved")) return null;
     return h("div", { class: "card", id: "moved-note", role: "note" },
       h("p", { class: "status", text: "Ten Days has a new home, with notifications." }),
       h("p", { class: "small", text: "Make a move code here, open " + TD_HOME.replace(/^https:\/\//, "") + ", add it to your Home Screen, and type the code. Everything comes with you." }),

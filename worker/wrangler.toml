@@ -18,7 +18,7 @@ crons = ["* * * * *"]
 ALLOWED_ORIGINS = "*"
 VAPID_SUBJECT = "mailto:rishiaadi3005@gmail.com"
 # VAPID_PUBLIC goes here after running: node vapid.mjs  (the private key is a secret, never in this file)
-VAPID_PUBLIC = ""
+VAPID_PUBLIC = "BPYdUCoH-i838UFsJ1nZ3DiJIaLk9xdb_P0tfCMxfOcil8Md1QObDDVQpS9XGK79Wxypsy1Bbp8OgIK_1FrrlB4"
 
 [[d1_databases]]
 binding = "DB"
