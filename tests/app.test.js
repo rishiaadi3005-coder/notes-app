@@ -25,7 +25,7 @@ const SEED = {
     { id: "kaaaa2", title: "Workout", type: "CUSTOM", repeat: "daily", hist: [], created: 2 },
     { id: "kaaaa3", title: "Read today's pages", type: "READ", repeat: "daily", goal: "reading", hist: [], created: 3 }
   ],
-  freeDays: [], contacts: [{ id: "kc0001", name: "Mom", phone: "555 000 1111" }], view: "list", intakeDone: true
+  freeDays: [], contacts: [{ id: "kc0001", name: "Mom", phone: "555 000 1111" }], view: "list", intakeDone: true, sosWait: 3
 };
 async function boot(browser, opts) {
   opts = opts || {};
@@ -42,7 +42,7 @@ async function boot(browser, opts) {
   });
   if (opts.seed !== null) await page.addInitScript(s => { if (!sessionStorage.getItem("seeded")) { sessionStorage.setItem("seeded", "1"); localStorage.setItem("tendays.v1", s); } }, JSON.stringify(opts.seed || SEED));
   if (opts.at) await page.clock.setSystemTime(opts.at);
-  await page.goto(APP);
+  await page.goto(APP + (opts.hash || ""));
   await page.waitForSelector("#screen h1");
   return { ctx, page, errors, posts };
 }
@@ -500,6 +500,7 @@ async function axe(page, name) {
       }
       const cids = await (async () => { await page.click("#y-checkin"); return page.$$eval("#screen .morelist .btn", b => b.map(x => x.id)); })();
       for (const id of cids) {
+        if (!(await page.isVisible("#" + id))) await page.click("#ck-adv summary");
         await page.click("#" + id);
         ok(!!(await page.textContent("#screen h1")), "Check-in → " + id);
         await page.click("#nav-you"); await page.click("#y-checkin");
@@ -941,6 +942,117 @@ async function axe(page, name) {
       ok((await S(page)).kept[0].text === q1, "keep a card");
       await page.click("#sup-ok");
       ok(!errors.length, "v7: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+    // ---------- v8: staged I need you, messages, counts, your week, learned times, hard hours, you and him ----------
+    console.log("v8");
+    {
+      const seed = JSON.parse(JSON.stringify(SEED)); seed.sosWait = 60; seed.partner = { name: "Audi" };
+      const day = 864e5, now0 = Date.now();
+      seed.habits = [{ k: "gym", m: 1080, d: 60, at: now0 - day }, { k: "gym", m: 1080, d: 60, at: now0 - 2 * day }, { k: "gym", m: 1075, d: 60, at: now0 - 3 * day }];
+      const at = new Date("2026-11-09T16:30:00Z"); // Monday 10:30 AM in Chicago
+      seed.blocks = [{ id: "b1", title: "ACCT 2301", days: [1, 3], start: "10:00", end: "11:15" }];
+      const { page, errors, posts, ctx } = await boot(browser, { seed, at });
+      // I need you waits, and you can stop it or send it now
+      await page.click("#sos"); await page.waitForTimeout(300);
+      ok((await page.textContent("#screen h1")) === "I'm here." && /Telling Audi in (1:00|0:59|5\d s)/.test(await page.textContent("#cd-text")), "I need you: stays with you, tells Audi after a minute: " + await page.textContent("#cd-text"));
+      ok(await page.isVisible("#cd-now") && (await page.textContent("#cd-cancel")) === "Don't tell him", "Tell now and Don't tell him");
+      ok((await page.textContent("#sup-cd")).includes("unless you stop it"), "support says when it will tell him");
+      await page.waitForTimeout(800); await page.click("#cd-cancel"); await page.waitForTimeout(300);
+      ok(!posts.some(p => p.url.includes(SEED.topics.alert)) && (await page.textContent("#toast")).includes("won't tell him"), "Don't tell him: nothing sent, still here");
+      await page.click("#sos"); await page.waitForTimeout(800); await page.click("#cd-now"); await page.waitForTimeout(400);
+      ok(posts.some(p => p.url.includes(SEED.topics.alert) && p.body.includes("Call when you can")), "Tell now sends right away");
+      await page.click("#sup-ok"); await page.waitForTimeout(100);
+      if ((await page.textContent("#screen h1")) === "A private line?") await page.click("#skip-line");
+      await page.click("#nav-home");
+      // now and next, around a class
+      ok((await page.textContent("#nownext")).includes("Now ACCT 2301 until 11:15"), "now/next shows the class: " + await page.textContent("#nownext"));
+      // a task with no time: free slots around the class
+      await ask(page, "Laundry");
+      ok(await page.isVisible("#slots") && (await page.textContent("#slot-0")) === "11:15 AM", "free slot after the class: " + await page.textContent("#slots").catch(() => ""));
+      await page.click("#slot-0");
+      ok((await S(page)).tasks.find(t => t.title === "Laundry").time === "11:15", "pick a slot");
+      await page.click("#asst-close").catch(() => {});
+      // learned time and length
+      await ask(page, "Gym");
+      let gym = (await S(page)).tasks.find(t => t.title === "Gym");
+      ok(gym.time === "18:00" && gym.dur === 60 && (await page.textContent("#asst-note")).includes("when you usually do this"), "learned: gym at your usual 6 PM for an hour (" + gym.time + "," + gym.dur + ")");
+      ok((await page.textContent("#fc-when")).includes("your usual time"), "labeled as your usual time");
+      await page.click("#asst-close").catch(() => {});
+      // classes typed in plain words
+      const b = await page.evaluate(() => [window.__td.block("ACCT 2301 class MW 10-11:15"), window.__td.block("Study for class MW 10-11"), window.__td.block("Chem lab TTh 2-4:50pm")]);
+      ok(b[0] && b[0].days.join() === "1,3" && b[0].start === "10:00" && b[0].end === "11:15" && !b[1] && b[2] && b[2].days.join() === "2,4" && b[2].start === "14:00" && b[2].end === "16:50", "class times understood: " + JSON.stringify(b));
+      await ask(page, "Chem lab TTh 2-4:50pm");
+      ok((await S(page)).blocks.length === 2 && (await page.textContent("#toast")).includes("Added to your week"), "typing a class adds it to your week");
+      // counts
+      await ask(page, "track sugar max 1");
+      let s = await S(page); const sid = s.counters[0] && s.counters[0].id;
+      ok(sid && s.counters[0].name === "Sugar" && s.counters[0].limit === 1 && await page.isVisible("#counts"), "track sugar: a counter on Today");
+      await ask(page, "had 2 sugars");
+      ok(Object.values((await S(page)).countLog)[0][sid] === 2 && await page.isVisible(".cnt.over"), "had 2 sugars: counted, over the max shows");
+      await page.click("#cnt-" + sid + "-minus");
+      ok(Object.values((await S(page)).countLog)[0][sid] === 1, "minus one");
+      await page.click("#cnt-" + sid);
+      ok(Object.values((await S(page)).countLog)[0][sid] === 2, "tap adds one");
+      // message him by typing
+      posts.length = 0;
+      await ask(page, "Tell Audi I finished the layout");
+      ok((await page.textContent("#toast")).includes("To Audi"), "message preview with Undo");
+      await page.waitForTimeout(4500);
+      ok(posts.some(p => p.url.includes(SEED.topics.alert) && p.body === "I finished the layout") && (await page.textContent("#toast")).includes("Sent to Audi"), "message sent to his phone");
+      posts.length = 0;
+      await ask(page, "text my brother on my way"); await page.click("#toast-act"); await page.waitForTimeout(4500);
+      ok(!posts.length, "Undo stops the message");
+      // You: organized; you and him
+      await page.click("#nav-you");
+      ok(await page.isVisible("#y-people") && await page.locator(".morelist.grid2").count() === 2, "You: people on top, tiles below");
+      await page.click("#y-people");
+      ok((await page.textContent("#screen h1")) === "You and Audi" && await page.isVisible("#pp-me"), "you and Audi");
+      posts.length = 0;
+      await page.click("#share-on"); await page.waitForTimeout(400);
+      s = await S(page);
+      ok(s.share.on && /^ts-/.test(s.share.topic) && posts.some(p => p.url.includes(s.share.topic) && p.body.includes('"v":1') && p.body.includes("Sugar")), "share my day: a status update is posted");
+      ok((await page.textContent("#share-code")).includes("#pair=1&s=" + s.share.topic), "my link to send him");
+      // his day, read from his channel
+      const his = { v: 1, n: "Audi", at: Date.now(), day: await page.evaluate(() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }), t: [3, 5], c: [1, 2], f: 40, k: [["Sugar", 2, 1]] };
+      await page.route("https://ntfy.sh/ts-audistatus0001/json**", r => r.fulfill({ status: 200, body: JSON.stringify({ event: "message", time: Math.floor(Date.now() / 1000), message: JSON.stringify(his) }) + "\n" }));
+      await page.fill("#pp-paste", "https://x.example/index.html#pair=1&s=ts-audistatus0001&r=tp-audiinbox00001&n=Audi"); await page.click("#pp-follow");
+      await page.waitForSelector("#pp-h-tasks");
+      ok((await page.textContent("#pp-h-tasks")).includes("3 of 5") && (await page.textContent("#pp-h-counts")).includes("Sugar"), "his day: tasks and sugars");
+      await page.click("#nav-you");
+      ok((await page.textContent("#y-people-hint")).includes("3 of 5 tasks"), "his summary on You");
+      posts.length = 0;
+      await page.click("#y-people"); await page.fill("#pp-msg", "Proud of you"); await page.click("#pp-send"); await page.waitForTimeout(4500);
+      ok(posts.some(p => p.url.includes("tp-audiinbox00001") && p.body === "Proud of you"), "messages go to his own inbox once linked");
+      await page.click("#sw-0");
+      ok((await S(page)).sosWait === 0, "choose: only when I tap");
+      await page.click("#nav-home"); posts.length = 0; await page.click("#sos"); await page.waitForTimeout(600);
+      ok(!(await page.isVisible("#cancelbar")) && (await page.textContent("#screen h1")) === "I'm here." && !posts.length, "only when I tap: support, no countdown, nothing sent");
+      await axe(page, "people");
+      ok(!errors.length, "v8: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+    {
+      // a pair link opens straight to "Follow Audi?"
+      const { page, errors, ctx } = await boot(browser, { hash: "#pair=1&s=ts-audistatus0002&r=tp-audiinbox00002&n=Audi" });
+      ok(await page.isVisible("#pair-offer") && (await page.textContent("#pair-q")).includes("Audi"), "pair link: Follow Audi?");
+      await page.click("#pair-yes");
+      const s = await S(page);
+      ok(s.partner.topic === "ts-audistatus0002" && s.partner.inbox === "tp-audiinbox00002" && s.partner.name === "Audi", "following him");
+      ok(!errors.length, "pair: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+    {
+      // hard hours: three late nights in a row
+      const seed = JSON.parse(JSON.stringify(SEED)); seed.topics.reminders = "tr-remindersxx0001";
+      seed.urges = ["2026-11-06T05:10:00Z", "2026-11-07T05:20:00Z", "2026-11-08T05:05:00Z", "2026-11-08T18:00:00Z"].map(x => ({ at: Date.parse(x), via: "sos" }));
+      const { page, errors, posts, ctx } = await boot(browser, { seed, at: new Date("2026-11-10T04:30:00Z") }); // 10:30 PM in Chicago
+      const w = await page.evaluate(() => window.__td.hard());
+      ok(w && w.start === 23 && w.days === 3, "hard hours found: " + JSON.stringify(w));
+      ok(await page.isVisible("#hard-card") && (await page.textContent("#hard-card")).includes("11 PM"), "heads-up card before the hard hours");
+      await page.click("#hard-ping"); await page.waitForTimeout(300);
+      ok(posts.some(p => p.url.includes("tr-remindersxx0001") && /delay=\d+/.test(p.url)), "scheduled a heads-up to my phone");
+      ok(!errors.length, "hard: no errors " + errors.join(" | "));
       await ctx.close();
     }
     // quizzes from a learning book (no AI: questions made from the page's sentences)
