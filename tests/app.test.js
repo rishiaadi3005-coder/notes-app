@@ -25,7 +25,7 @@ const SEED = {
     { id: "kaaaa2", title: "Workout", type: "CUSTOM", repeat: "daily", hist: [], created: 2 },
     { id: "kaaaa3", title: "Read today's pages", type: "READ", repeat: "daily", goal: "reading", hist: [], created: 3 }
   ],
-  freeDays: [], contacts: [{ id: "kc0001", name: "Mom", phone: "555 000 1111" }]
+  freeDays: [], contacts: [{ id: "kc0001", name: "Mom", phone: "555 000 1111" }], view: "list", intakeDone: true
 };
 async function boot(browser, opts) {
   opts = opts || {};
@@ -41,6 +41,7 @@ async function boot(browser, opts) {
     r.fulfill({ status: 200, contentType: "application/javascript", headers: { "access-control-allow-origin": "*" }, body: fs.readFileSync(PDFJS + f) });
   });
   if (opts.seed !== null) await page.addInitScript(s => { if (!sessionStorage.getItem("seeded")) { sessionStorage.setItem("seeded", "1"); localStorage.setItem("tendays.v1", s); } }, JSON.stringify(opts.seed || SEED));
+  if (opts.at) await page.clock.setSystemTime(opts.at);
   await page.goto(APP);
   await page.waitForSelector("#screen h1");
   return { ctx, page, errors, posts };
@@ -414,7 +415,7 @@ async function axe(page, name) {
       await p1.click();
       ok(await page.locator(".passage.sel[aria-pressed=true]").count() === 1 && (await page.textContent("#sel-n")).includes("1 passage"), "tap selects a passage");
       await page.click("#pg-next");
-      ok((await page.textContent("#read-today")).startsWith("Today: 1 of"), "page counted as read");
+      ok((await page.textContent("#read-today")).startsWith("Today: 0 of"), "flipping to the next page doesn't count it as read");
       await page.locator(".passage.sel").filter({ hasText: "reason" }).first().click();
       ok((await page.textContent("#sel-n")).includes("2 passages"), "selection kept across pages");
       await page.selectOption("#sel-for", "urge");
@@ -430,8 +431,13 @@ async function axe(page, name) {
       await page.selectOption("#doc-goal", "2"); await page.click("#doc-daily");
       s = await S(page); const rt = s.tasks.find(t => t.docId && t.type === "READ" && t.repeat === "daily");
       ok(!!rt, "daily reading task linked to the book");
-      await page.click("#pg-next"); await page.click("#pg-done");
+      await page.evaluate(() => window.__td.readScale(0.05));
+      await page.click("#doc-read"); await page.waitForSelector("#read-count.ok", { timeout: 5000 });
+      ok((await page.textContent("#read-count")).includes("counted"), "a page counts after time spent on it");
+      await page.click("#rd-next"); await page.waitForSelector("#read-count.ok", { timeout: 5000 });
+      await page.waitForTimeout(300);
       s = await S(page); ok(s.tasks.find(t => t.id === rt.id).doneOn, "reading goal met marks the task done");
+      await page.click("#read-close"); await page.click("#nav-you"); await page.click("#y-lib"); await page.click("[data-doc]");
       await page.click("#back"); await page.click('[data-card]');
       ok((await page.textContent("#card-src")).includes("Exact quote · book, p. 1"), "quote labeled with doc and page");
       ok((await page.textContent("#card-items")).includes("not the author's words"), "adaptations labeled as not the author's");
@@ -773,8 +779,8 @@ async function axe(page, name) {
       await showAll(); await page.click('[data-task="' + lid + '"] .tmain');
       ok(await page.isVisible("#panel-" + lid), "tap opens the task in place");
       // spark: change it by typing
-      await page.click('[data-spark="' + lid + '"]'); await page.fill("#sp-" + lid, "tomorrow 2pm, high, 45 min");
-      await page.click("#sp-go-" + lid);
+      await page.click('[data-spark="' + lid + '"]'); await page.fill("#sh-say", "tomorrow 2pm, high, 45 min");
+      await page.click("#sh-say-go"); await page.click("#sh-close");
       t = (await S(page)).tasks.find(x => x.id === lid);
       ok(t.time === "14:00" && t.priority === "high" && t.dur === 45 && t.date > "2000", "spark edit: tomorrow 2pm, high, 45 min");
       await page.click("#toast-act"); t = (await S(page)).tasks.find(x => x.id === lid);
@@ -859,6 +865,95 @@ async function axe(page, name) {
       await touch("touchStart", b.x + b.width / 2, y); await page.waitForTimeout(650); await touch("touchEnd");
       ok(await page.isVisible("#bulkbar"), "touch: hold to select");
       ok(!errors.length, "touch: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+
+
+    // ---------- v7: grid, sheet, commands, duplicates, clashes, check-ins, deck, guide, quiz ----------
+    console.log("v7");
+    {
+      const seed = JSON.parse(JSON.stringify(SEED)); seed.view = "grid"; seed.intakeDone = false;
+      const at = new Date(); at.setUTCHours(13, 0, 0, 0); // 7-8 AM in Chicago, so 10 AM is still ahead today
+      const { page, errors, ctx } = await boot(browser, { seed, at });
+      const r = await page.evaluate(() => [window.__td.parse("Water plants not so urgent").priority, window.__td.parse("Pay rent urgent").priority, window.__td.parse("Call bank no rush").priority]);
+      ok(r[0] === "low" && r[1] === "urgent" && r[2] === "low", "“not so urgent” is low, “urgent” is urgent: " + r.join(","));
+      ok(await page.isVisible("#intake"), "first open after the update offers “Tell Ten Days about you”");
+      // duplicates
+      await ask(page, "Meditate 10 min"); await page.click("#asst-close").catch(() => {});
+      await ask(page, "meditate 10 min");
+      ok((await S(page)).tasks.filter(t => /meditate/i.test(t.title)).length === 1 && (await page.textContent("#toast")).includes("Already on your list"), "no duplicate tasks");
+      await page.click("#asst-close").catch(() => {});
+      // grid tiles grouped by time of day, sheet with urgency slider and wheels
+      await ask(page, "Gym at 10am"); await ask(page, "Study at 10am for 1 hour"); await page.click("#asst-close").catch(() => {});
+      ok(await page.locator(".tgrid .tile2").count() >= 3 && await page.isVisible("#pt-morning"), "tiles grouped by time of day");
+      ok(await page.isVisible(".clash"), "clash between two 10 AM tasks is pointed out");
+      await page.click('[id^="clash-fix-"]');
+      const st = (await S(page)).tasks.filter(t => t.time && t.time.startsWith("1")).map(t => t.time).sort();
+      ok(st.length === 2 && st[0] !== st[1], "clash fixed by moving one: " + st.join(","));
+      ok(await page.isVisible("#df-title"), "do-first pick with a reason");
+      const mid = (await S(page)).tasks.find(t => /meditate/i.test(t.title)).id;
+      await page.click('[data-task="' + mid + '"] .tbody');
+      ok(await page.isVisible("#sheet") && await page.isVisible("#prio-slider"), "tap a tile: calm sheet with urgency slider");
+      await page.click("#ps-3"); ok((await S(page)).tasks.find(t => t.id === mid).priority === "urgent", "slider sets urgent");
+      await page.click("#ps-0"); ok((await S(page)).tasks.find(t => t.id === mid).priority === "low", "slider sets low");
+      await page.click("#sh-time"); await page.waitForSelector("#wh-h");
+      await page.evaluate(() => { const w = document.getElementById("wh-h"); w.scrollTop = 40 * 15; w.dispatchEvent(new Event("scroll")); });
+      await page.waitForTimeout(400);
+      ok(((await S(page)).tasks.find(t => t.id === mid).time || "").startsWith("15:"), "hour wheel sets 3 PM");
+      await page.click("#sh-close"); ok(!(await page.$("#sheet")), "sheet closes");
+      // commands
+      await ask(page, "delete the meditate task");
+      ok(!(await S(page)).tasks.some(t => /meditate/i.test(t.title)), "“delete the meditate task” deletes it");
+      await page.click("#toast-act"); ok((await S(page)).tasks.some(t => /meditate/i.test(t.title)), "and Undo brings it back");
+      await ask(page, "delete everything");
+      ok((await page.textContent("#asst")).includes("Delete everything?"), "delete everything asks first");
+      await page.click("#cf-yes"); ok((await S(page)).tasks.length === 0, "delete everything");
+      await page.click("#toast-act"); ok((await S(page)).tasks.length > 0, "undo delete everything");
+      await ask(page, "Remove stains from shirt");
+      ok((await S(page)).tasks.some(t => /stains/i.test(t.title)), "a normal task starting with “remove” is still a task");
+      // check-ins
+      await page.click("#in-later");
+      await page.click("#nav-you"); await page.click("#y-me"); await page.click("#back");
+      await page.click("#nav-home"); await page.waitForSelector("#qa");
+      await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("tendays.v1")); s.checkins = [{ id: "c1", text: "Breathwork, 5 minutes" }, { id: "c2", text: "Walked outside" }]; localStorage.setItem("tendays.v1", JSON.stringify(s)); });
+      await page.reload(); await page.waitForSelector("#checkins");
+      await page.click("#ck-c1");
+      ok((await S(page)).checkLog[Object.keys((await S(page)).checkLog)[0]].includes("c1") && (await page.getAttribute("#ck-c1", "aria-pressed")) === "true", "daily check-in ticked");
+      // focus wheel and the timer that follows you
+      await page.click("#t-focus"); ok(await page.isVisible("#f-wheel"), "focus minutes on a scroll wheel");
+      await page.waitForTimeout(300); await page.evaluate(() => { const w = document.getElementById("f-wheel"); w.scrollTop = 40 * 11; w.dispatchEvent(new Event("scroll")); });
+      await page.waitForTimeout(400);
+      ok((await page.textContent("#focus-start")) === "Start 12 min", "wheel picks 12 minutes");
+      await page.click("#focus-start"); await page.click("#nav-home"); await page.waitForTimeout(1200);
+      ok(await page.isVisible("#minifocus") && /\d+:\d\d/.test(await page.textContent("#mf-time")), "focus timer stays on screen elsewhere");
+      await page.click("#minifocus"); ok((await page.textContent("#screen h1")) === "Focus", "tap it to go back to the timer");
+      await page.click("#focus-end"); await page.click("#focus-end");
+      // notes with the guide, your week
+      await page.click("#nav-home"); await page.click("#t-notes"); await page.fill("#note-in", "So annoyed at my roommate today"); await page.click("#note-add");
+      ok((await page.textContent(".reflect")).includes("Bhagavad Gita") && (await page.textContent(".reflect")).includes("paraphrase"), "angry note gets a short Gita thought, labeled paraphrase");
+      ok(await page.isVisible('.reflect .listen'), "and a Listen button");
+      await page.click("#nav-progress"); await page.click("#week-go");
+      ok((await page.textContent("#week-text")).length > 40, "your week, written up");
+      // deck
+      await page.click("#sos"); await page.waitForTimeout(800); await page.click("#cd-cancel");
+      ok(await page.isVisible("#deck-top") && await page.isVisible("#deck-keep"), "I need you: a deck of cards");
+      const q1 = await page.textContent("#sup-quote"); await page.click("#deck-keep");
+      ok((await S(page)).kept[0].text === q1, "keep a card");
+      await page.click("#sup-ok");
+      ok(!errors.length, "v7: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+    // quizzes from a learning book (no AI: questions made from the page's sentences)
+    {
+      const { page, errors, ctx } = await boot(browser);
+      await page.click("#nav-you"); await page.click("#y-lib");
+      await page.setInputFiles("#pdf-in", FIX + "/learn.pdf"); await page.waitForSelector("#passages", { timeout: 20000 });
+      ok((await S(page)).docs[0].kind === "learning", "a finance PDF is recognized as learning");
+      await page.click("#doc-quiz"); await page.waitForSelector("#qz-q", { timeout: 10000 });
+      ok((await page.textContent("#qz-q")).includes("_____"), "specific fill-in question from the page: " + (await page.textContent("#qz-q")).slice(0, 80));
+      await page.click("#qz-c0"); ok(await page.isVisible("#qz-fb"), "answer feedback");
+      ok((await S(page)).quiz[0].due > "2000", "spaced review scheduled");
+      ok(!errors.length, "quiz: no errors " + errors.join(" | "));
       await ctx.close();
     }
 

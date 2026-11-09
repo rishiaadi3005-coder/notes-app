@@ -174,6 +174,8 @@ ol, ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; 
 /* ============ home: gem, today list, quick add ============ */
 .topmore { position: absolute; top: calc(1.15em + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: 48px; height: 48px; border-radius: 50%;
   display: grid; place-items: center; border: 1px solid var(--line); background: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); color: var(--ink); padding: 0; }
+/* any inline icon without its own rule stays text-sized */
+:where(p, span, h2, h3, li, label, a) > svg { width: 1.15em; height: 1.15em; vertical-align: -.18em; flex: none; }
 .topmore svg { width: 22px; height: 22px; }
 #screen[data-screen="home"] h1 { font-size: 1.6em; padding-right: 2.6em; min-height: 48px; display: flex; align-items: center; }
 .eyebrow { order: -1; margin-bottom: -.9em; font-size: .78em; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
@@ -446,7 +448,7 @@ input[type=search], input[type=number] { width: 100%; min-width: 0; min-height: 
 @keyframes conf { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 100% { opacity: 0; transform: translate(var(--x), 160px) rotate(var(--r)); } }
 @keyframes celin { from { opacity: 0; transform: translateY(-14px) scale(.96); } to { opacity: 1; transform: none; } }
 @keyframes celout { to { opacity: 0; transform: translateY(-10px); } }
-.toast { display: flex; align-items: center; gap: .8em; width: max-content; max-width: min(calc(100% - 32px), 500px); }
+.toast { z-index: 70; display: flex; align-items: center; gap: .8em; width: max-content; max-width: min(calc(100% - 32px), 500px); }
 .toast span { flex: 1; min-width: 0; }
 .toast button { flex: none; min-height: 44px; min-width: 44px; padding: 0 .4em; border: 0; background: none; color: inherit; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
 .trow.pop { animation: rowdone 520ms ease; }
@@ -461,6 +463,127 @@ input[type=search], input[type=number] { width: 100%; min-width: 0; min-height: 
 .chip, .fchip { overflow-wrap: anywhere; max-width: 100%; }
 #screen { overflow-wrap: anywhere; }
 #screen .btn.link { overflow-wrap: break-word; flex: 0 1 auto; }
+
+/* ============ v7: tiles, sheet, wheels, deck; smoother motion ============ */
+:root { --ease: cubic-bezier(.22, 1, .36, 1); --ease-ios: cubic-bezier(.32, .72, 0, 1); }
+#screen.enter { animation: screenin2 420ms var(--ease-ios) both; }
+@keyframes screenin2 { from { opacity: 0; transform: translateY(14px) scale(.992); } to { opacity: 1; transform: none; } }
+.btn, .chip, .tile2, .tbtn, .ckchip, .booktile, .ract, .donechip { transition: transform 260ms var(--ease), background 200ms var(--ease), border-color 200ms var(--ease), box-shadow 260ms var(--ease); }
+.btn:active:not(:disabled), .chip:active, .tile2:active, .tbtn:active, .ckchip:active, .booktile:active, .ract:active, .donechip:active { transform: scale(.965); }
+.tbar { display: flex; gap: .3em; flex-wrap: wrap; justify-content: flex-end; }
+.tbtn { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; gap: .3em; padding: 0 .7em; border-radius: 99px; border: 1px solid var(--line); background: var(--field); color: var(--ink); font-weight: 700; font-size: .8em; }
+.tbtn svg { width: 16px; height: 16px; }
+.tbtn[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.tbtn:disabled { opacity: .4; }
+/* tiles grouped by time of day */
+.part { display: flex; flex-direction: column; gap: .45em; }
+.parth { margin: .3em 0 0; font-size: .8em; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: .5em; }
+.parth .n { font-size: .9em; padding: .05em .55em; border-radius: 99px; background: var(--field); border: 1px solid var(--line); color: var(--ink); letter-spacing: 0; }
+.part-overdue .parth { color: var(--bad-text); }
+.tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .5em; }
+.tile2 { position: relative; display: flex; align-items: flex-start; gap: .45em; padding: .55em .55em .55em .5em; border-radius: 18px; border: 1px solid var(--line); background: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); min-height: 64px; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+.tile2 .check { width: 36px; height: 36px; flex: none; }
+.tile2 .check svg { width: 18px; height: 18px; }
+.tile2 .tbody { flex: 1; min-width: 0; border: 0; background: none; color: var(--ink); text-align: left; padding: .2em 0; min-height: 44px; display: flex; flex-direction: column; gap: .2em; }
+.tile2 .ttitle { font-weight: 700; font-size: .95em; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tile2 .tmeta { font-size: .76em; color: var(--muted); display: flex; align-items: center; gap: .35em; }
+.pdot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.pdot.p-urgent { background: var(--bad-text); } .pdot.p-high { background: var(--warn-text); }
+.tile2.pr-urgent { border-color: var(--signal-line); }
+.tile2.picked { border-color: var(--corner); box-shadow: 0 0 0 2px var(--corner-soft); }
+.tile2.lifted { transform: scale(1.03); box-shadow: 0 12px 26px var(--shadow); }
+.tile2.done .ttitle { text-decoration: line-through; color: var(--muted); }
+.donewrap { display: flex; flex-wrap: wrap; gap: .4em; }
+.donechip { min-height: 40px; display: inline-flex; align-items: center; gap: .35em; padding: 0 .8em; border-radius: 99px; border: 1px solid var(--line); background: var(--field); color: var(--muted); font-size: .82em; font-weight: 650; text-decoration: line-through; max-width: 100%; }
+.donechip svg { width: 14px; height: 14px; color: var(--ok-text); flex: none; }
+.donechip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* do first, clashes */
+.dofirst { gap: .45em; border-color: var(--corner); }
+.dofirst .lbl { display: flex; align-items: center; gap: .4em; }
+.dofirst .lbl svg { width: 1.05em; height: 1.05em; color: var(--corner); }
+.clash { display: flex; align-items: center; gap: .45em; flex-wrap: wrap; padding: .45em .7em; border-radius: 12px; background: var(--warn-soft); color: var(--ink); font-size: .85em; }
+.clash svg { width: 1.1em; height: 1.1em; color: var(--warn-text); flex: none; }
+/* check-ins, reading, intake */
+.checkins { display: flex; flex-direction: column; gap: .4em; }
+.ckwrap { display: flex; flex-wrap: wrap; gap: .4em; }
+.ckchip { min-height: 44px; display: inline-flex; align-items: center; gap: .4em; padding: 0 .9em; border-radius: 99px; border: 1px solid var(--line); background: var(--field); color: var(--ink); font-weight: 650; font-size: .88em; }
+.ckchip svg { width: 18px; height: 18px; color: var(--muted); }
+.ckchip.on { background: var(--corner-soft); border-color: var(--corner); }
+.ckchip.on svg { color: var(--corner); }
+.ckrow { justify-content: space-between; padding: .3em 0; border-bottom: 1px solid var(--line); }
+.reading { display: flex; flex-direction: column; gap: .4em; }
+.booktiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .5em; }
+.booktile { display: flex; flex-direction: column; align-items: flex-start; gap: .25em; padding: .7em .8em; border-radius: 18px; border: 1px solid var(--line); background: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); color: var(--ink); text-align: left; min-height: 88px; }
+.booktile svg { width: 20px; height: 20px; color: var(--ty-read); }
+.booktile .bt-name { font-weight: 750; font-size: .92em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.booktile .bt-pos, .booktile .bt-quiz { font-size: .76em; color: var(--muted); font-weight: 650; }
+.booktile .bt-quiz { color: var(--ty-meeting); }
+.booktile .sbar { width: 100%; height: 6px; border-radius: 99px; background: var(--field); overflow: hidden; display: block; }
+.booktile .sbar i { display: block; height: 100%; background: var(--prim-grad); border-radius: inherit; }
+.intake { border-color: var(--care); }
+.rcount { font-weight: 650; }
+.rcount.ok { color: var(--ok-text); }
+.reflect { display: flex; flex-direction: column; gap: .3em; padding: .6em .8em; border-radius: 14px; background: var(--care-soft); }
+.weektext { white-space: pre-wrap; line-height: 1.55; }
+.listen svg { width: 1.1em; height: 1.1em; vertical-align: -.2em; }
+.center { text-align: center; }
+/* the sheet */
+.sheetwrap { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; }
+.scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, .45); animation: fadein 260ms var(--ease) both; }
+.sheet { position: relative; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; overscroll-behavior: contain; padding: .5em 1em calc(1.2em + env(safe-area-inset-bottom, 0px)); border-radius: 26px 26px 0 0;
+  background: var(--glass-solid); border: 1px solid var(--line); box-shadow: 0 -18px 50px var(--shadow); display: flex; flex-direction: column; gap: .7em; animation: sheetup 420ms var(--ease-ios) both; }
+@keyframes sheetup { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+.sgrab { width: 40px; height: 5px; border-radius: 99px; background: var(--line); align-self: center; margin: .2em 0 .1em; }
+.shead { flex-wrap: nowrap; }
+.shead .ttl { flex: 1; }
+.chip.sm { min-height: 40px; padding: .3em .85em; font-size: .88em; }
+.rm .sheet, .rm .scrim, .rm #screen.enter { animation: none; }
+/* urgency slider */
+.pslider { --i: 1; position: relative; display: grid; grid-template-columns: repeat(4, 1fr); padding: 4px; border-radius: 99px; background: var(--field); border: 1px solid var(--line); touch-action: none; }
+.pthumb { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 4); border-radius: 99px; background: var(--glass-solid); box-shadow: 0 4px 14px var(--shadow); transform: translateX(calc(var(--i) * 100%)); transition: transform 360ms var(--ease); }
+.pseg { position: relative; z-index: 1; min-height: 44px; border: 0; background: none; color: var(--muted); font-weight: 750; font-size: .9em; }
+.pseg[aria-checked="true"] { color: var(--ink); }
+.pseg.p-urgent[aria-checked="true"] { color: var(--bad-text); } .pseg.p-high[aria-checked="true"] { color: var(--warn-text); }
+.rm .pthumb { transition: none; }
+/* scroll wheels */
+.wheels { display: grid; grid-template-columns: 1fr 1fr; gap: .5em; }
+.wheelbox { position: relative; }
+.wheelbox::before { content: ""; position: absolute; left: 0; right: 0; top: 80px; height: 40px; border-radius: 12px; background: var(--field); border: 1px solid var(--line); pointer-events: none; }
+.wheel { position: relative; height: 200px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); overscroll-behavior: contain; }
+.wheel::-webkit-scrollbar { display: none; }
+.wheel:focus-visible { outline: 3px solid var(--corner); outline-offset: 2px; border-radius: 12px; }
+.wpad { height: 80px; }
+.witem { height: 40px; scroll-snap-align: center; display: grid; place-items: center; font-size: 1.15em; color: var(--muted); font-variant-numeric: tabular-nums; cursor: pointer; transition: color 160ms ease, transform 200ms var(--ease); }
+.witem.on { color: var(--ink); font-weight: 750; transform: scale(1.06); }
+/* focus that follows you */
+.minifocus { position: fixed; z-index: 35; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 12px); display: flex; align-items: center; gap: .55em; min-height: 52px; padding: .35em .9em .35em .45em;
+  border-radius: 99px; border: 1px solid var(--line); background: var(--glass-solid); color: var(--ink); box-shadow: 0 12px 30px var(--shadow); max-width: 70vw; animation: sheetup 420ms var(--ease-ios) both; }
+.minifocus .mf-ring { --p: 0; width: 38px; height: 38px; border-radius: 50%; flex: none; background: conic-gradient(var(--corner) calc(var(--p) * 1turn), var(--field) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4.5px)); animation: mfpulse 2.4s ease-in-out infinite; }
+@keyframes mfpulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
+.minifocus .mf-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; min-width: 0; }
+.minifocus b { font-variant-numeric: tabular-nums; }
+.minifocus #mf-task { font-size: .78em; color: var(--muted); max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rm .minifocus, .rm .minifocus .mf-ring { animation: none; }
+/* the deck */
+.deckwrap { display: flex; flex-direction: column; gap: .6em; }
+.deck { position: relative; min-height: 220px; }
+.dcard { position: absolute; inset: 0; border-radius: 24px; border: 1px solid var(--line); background: var(--glass-solid); box-shadow: 0 14px 34px var(--shadow); }
+.dcard.under1 { transform: translateY(10px) scale(.96); opacity: .7; }
+.dcard.under2 { transform: translateY(20px) scale(.92); opacity: .45; }
+.dcard.top { position: relative; display: flex; flex-direction: column; gap: .6em; padding: 1.2em 1.2em .8em; min-height: 220px; border-color: var(--care); transition: transform 380ms var(--ease), opacity 300ms var(--ease); touch-action: pan-y; }
+.dcard.top.keep { border-color: var(--ok-text); } .dcard.top.skip { border-color: var(--muted); }
+.dcard.top.fly-r { transform: translateX(130%) rotate(14deg) !important; opacity: 0; }
+.dcard.top.fly-l { transform: translateX(-130%) rotate(-14deg) !important; opacity: 0; }
+.deckbtns { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4em; }
+.rm .dcard.top { transition: none; }
+/* quiz */
+.qzq { font-size: 1.15em; font-weight: 700; line-height: 1.4; }
+.btn.qzc { justify-content: flex-start; text-align: left; }
+.btn.qzc.right { border-color: var(--ok-text); background: var(--corner-soft); }
+.btn.qzc.wrong { border-color: var(--bad-text); background: var(--signal-soft); }
+.btn.qzc:disabled { opacity: 1; }
 
 /* rows: swipe, open in place, select, drag */
 .tswipe { position: relative; border-radius: 20px; transition: transform 160ms ease, opacity 160ms ease, box-shadow 160ms ease; }
@@ -650,6 +773,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
 <div class="sr-only" id="announce" aria-live="polite"></div>
 <div id="float"></div>
 <button id="hlbtn" class="hlbtn" type="button" hidden>Save highlight</button>
+<button id="minifocus" class="minifocus" type="button" hidden><span class="mf-ring" aria-hidden="true"></span><span class="mf-text" aria-hidden="true"><b id="mf-time"></b><span id="mf-task"></span></span></button>
 
 <script>
 (function () {
@@ -798,7 +922,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     var P = obj(s.profile) || {};
     s.profile = { habitKey: ["phone", "porn", "alcohol", "nicotine", "gaming", "other"].indexOf(P.habitKey) >= 0 ? P.habitKey : "", habit: str(P.habit, 60), step: str(P.step, 120),
       reasons: (Array.isArray(P.reasons) ? P.reasons : []).map(function (x) { return str(x, 140).trim(); }).filter(Boolean).slice(0, 5),
-      style: ["gentle", "direct", "practical"].indexOf(P.style) >= 0 ? P.style : "gentle", when: str(P.when, 80) };
+      style: ["gentle", "direct", "practical"].indexOf(P.style) >= 0 ? P.style : "gentle", when: str(P.when, 80), guide: P.guide === "plain" ? "plain" : "krishna" };
     s.memory = (Array.isArray(s.memory) ? s.memory : []).filter(obj).map(function (m) { return { id: str(m.id, 40) || newId(), key: str(m.key, 40), value: TIME_RE.test(m.value || "") ? m.value : "", text: str(m.text, 120), at: +m.at || Date.now() }; })
       .filter(function (m) { return m.key && m.value; }).slice(0, 50);
     var F = obj(s.fx) || {};
@@ -815,7 +939,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     s.docs = (Array.isArray(s.docs) ? s.docs : []).filter(obj).map(function (d) {
       var rd = {}; Object.keys(obj(d.read) || {}).filter(function (k) { return DATE_RE.test(k) && Array.isArray(d.read[k]); }).sort().slice(-60).forEach(function (k) { rd[k] = d.read[k].map(Number).filter(function (n) { return n >= 1 && n === Math.floor(n); }).slice(0, 2000); });
       return { id: str(d.id, 40), name: str(d.name, 80) || "Untitled", pages: Math.max(0, Math.floor(+d.pages || 0)), chars: +d.chars || 0, at: +d.at || 0, status: d.status === "scanned" ? "scanned" : "ready", truncated: !!d.truncated,
-        hasFile: !!d.hasFile, pos: Math.max(1, Math.floor(+d.pos || 1)), goal: Math.max(1, Math.min(200, Math.floor(+d.goal || 5))), read: rd };
+        hasFile: !!d.hasFile, kind: d.kind === "learning" || d.kind === "mindset" ? d.kind : "", lastRead: +d.lastRead || 0, pos: Math.max(1, Math.floor(+d.pos || 1)), goal: Math.max(1, Math.min(200, Math.floor(+d.goal || 5))), read: rd };
     }).filter(function (d) { return d.id; });
     s.cards = (Array.isArray(s.cards) ? s.cards : []).filter(obj).map(function (c) {
       return { id: str(c.id, 40) || newId(), docId: str(c.docId, 40), docName: str(c.docName, 80), page: Math.max(0, Math.floor(+c.page || 0)), quote: str(c.quote, 600), typed: !!c.typed,
@@ -823,7 +947,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         items: (Array.isArray(c.items) ? c.items : []).filter(obj).map(function (i) { return { kind: ["prompt", "action", "encourage", "own"].indexOf(i.kind) >= 0 ? i.kind : "own", by: i.by === "you" ? "you" : "template", text: str(i.text, 300) }; }).filter(function (i) { return i.text; }) };
     }).filter(function (c) { return c.quote; });
     s.asst = obj(s.asst);
-    if (s.asst && ["task", "plan", "planned", "overwhelm", "encourage", "review", "unsure", "nofix", "aiSaved"].indexOf(s.asst.kind) < 0) s.asst = null;
+    if (s.asst && ["task", "plan", "planned", "overwhelm", "encourage", "review", "unsure", "nofix", "aiSaved", "confirm", "intake"].indexOf(s.asst.kind) < 0) s.asst = null;
     if (s.asst && s.asst.kind === "task") {
       var D = obj(s.asst.d);
       if (!D) s.asst = null;
@@ -844,9 +968,18 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (s.asst && !s.asst.src) s.asst.src = "";
     s.askText = str(s.askText, 300);
     // what Ten Days has learned, and suggestions you've set aside
-    s.notes = (Array.isArray(s.notes) ? s.notes : []).filter(obj).map(function (n) { return { id: str(n.id, 40) || newId(), text: str(n.text, 2000), at: +n.at || Date.now() }; }).filter(function (n) { return n.text; }).slice(0, 500);
+    s.notes = (Array.isArray(s.notes) ? s.notes : []).filter(obj).map(function (n) { return { id: str(n.id, 40) || newId(), text: str(n.text, 2000), at: +n.at || Date.now(), reply: str(n.reply, 500) }; }).filter(function (n) { return n.text; }).slice(0, 500);
     s.breathLog = (Array.isArray(s.breathLog) ? s.breathLog : []).filter(function (e) { return obj(e) && typeof e.at === "number"; }).map(function (e) { return { at: e.at, mins: Math.max(1, Math.min(60, Math.round(+e.mins || 1))) }; }).slice(-500);
     s.brPat = ["calm", "sigh", "box", "sleep"].indexOf(s.brPat) >= 0 ? s.brPat : "calm"; s.brMins = [1, 3, 5, 10].indexOf(+s.brMins) >= 0 ? +s.brMins : 3;
+    s.checkins = (Array.isArray(s.checkins) ? s.checkins : []).filter(obj).map(function (c) { return { id: str(c.id, 40) || newId(), text: str(c.text, 60).trim() }; }).filter(function (c) { return c.text; }).slice(0, 30);
+    var CL = obj(s.checkLog) || {}; s.checkLog = {};
+    Object.keys(CL).filter(function (k) { return DATE_RE.test(k) && Array.isArray(CL[k]); }).sort().slice(-120).forEach(function (k) { s.checkLog[k] = CL[k].map(String).slice(0, 40); });
+    s.about = (Array.isArray(s.about) ? s.about : []).map(function (x) { return str(x, 140).trim(); }).filter(Boolean).slice(-40); s.intakeDone = !!s.intakeDone;
+    s.quiz = (Array.isArray(s.quiz) ? s.quiz : []).filter(obj).map(function (q) { return { id: str(q.id, 40) || newId(), docId: str(q.docId, 40), page: Math.max(1, Math.floor(+q.page || 1)), q: str(q.q, 300), choices: (Array.isArray(q.choices) ? q.choices : []).map(function (c) { return str(c, 140); }).slice(0, 4), answer: Math.floor(+q.answer || 0), explain: str(q.explain, 200), box: Math.max(0, Math.min(5, Math.floor(+q.box || 0))), due: DATE_RE.test(q.due || "") ? q.due : "", by: q.by === "ai" ? "ai" : "text" }; })
+      .filter(function (q) { return q.q && q.choices.length >= 2 && q.answer < q.choices.length; }).slice(-400);
+    s.kept = (Array.isArray(s.kept) ? s.kept : []).filter(obj).map(function (k) { return { text: str(k.text, 600), label: str(k.label, 120) }; }).filter(function (k) { return k.text; }).slice(0, 50);
+    s.view = s.view === "list" ? "list" : "grid";
+    s.week = obj(s.week) && typeof s.week.text === "string" ? { day: str(s.week.day, 10), text: str(s.week.text, 3000), by: s.week.by === "ai" ? "ai" : "local" } : null;
     s.learn = s.learn !== false; s.patNo = obj(s.patNo) || {}; s.sugNo = obj(s.sugNo) || {}; s.lastLink = str(s.lastLink, 40);
     s.org = obj(s.org) && DATE_RE.test(s.org.day || "") && Array.isArray(s.org.done) && !s.org.busy ? s.org : null;
     var lt = obj(s.lastTask); s.lastTask = lt && typeof lt.at === "number" ? { id: str(lt.id, 40), at: lt.at } : null;
@@ -1346,7 +1479,9 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     sparkle: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z", shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",
     help: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.7-2.5 2-2.5 4M12 17h.01", pin: "M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z",
     quote: "M9 7H5v5h4v1a3 3 0 0 1-3 3M19 7h-4v5h4v1a3 3 0 0 1-3 3", bell: "M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0",
-    up: "M6 15l6-6 6 6", down: "M6 9l6 6 6-6", left: "M15 5l-7 7 7 7", x: "M6 6l12 12M18 6L6 18", mic: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21", stop: "M7 7h10v10H7z", trash: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13", wind: "M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7", note: "M5 4h10l4 4v12H5zM15 4v4h4M8 12h8M8 16h5"
+    up: "M6 15l6-6 6 6", down: "M6 9l6 6 6-6", left: "M15 5l-7 7 7 7", x: "M6 6l12 12M18 6L6 18", mic: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21", stop: "M7 7h10v10H7z", undo: "M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3", grid: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",
+    speaker: "M4 9h4l5-4v14l-5-4H4zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12", alert: "M12 3l9.5 17h-19zM12 10v4M12 17h.01", circle: "M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z",
+    shuffle: "M4 7h3l10 10h3M4 17h3l3-3M14 10l3-3h3M17 4l3 3-3 3M17 14l3 3-3 3", trash: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13", wind: "M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7", note: "M5 4h10l4 4v12H5zM15 4v4h4M8 12h8M8 16h5"
   };
   function icon(name) {
     return svg("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": name === "more" ? "3.2" : "2", "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true", focusable: "false" },
@@ -1431,6 +1566,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     take(/\s(https?:\/\/[^\s"'<>]+)(?=\s)/i, function (m) { r.link = m[1]; r.type = "MEETING"; r.found.push("link"); });
     take(/\s#p(?:rivate)?(?=\s)/i, function () { r.private = true; r.found.push("private"); });
     var setP = function (v) { return function () { r.priority = v; r.found.push("priority"); }; };
+    take(/\s(?:not (?:so |that |very |too |really |super |at all )?(?:urgent|important|pressing)|non-?urgent|no rush|no hurry|low urgency|less urgent|low priority|whenever|someday)(?=\s)/i, setP("low")) ||
     take(/\s(?:!!!|urgent|urgently|asap|critical|#urgent|right away)(?=\s)/i, setP("urgent")) || take(/\s(?:!!|!high|#high|important|high priority)(?=\s)/i, setP("high"))
       || take(/\s(?:!low|#low|low priority|not urgent|whenever|someday)(?=\s)/i, setP("low")) || take(/\s(?:normal priority|#normal)(?=\s)/i, setP("normal"));
     take(/\sremind(?: me)? (\d{1,3}) ?(m|mins?|minutes?|h|hrs?|hours?) (?:before|early|earlier|ahead)(?=\s)/i, function (m) { r.remindBefore = Math.min(1440, +m[1] * (/^h/i.test(m[2]) ? 60 : 1)); r.remind = true; r.found.push("remind"); })
@@ -1734,7 +1870,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       : h("button", { class: "tmain", type: "button", "aria-expanded": open ? "true" : "false", "aria-label": t.title + (meta.length ? "" : ""), onclick: function () { rowTap(t); } },
           h("span", { class: "ttitle", text: t.title }), meta.length ? h("span", { class: "tmeta" }, meta) : null);
     var spark = picking ? null : h("button", { class: "spark", type: "button", "data-spark": t.id, "aria-label": "Change “" + t.title + "” by typing", "aria-expanded": ui.spark === t.id ? "true" : "false", onclick: function () {
-      ui.spark = ui.spark === t.id ? null : t.id; ui.expanded = ui.spark ? t.id : ui.expanded; render(false); var f = $("sp-" + t.id); if (f) f.focus();
+      openSheet(t.id); var f = $("ps-0"); if (f) f.focus();
     } }, icon("sparkle"));
     var row = h("div", { class: "trow pr-" + t.priority + (done ? " done" : "") + (over ? " over" : "") + (snz ? " snz" : "") + (ui.justDone === t.id ? " pop" : "") + (picked ? " picked" : "") }, lead, main, spark);
     var wrap = h("div", { class: "tswipe" + (open ? " open" : ""), "data-task": t.id },
@@ -2128,7 +2264,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     var x = S.bank.xp;
     S.tasks.forEach(function (t) { x += t.hist.length * (t.priority === "high" ? 15 : 10); });
     S.focusLog.forEach(function (e) { x += Math.min(120, e.mins); });
-    return x + S.freeDays.length * 20 + S.steps.length * 5;
+    return x + S.freeDays.length * 20 + S.steps.length * 5 + Object.keys(S.checkLog).reduce(function (a, k) { return a + S.checkLog[k].length; }, 0) * 3;
   }
   function levelOf(x) { var L = 1; while (x >= 25 * L * (L + 1)) L++; return { level: L, from: 25 * (L - 1) * L, to: 25 * L * (L + 1) }; }
   function rankOf(L) { var r = RANKS[0][1]; RANKS.forEach(function (k) { if (L >= k[0]) r = k[1]; }); return r; }
@@ -2272,7 +2408,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       };
       return next().then(function () {
         var scanned = chars < 40 * n;
-        var meta = { id: id, name: name, pages: n, chars: chars, at: Date.now(), status: scanned ? "scanned" : "ready", truncated: doc.numPages > n };
+        var meta = { id: id, name: name, pages: n, chars: chars, at: Date.now(), status: scanned ? "scanned" : "ready", truncated: doc.numPages > n, kind: scanned ? "" : guessKind(pages.join(" ")) };
         meta.hasFile = !scanned;
         return (scanned ? Promise.resolve() : idbPut("docs", id, { id: id, pages: pages }).then(function () { return idbPut("blobs", "pdf:" + id, keep); })).then(function () {
           S.docs.push(meta);
@@ -2419,6 +2555,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (!text) { toast("Type what's happening first."); return false; }
     var intent = intentOf(text), a = S.asst;
     if (intent === "note") { saveNote(text); S.asst = null; save(); return true; }
+    if (runCommand(text)) { save(); return true; }
     if (intent === "fix") {
       var draftA = a && a.kind === "task" ? a : null, t = draftA ? (draftA.editing ? taskById(draftA.editing) : null) : lastTask();
       if (!draftA && !t) { setAsst({ kind: "nofix", src: text }); return true; }
@@ -2455,7 +2592,11 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       EDIT_KEYS.forEach(function (k) { if (d[k] !== undefined) t[k] = JSON.parse(JSON.stringify(d[k])); });
       if (periodKey(t) !== was) { t.doneOn = ""; t.doneAt = 0; }
       n = normTask(t);
-    } else { n = draftToTask(d); if (!n) { toast("Add a title first."); return; } S.tasks.push(n); }
+    } else {
+      var dup = dupOf(d);
+      if (dup) { S.asst = { kind: "task", d: taskToDraft(dup), editing: dup.id, note: "That's already on your list, so nothing new was added." }; save(); toast("Already on your list: " + dup.title); return; }
+      n = draftToTask(d); if (!n) { toast("Add a title first."); return; } S.tasks.push(n);
+    }
     S.lastTask = { id: n.id, at: Date.now() };
     var keep = { sugg: d.sugg || {}, remind: !!d.remind };
     var nd = taskToDraft(n); nd.sugg = keep.sugg; nd.remind = keep.remind;
@@ -2656,7 +2797,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   function asstView() {
     var a = S.asst; if (!a) return null;
     try {
-      var body = a.kind === "thinking" ? thinkingCard(a) : a.kind === "aiSaved" ? aiSavedCard(a) : a.kind === "task" ? taskCard(a) : a.kind === "plan" ? planCard(a) : a.kind === "planned" ? plannedCard(a) : a.kind === "overwhelm" ? overwhelmCard(a)
+      var body = a.kind === "confirm" ? confirmCard(a) : a.kind === "intake" ? intakeCard(a) : a.kind === "thinking" ? thinkingCard(a) : a.kind === "aiSaved" ? aiSavedCard(a) : a.kind === "task" ? taskCard(a) : a.kind === "plan" ? planCard(a) : a.kind === "planned" ? plannedCard(a) : a.kind === "overwhelm" ? overwhelmCard(a)
         : a.kind === "encourage" ? encourageCard(a) : a.kind === "review" ? reviewCard(a) : a.kind === "nofix" ? nofixCard(a) : unsureCard(a);
       if (!body) return null;
       return h("section", { class: "card asst k-" + a.kind, id: "asst", "aria-labelledby": "asst-state", onkeydown: function (e) { if (e.key === "Escape" && !ui.asstEdit) { setAsst(null); render(false); var q = $("qa"); if (q) q.focus(); } } }, body);
@@ -2910,7 +3051,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     countAi(); save();
     var steps = 0, modelFixed = false;
     var build = function (model) {
-      var b = { system_instruction: { parts: [{ text: AI_RULES + (me ? "\n\nWhat you know about the person:\n" + me : "") + "\n\n" + task }] }, contents: [{ role: "user", parts: parts }],
+      var b = { system_instruction: { parts: [{ text: AI_RULES + (krishna() && !opts.json ? "\n\n" + KRISHNA_RULES : "") + (me ? "\n\nWhat you know about the person:\n" + me : "") + "\n\n" + task }] }, contents: [{ role: "user", parts: parts }],
         generationConfig: { temperature: opts.temp != null ? opts.temp : .3, maxOutputTokens: opts.max || 1200 } };
       if (opts.json) b.generationConfig.responseMimeType = "application/json";
       var tm = S.ai.think[model] || THINK_ORDER[0];
@@ -2955,11 +3096,11 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (SR) { startDictation(SR); return; }
     toast("Turn on the AI helper in You for voice notes, or tap the mic on your keyboard to dictate.", 6000);
   }
-  function startRec() {
+  function startRec(purpose) {
     if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { toast("This browser can't record. Tap the mic on your keyboard to dictate instead.", 6000); return; }
     var AC = window.AudioContext || window.webkitAudioContext; if (!AC) { toast("This browser can't record audio."); return; }
     var ctx = new AC();   // made inside the tap, so iPhone lets it run
-    rec = { ctx: ctx, chunks: [], start: Date.now(), rate: ctx.sampleRate, pending: true };
+    rec = { ctx: ctx, chunks: [], start: Date.now(), rate: ctx.sampleRate, pending: true, purpose: purpose || "tasks" };
     render(false);
     navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }).then(function (stream) {
       if (!rec) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
@@ -2968,7 +3109,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       src.connect(proc); proc.connect(ctx.destination);
       if (ctx.state === "suspended") ctx.resume();
       rec.stream = stream; rec.src = src; rec.proc = proc; rec.pending = false; rec.start = Date.now(); rec.rate = ctx.sampleRate;
-      rec.timer = setInterval(function () { var t = $("rec-time"); if (t && rec) t.textContent = mmss(Date.now() - rec.start); if (rec && Date.now() - rec.start > 120e3) stopRec(true); }, 250);
+      rec.timer = setInterval(function () { var t = $("rec-time"); if (t && rec) t.textContent = mmss(Date.now() - rec.start); if (rec && Date.now() - rec.start > (rec.purpose === "intake" ? 300e3 : 120e3)) stopRec(true); }, 250);
       render(false); announce("Recording. Tap stop when you're done.");
     }, function (err) {
       try { ctx.close(); } catch (e) {} rec = null; render(false);
@@ -2986,7 +3127,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     var n = r.chunks.reduce(function (a, c) { return a + c.length; }, 0);
     if (n < r.rate * .6) { toast("That was too short. Hold on a moment longer next time."); return; }
     var b64 = wavB64(r.chunks, n, r.rate);
-    aiVoice(b64);
+    if (r.purpose === "intake") aiIntake(b64); else aiVoice(b64);
   }
   // 16 kHz mono WAV: small, and a format Gemini reads.
   function wavB64(chunks, n, rate) {
@@ -3004,8 +3145,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   }
   var AI_VOICE = "A voice note is attached. Transcribe it, then do what the note asks: turn everything they need to do into tasks. Reply with JSON only: " +
     '{"transcript":"","kind":"tasks|overwhelm|encourage|review|support|unclear","tasks":[{"title":"","date":"","time":"","minutes":0,"repeat":"once","priority":"normal","items":[]}],"question":""}. ' +
-    "kind is support if they describe an urge, a craving, a relapse or a crisis. Each separate thing to do is its own task with a short title in their words. " +
-    "priority is high when it's urgent or due within a day, low when it's a someday thing, otherwise normal. date as YYYY-MM-DD and time as 24-hour HH:MM only if they say or clearly imply it. Never invent details.";
+    "priority is one of urgent, high, normal, low. kind is support if they describe an urge, a craving, a relapse or a crisis. Each separate thing to do is its own task with a short title in their words. " +
+    "priority is urgent when they say urgent or it's due within hours, high when important or due within a day, low for someday things or when they say not urgent or no rush, otherwise normal. date as YYYY-MM-DD and time as 24-hour HH:MM only if they say or clearly imply it. Never invent details.";
   function aiVoice(b64) {
     setAsst({ kind: "thinking", src: "Your voice note", voice: true });
     render(false);
@@ -3034,8 +3175,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (!rec && !sr) return null;
     return h("div", { class: "card rec", id: "rec", role: "status" },
       h("p", { class: "status" }, h("span", { class: "recdot", "aria-hidden": "true" }), rec && rec.pending ? "Starting the microphone…" : sr ? "Listening…" : "Recording ", rec && !rec.pending ? h("span", { id: "rec-time", text: mmss(Date.now() - rec.start) }) : null),
-      h("p", { class: "small", text: rec ? "Say everything on your mind. Ten Days turns it into tasks, most urgent first." : "Speak, and the words go in the box." }),
-      h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "rec-stop", onclick: micTap }, rec ? "Done, organize it" : "Stop"),
+      h("p", { class: "small", text: rec && rec.purpose === "intake" ? "Talk freely: what you like, what calms you, your routines, what's hard. Up to 5 minutes." : rec ? "Say everything on your mind. Ten Days turns it into tasks, most urgent first." : "Speak, and the words go in the box." }),
+      h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "rec-stop", onclick: micTap }, rec && rec.purpose === "intake" ? "Done, understand me" : rec ? "Done, organize it" : "Stop"),
         rec ? h("button", { class: "btn link", type: "button", id: "rec-cancel", onclick: function () { stopRec(false); } }, "Cancel") : null));
   }
 
@@ -3053,13 +3194,15 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       } }, "Undo"), closeLink("Done"))];
   }
   function saveAiTasks(text, tasks, note, heard) {
-    var ids = [];
+    var ids = [], skipped2 = 0;
     tasks.forEach(function (x) {
       var d = aiTask(x), p = obj(x) && x.priority;
-      d.priority = ["high", "normal", "low"].indexOf(p) >= 0 ? p : "normal";
+      d.priority = ["urgent", "high", "normal", "low"].indexOf(p) >= 0 ? p : "normal";
+      if (dupOf(d)) { skipped2++; return; }
       var t = draftToTask(d); if (t) { S.tasks.push(t); ids.push(t.id); }
     });
     if (ids.length) S.lastTask = { id: ids[ids.length - 1], at: Date.now() };
+    if (skipped2) note = (note ? note + " " : "") + skipped2 + (skipped2 === 1 ? " was" : " were") + " already on your list, so I didn't add again.";
     setAsst({ kind: "aiSaved", ids: ids, src: text, note: note || "", heard: heard || "" });
     chime(); announce("Added " + ids.length + " tasks.");
   }
@@ -3073,7 +3216,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       if (t.repeat === "once" && t.date && t.date < today) out.push({ type: "date", id: t.id, date: today, time: "", why: "It was from an earlier day" });
 
     });
-    return out.slice(0, 12);
+    return dupChanges().concat(out).slice(0, 14);
   }
   function organize(auto) {
     if (orgBusy) return;
@@ -3090,7 +3233,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     aiCall(AI_ORG + " " + nowLine(), orgInput(), { json: true, max: 1600 }).then(function (r) {
       orgBusy = false;
       if (!r.ok) { applyAll(localChanges(), "", "AI not available: " + aiWhy(r) + " Used quick rules instead."); return; }
-      var ch = cleanChanges(r.data);
+      var ch = dupChanges().concat(cleanChanges(r.data));
       if (!ch.length) ch = localChanges();
       applyAll(ch, str(obj(r.data) && r.data.summary, 200), "");
     });
@@ -3184,7 +3327,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     '{"kind":"tasks|note|overwhelm|encourage|review|support|unclear","tasks":[{"title":"","date":"","time":"","minutes":0,"repeat":"once","priority":"normal","items":[]}],"question":""}. ' +
     "kind is support if they describe an urge, a craving, a relapse or a crisis; note if it's a thought, feeling or idea rather than something to do. For tasks, give each separate thing to do as its own task: a short title in their words (under 60 characters), " +
     "date as YYYY-MM-DD only if the note says or clearly implies a day, time as 24-hour HH:MM only if the note gives one, minutes only if it gives a length, repeat as once, daily, weekdays or weekly, items for a shopping list, " +
-    "and priority as high when it's urgent or due within a day, low for someday things, otherwise normal. " +
+    "and priority as urgent when they say it's urgent or it's due within hours, high when it's important or due within a day, low for someday things or when they say it's not urgent, otherwise normal. " +
     "Never invent dates, times or details. If something essential is missing, put one short question in question.";
   function aiThink(text, intent) {
     setAsst({ kind: "thinking", src: text, intent: intent });
@@ -3486,6 +3629,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (c.type === "group") return "Group " + c.ids.length + " tasks as “" + c.name + "”";
     if (c.type === "steps") return "Break " + nm + " into steps: " + c.items.join(", ");
     if (c.type === "priority") return "Mark " + nm + " as " + c.priority + " priority";
+    if (c.type === "merge") return "Merged " + (c.ids.length + 1) + " copies of " + nm;
     return "";
   }
   function applyChange(c) {
@@ -3496,6 +3640,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     else if (c.type === "group") c.ids.forEach(function (id) { var x = taskById(id); if (x) x.group = c.name; });
     else if (c.type === "steps" && t) { c.items.forEach(function (i) { if (!t.items.some(function (x) { return x.t === i; })) t.items.push({ t: i, doneOn: "" }); }); }
     else if (c.type === "priority" && t) t.priority = c.priority;
+    else if (c.type === "merge" && t) { var others = c.ids.map(taskById).filter(Boolean); if (others.length) mergeInto(t, others); }
     if (t) normTask(t);
   }
   var orgBusy = false;
@@ -3710,6 +3855,564 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (inside && txt.length >= 12) { hlText = txt; btn.hidden = false; } else if (!inside || !txt) btn.hidden = true;
   });
 
+  // ============ the guide: Krishna-inspired, from the Bhagavad Gita ============
+  // These are short paraphrases written for this app, each with the verse it draws on. They are not exact
+  // translations, and the app always labels them that way. Add a Gita PDF in Library for exact wording.
+  var GITA = [
+    ["2.47", ["work", "anxiety", "results", "pressure", "exam"], "Your part is the effort, not the outcome. Do the work well and let go of the result."],
+    ["2.14", ["pain", "urge", "discomfort", "sad"], "Heat and cold, pleasure and pain come and go. They don't last. Endure them patiently."],
+    ["2.48", ["anxiety", "balance", "results"], "Act steadily, the same in success and failure. That evenness is yoga."],
+    ["6.5", ["self", "discipline", "urge", "low"], "Lift yourself by your own effort. Your mind can be your best friend or your worst enemy."],
+    ["6.6", ["self", "discipline"], "For the one who has mastered the mind, it is a friend. For the one who hasn't, it acts like an enemy."],
+    ["6.26", ["restless", "focus", "distraction", "urge"], "Wherever the restless mind wanders, gently bring it back. Again and again."],
+    ["6.35", ["restless", "discipline", "focus"], "The mind is restless and hard to hold, yes. It is steadied by practice and by letting go."],
+    ["2.62", ["urge", "craving", "anger"], "Dwelling on something breeds attachment; attachment breeds desire; blocked desire turns into anger."],
+    ["2.63", ["anger", "urge"], "From anger comes confusion, and confusion clouds judgment. Pause before it carries you."],
+    ["3.37", ["anger", "craving", "urge"], "Desire and the anger that follows it are the real enemy here. See them clearly."],
+    ["2.56", ["balance", "sad", "anxiety"], "Steady is the one not shaken by sorrow, not grasping at pleasure, free of fear and rage."],
+    ["2.70", ["craving", "urge", "peace"], "Like the ocean that stays still as rivers pour in, stay steady as desires arrive."],
+    ["3.8", ["lazy", "work", "discipline", "procrastination"], "Do the work in front of you. Action is better than doing nothing."],
+    ["3.35", ["comparison", "self"], "Better your own path done imperfectly than someone else's done perfectly."],
+    ["6.17", ["sleep", "balance", "health"], "Be moderate in eating and sleep, in work and rest. Balance is what makes practice possible."],
+    ["5.22", ["craving", "urge", "pleasure"], "Pleasures born of the senses have a beginning and an end. The wise don't build their joy on them."],
+    ["2.40", ["progress", "low", "relapse", "start"], "No effort on this path is ever wasted. Even a little of it protects you."],
+    ["6.40", ["relapse", "low", "progress"], "One who does good never comes to a bad end. Your effort is not lost."],
+    ["18.48", ["work", "perfection", "procrastination"], "Every effort has some flaw, as fire has smoke. Don't drop your work because it isn't perfect."],
+    ["2.38", ["balance", "results", "exam"], "Treat gain and loss, win and defeat alike, and then act. That way nothing weighs on you."],
+    ["6.34", ["restless", "urge"], "The mind is as hard to hold as the wind. That's why practice matters, not willpower alone."],
+    ["12.13", ["anger", "people", "kindness"], "Free of hate toward anyone, friendly and compassionate: that one is dear to me."],
+    ["16.21", ["craving", "anger", "greed"], "Lust, anger and greed are three gates to ruin. Close them and walk on."],
+    ["2.20", ["fear", "death", "anxiety"], "What you truly are was never born and never dies. Fear touches only the surface."],
+    ["4.38", ["learning", "study"], "Nothing in this world purifies like knowledge. In time, it comes to the one who practices."]
+  ];
+  var MOODS = [
+    ["anger", /\b(angry|anger|mad|furious|pissed|rage|annoyed|irritated|aggravat\w*|hate)\b/i],
+    ["anxiety", /\b(anxious|anxiety|worried|worry|nervous|stress\w*|scared|fear|panic|overthink\w*)\b/i],
+    ["urge", /\b(urge|craving|tempt\w*|relaps\w*|slipped|scroll\w*|porn|addict\w*)\b/i],
+    ["low", /\b(sad|down|low|depress\w*|lonely|tired|hopeless|worthless|empty)\b/i],
+    ["lazy", /\b(lazy|procrastinat\w*|unmotivated|can't start|cant start|stuck)\b/i],
+    ["restless", /\b(restless|distract\w*|can't focus|cant focus|scattered)\b/i],
+    ["results", /\b(exam|test|grade|result|outcome|interview|fail\w*)\b/i]
+  ];
+  function moodOf(text) { for (var i = 0; i < MOODS.length; i++) if (MOODS[i][1].test(text || "")) return MOODS[i][0]; return ""; }
+  function gitaFor(mood, seed) {
+    var list = mood ? GITA.filter(function (g) { return g[1].indexOf(mood) >= 0; }) : GITA;
+    if (!list.length) list = GITA;
+    return list[Math.abs(seed || 0) % list.length];
+  }
+  function gitaLabel(g) { return "Bhagavad Gita " + g[0] + " · paraphrase"; }
+  function krishna() { return S.profile.guide !== "plain"; }
+  var KRISHNA_RULES = "Speak as a calm, warm guide in the spirit of Krishna counselling Arjuna in the Bhagavad Gita: steady, kind, wise, never preachy, and short (one to three sentences). " +
+    "You may draw on Gita teachings and mention a chapter and verse only when you're sure of it, and always present the wording as your own paraphrase, never as an exact quote.";
+
+  // ============ speaking aloud (the phone's own voices) ============
+  var voiceP = null;
+  function pickVoice() {
+    try {
+      var vs = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+      var by = function (re) { return vs.filter(function (v) { return re.test(v.name + " " + v.lang); })[0]; };
+      // a calm Indian-English voice if the phone has one (iPhone ships "Rishi"), else a deeper English voice
+      return by(/Rishi/i) || by(/en[-_]IN/i) || by(/Daniel|Aaron|Arthur|Oliver|Google UK English Male|Male/i) || by(/^en|English/i) || null;
+    } catch (e) { return null; }
+  }
+  try { if (window.speechSynthesis) speechSynthesis.onvoiceschanged = function () { voiceP = null; }; } catch (e) {}
+  var speaking = "";
+  function speak(text, id) {
+    if (!window.speechSynthesis) { toast("This phone can't read aloud here."); return; }
+    try {
+      if (speaking === id) { speechSynthesis.cancel(); speaking = ""; render(false); return; }
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(String(text).slice(0, 4000)), v = voiceP || (voiceP = pickVoice());
+      if (v) { u.voice = v; u.lang = v.lang; }
+      u.rate = .9; u.pitch = .85;
+      u.onend = u.onerror = function () { if (speaking === id) { speaking = ""; render(false); } };
+      speaking = id; speechSynthesis.speak(u); render(false);
+    } catch (e) { toast("Couldn't read that aloud."); }
+  }
+  function listenBtn(text, id) {
+    return h("button", { class: "btn link inl listen", type: "button", id: id, "aria-pressed": speaking === id ? "true" : "false", onclick: function () { speak(text, id); } }, icon(speaking === id ? "stop" : "speaker"), speaking === id ? " Stop" : " Listen");
+  }
+  // ============ no duplicates ============
+  function sameDay(a, b) { return (a.date || "") === (b.date || "") || (dayBased(a) && dayBased(b)); }
+  function dupOf(d, exceptId) {
+    var k = tkey(d.title); if (!k) return null;
+    return S.tasks.filter(function (t) { return t.id !== exceptId && !isDone(t) && tkey(t.title) === k && sameDay(t, d); })[0] || null;
+  }
+  // Copies of the same open task are merged: the first one keeps everyone's checklist items and notes.
+  function dupChanges() {
+    var seen = {}, out = [];
+    S.tasks.forEach(function (t) {
+      if (isDone(t) || t.private) return;
+      var k = tkey(t.title) + "|" + (dayBased(t) ? "~" : t.date || "");
+      if (!tkey(t.title)) return;
+      if (seen[k]) { var c = out.filter(function (x) { return x.id === seen[k]; })[0]; if (c) c.ids.push(t.id); else out.push({ type: "merge", id: seen[k], ids: [t.id], why: "Same task twice" }); }
+      else seen[k] = t.id;
+    });
+    return out;
+  }
+  function mergeInto(keep, others) {
+    others.forEach(function (o) {
+      o.items.forEach(function (i) { if (!keep.items.some(function (x) { return x.t === i.t; })) keep.items.push({ t: i.t, doneOn: i.doneOn }); });
+      if (o.notes && keep.notes.indexOf(o.notes) < 0) keep.notes = (keep.notes ? keep.notes + "\n" : "") + o.notes;
+      if (PR[o.priority] < PR[keep.priority]) keep.priority = o.priority;
+      if (!keep.time && o.time) keep.time = o.time;
+      if (!keep.dur && o.dur) keep.dur = o.dur;
+      bankTask(o);
+    });
+    S.tasks = S.tasks.filter(function (t) { return others.indexOf(t) < 0; });
+  }
+
+  // ============ commands you can type or say ============
+  function findTasks(q) {
+    var words = tkey(q).replace(/\b(task|tasks|one|thing|item|todo|to do)\b/g, " ").split(" ").filter(Boolean);
+    if (!words.length) return [];
+    var hits = S.tasks.filter(function (t) { var k = " " + tkey(t.title) + " "; return words.every(function (w) { return k.indexOf(" " + w) >= 0; }); });
+    var open = hits.filter(function (t) { return !isDone(t); });
+    return open.length ? open : hits;
+  }
+  function runCommand(text) {
+    var s = normText(text).replace(/[.!?]+$/, ""), m;
+    if (/^(?:please )?(?:delete|remove|clear|erase|wipe|get rid of) (?:all|every|everything)(?: (?:my )?(?:tasks?|of (?:them|it)))?$/i.test(s) || /^(?:delete|remove|clear) all (?:my )?tasks$/i.test(s)) {
+      if (!S.tasks.length) { toast("There's nothing to delete."); return true; }
+      setAsst({ kind: "confirm", act: "all", src: text, n: S.tasks.length }); return true;
+    }
+    if (/^(?:please )?(?:delete|remove|clear|hide) (?:all )?(?:the )?(?:finished|completed|done)(?: tasks| ones)?$/i.test(s)) { clearFinished(); return true; }
+    if ((m = s.match(/^(?:please )?(?:delete|remove|erase|cancel|drop|get rid of) (?:the |my )?(.+?)(?: task| tasks)?$/i))) {
+      var hits = findTasks(m[1]);
+      if (!hits.length) return false;   // not one of your tasks: treat it as something new to do
+      if (hits.length === 1) { deleteTask(hits[0]); S.asst = null; return true; }
+      setAsst({ kind: "confirm", act: "some", ids: hits.map(function (t) { return t.id; }), src: text, n: hits.length }); return true;
+    }
+    if ((m = s.match(/^(?:mark (?:the |my )?(.+?) (?:as )?(?:done|complete|finished)|(?:check|tick) off (?:the |my )?(.+?)|done with (?:the |my )?(.+?)|i (?:did|finished|completed|have done) (?:the |my )?(.+?)|(?:the |my )?(.+?) is (?:done|finished|complete))$/i))) {
+      m = [m[0], m[1] || m[2] || m[3] || m[4] || m[5]];
+      var h2 = findTasks(m[1]).filter(function (t) { return !isDone(t); });
+      if (h2.length === 1) { markDone(h2[0]); return true; }
+      if (h2.length > 1) { setAsst({ kind: "confirm", act: "done", ids: h2.map(function (t) { return t.id; }), src: text, n: h2.length }); return true; }
+      return false;
+    }
+    if ((m = s.match(/^(?:move|reschedule|push|postpone|change) (?:the |my )?(.+?) to (.+)$/i)) && !/^(?:it|that|this)$/i.test(m[1])) {
+      var h3 = findTasks(m[1]).filter(function (t) { return !isDone(t); });
+      if (h3.length === 1) { var d = taskToDraft(h3[0]); if (fixFields(m[2], d).length) { commitDraft(d, h3[0].id, "Moved"); S.asst = null; save(); return true; } }
+      return false;
+    }
+    return false;
+  }
+  function confirmCard(a) {
+    var ids = a.act === "all" ? S.tasks.map(function (t) { return t.id; }) : a.ids || [], ts = ids.map(taskById).filter(Boolean);
+    if (!ts.length) return null;
+    var go2 = function () {
+      pushHist(a.act === "done" ? "done" : "delete");
+      if (a.act === "done") ts.forEach(function (t) { if (!isDone(t)) { var k = periodKey(t); t.doneOn = k; t.doneAt = Date.now(); addHist(t, k); } });
+      else { ts.forEach(function (t) { bankTask(t); }); S.tasks = S.tasks.filter(function (t) { return ids.indexOf(t.id) < 0; }); }
+      setAsst(null); toast((a.act === "done" ? "Marked " : "Deleted ") + ts.length + ".", 6000, { label: "Undo", fn: undoHist }); render(false);
+    };
+    return [cardHead(a.act === "done" ? "check" : "trash", a.act === "all" ? "Delete everything?" : a.act === "done" ? "Mark these done?" : "Delete these?", a.act === "done" ? "" : "care"),
+      h("p", { text: a.act === "all" ? "All " + ts.length + " tasks will be deleted. You can undo right after." : ts.slice(0, 6).map(function (t) { return t.title; }).join(" · ") + (ts.length > 6 ? " …" : "") }),
+      h("div", { class: "row links" }, h("button", { class: a.act === "done" ? "btn primary" : "btn danger", type: "button", id: "cf-yes", onclick: go2 }, a.act === "all" ? "Delete all " + ts.length : a.act === "done" ? "Mark " + ts.length + " done" : "Delete " + ts.length), closeLink("Cancel"))];
+  }
+
+  // ============ what to do first, and what clashes ============
+  function slot(t, d) { var due = dueAt(t, d); return due === null ? null : { a: due, b: due + Math.max(15, t.dur || 30) * 60000, t: t }; }
+  function clashes(dayOffset) {
+    var d = addDays(new Date(), dayOffset || 0);
+    var list = (dayOffset ? S.tasks.filter(function (t) { return occursOn(t, d); }) : S.tasks.filter(function (t) { return inToday(t) && !isDone(t); }))
+      .map(function (t) { var dd = new Date(d.getFullYear(), d.getMonth(), d.getDate(), t.time ? +t.time.slice(0, 2) : 0, t.time ? +t.time.slice(3) : 0); return t.time ? { a: dd.getTime(), b: dd.getTime() + Math.max(15, t.dur || 30) * 60000, t: t } : null; })
+      .filter(Boolean).sort(function (x, y) { return x.a - y.a; });
+    var out = [];
+    for (var i = 0; i < list.length; i++) for (var j = i + 1; j < list.length && list[j].a < list[i].b; j++) out.push([list[i], list[j]]);
+    return out;
+  }
+  function nextFree(dayOffset, after, mins) {
+    var d = addDays(new Date(), dayOffset || 0), busy = S.tasks.filter(function (t) { return t.time && (dayOffset ? occursOn(t, d) : inToday(t) && !isDone(t)); })
+      .map(function (t) { var a = new Date(d.getFullYear(), d.getMonth(), d.getDate(), +t.time.slice(0, 2), +t.time.slice(3)).getTime(); return [a, a + Math.max(15, t.dur || 30) * 60000]; });
+    var at = after;
+    for (var k = 0; k < 40; k++) { var end = at + mins * 60000, hit = busy.filter(function (b) { return at < b[1] && end > b[0]; })[0]; if (!hit) break; at = hit[1]; }
+    at = Math.ceil(at / 300e3) * 300e3; var x = new Date(at);
+    return x.getDate() === d.getDate() ? pad(x.getHours()) + ":" + pad(x.getMinutes()) : "";
+  }
+  function whyFirst(t, now) {
+    var d = dueAt(t, now), ms = now.getTime();
+    if (d !== null && d < ms) return "Overdue since " + whenText(d) + ". Get it off your plate.";
+    if (d !== null && d - ms < 2 * 3600e3) return "Due at " + fmtTime(d) + ", in " + durText(Math.max(1, Math.round((d - ms) / 60000))) + ".";
+    if (t.priority === "urgent") return "You marked it urgent.";
+    if (t.priority === "high") return "High priority, nothing more pressing right now.";
+    if (t.dur && t.dur <= 15) return "A quick win: about " + durText(t.dur) + ".";
+    if (d !== null) return "Next thing with a time: " + fmtTime(d) + ".";
+    return "Nothing is pressing, so start with this one.";
+  }
+  function doFirstCard(now) {
+    if (S.session) return null;
+    var open = S.tasks.filter(function (t) { return inToday(t, now) && !isDone(t, now) && !(t.snoozeUntil > now.getTime()) && !skipped("t:" + t.id); }).sort(byTop(now));
+    var cl = clashes(0);
+    if (!open.length && !cl.length) return null;
+    var t = open[0], kids = [];
+    if (t) {
+      var ph = cleanPhone(t.contact.phone), bk = t.type === "READ" ? docOf(t) : null, act;
+      if (bk) act = h("button", { class: "btn primary", type: "button", id: "df-go", onclick: function () { openBook(bk); } }, "Read · p. " + (bk.pos || 1));
+      else if (t.type === "CALL" && ph) act = h("a", { class: "btn primary", id: "df-go", href: "tel:" + ph }, "Call");
+      else if (t.type === "MEETING" && t.link) act = h("a", { class: "btn primary", id: "df-go", href: t.link, target: "_blank", rel: "noopener noreferrer" }, "Join");
+      else act = h("button", { class: "btn primary", type: "button", id: "df-go", onclick: function () { if (t.dur) { ui.focusMins = t.dur; go("focus", t.id); } else markDone(t); } }, t.dur ? "Start " + durText(t.dur) : "Done");
+      kids.push(h("p", { class: "lbl", id: "df-l" }, icon("flag"), "Do this first"), h("p", { class: "status", id: "df-title", text: t.title }), h("p", { class: "small", id: "df-why", text: whyFirst(t, now) }),
+        h("div", { class: "row" }, act, h("button", { class: "btn link", type: "button", id: "df-later", onclick: function () { notNow("t:" + t.id); } }, "Not now")));
+    }
+    cl.slice(0, 2).forEach(function (c, i) {
+      var b = c[1], free = nextFree(0, c[0].b, b.t.dur || 30);
+      kids.push(h("div", { class: "clash", id: "clash-" + i, role: "note" }, icon("alert"),
+        h("span", { text: fmtTime(b.a) + ": “" + c[0].t.title + "” and “" + b.t.title + "” overlap." }),
+        free ? h("button", { class: "btn link inl", type: "button", id: "clash-fix-" + i, onclick: function () { pushHist("move"); b.t.time = free; save(); toast("Moved “" + b.t.title + "” to " + hmText(free) + ".", 5000, { label: "Undo", fn: undoHist }); render(false); } }, "Move to " + hmText(free)) : null));
+    });
+    return h("section", { class: "card dofirst", id: "next-step", "aria-labelledby": t ? "df-l" : null }, kids);
+  }
+
+  // ============ scroll wheels, like the iPhone's ============
+  function wheel(id, values, value, fmt, onPick, label) {
+    var H = 40, idx = Math.max(0, values.indexOf(value));
+    var box = h("div", { class: "wheel", id: id, role: "spinbutton", tabindex: "0", "aria-label": label, "aria-valuemin": String(values[0]), "aria-valuemax": String(values[values.length - 1]), "aria-valuenow": String(values[idx]), "aria-valuetext": fmt(values[idx]) },
+      h("div", { class: "wpad" }), values.map(function (v, i) { return h("div", { class: "witem" + (i === idx ? " on" : ""), "data-i": String(i), text: fmt(v) }); }), h("div", { class: "wpad" }));
+    var cur = idx, t = 0;
+    var set = function (i, scroll) {
+      i = Math.max(0, Math.min(values.length - 1, i));
+      if (scroll) box.scrollTo({ top: i * H, behavior: reduced() ? "auto" : "smooth" });
+      if (i === cur) return;
+      var items = box.querySelectorAll(".witem"); if (items[cur]) items[cur].classList.remove("on"); if (items[i]) items[i].classList.add("on");
+      cur = i; box.setAttribute("aria-valuenow", String(values[i])); box.setAttribute("aria-valuetext", fmt(values[i]));
+      try { if (S.haptics !== false && HX.vibrate) navigator.vibrate(4); } catch (e) {}
+    };
+    box.addEventListener("scroll", function () { var i = Math.round(box.scrollTop / H); set(i); clearTimeout(t); t = setTimeout(function () { onPick(values[cur]); }, 160); }, { passive: true });
+    box.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); set(cur + (e.key === "ArrowDown" ? 1 : -1), true); clearTimeout(t); t = setTimeout(function () { onPick(values[cur]); }, 160); }
+    });
+    box.addEventListener("click", function (e) { var it = e.target.closest(".witem"); if (it) { set(+it.getAttribute("data-i"), true); clearTimeout(t); t = setTimeout(function () { onPick(values[cur]); }, 200); } });
+    setTimeout(function () { box.scrollTop = idx * H; }, 0);
+    return h("div", { class: "wheelbox" }, box);
+  }
+  function range(a, b, step) { var o = []; for (var i = a; i <= b; i += step || 1) o.push(i); return o; }
+
+  // ============ the task sheet: everything about one task, calm and small ============
+  var PRIO_STEPS = [["low", "Low"], ["normal", "Normal"], ["high", "High"], ["urgent", "Urgent"]];
+  function prioSlider(t) {
+    var i = Math.max(0, PRIO_STEPS.map(function (p) { return p[0]; }).indexOf(t.priority));
+    var setP = function (j) { j = Math.max(0, Math.min(3, j)); if (PRIO_STEPS[j][0] === t.priority) return; t.priority = PRIO_STEPS[j][0]; save(); haptic("tick"); render(false); var f = $("ps-" + j); if (f) f.focus(); };
+    var track = h("div", { class: "pslider", id: "prio-slider", role: "radiogroup", "aria-label": "Priority", style: "--i:" + i },
+      h("span", { class: "pthumb", "aria-hidden": "true" }),
+      PRIO_STEPS.map(function (p, j) { return h("button", { class: "pseg p-" + p[0], type: "button", role: "radio", id: "ps-" + j, "aria-checked": i === j ? "true" : "false", tabindex: i === j ? "0" : "-1", onclick: function () { setP(j); },
+        onkeydown: function (e) { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); setP(j + (e.key === "ArrowRight" ? 1 : -1)); } } }, p[1]); }));
+    // slide a finger across it to choose
+    var pick = function (x) { var r = track.getBoundingClientRect(); setP(Math.floor((x - r.left) / (r.width / 4))); };
+    track.addEventListener("touchmove", function (e) { pick(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
+    return track;
+  }
+  function openSheet(id) { ui.sheet = id; ui.sheetMore = false; pushHist("edit"); render(false); }
+  function closeSheet() { ui.sheet = null; render(false); }
+  function sheetView() {
+    var t = ui.sheet ? taskById(ui.sheet) : null; if (!t) { ui.sheet = null; return null; }
+    var done = isDone(t), today = dayKey(), tom = dayKey(addDays(new Date(), 1));
+    var whenChip = function (id, label, on, fn) { return h("button", { class: "chip sm", type: "button", id: id, "aria-pressed": on ? "true" : "false", onclick: fn }, label); };
+    var setDate = function (k) { return function () { t.date = k; if (dayBased(t)) t.repeat = "once"; t.snoozeUntil = 0; save(); render(false); }; };
+    var hours = range(0, 23), mins = range(0, 55, 5), tm = t.time || "";
+    var title = h("input", { type: "text", id: "sh-title", class: "ttl", value: t.title, maxlength: "80", "aria-label": "Title", onchange: function (e) { var v = e.target.value.trim(); if (v) { t.title = v.slice(0, 80); save(); render(false); } } });
+    var typed = h("input", { type: "text", id: "sh-say", maxlength: "200", autocomplete: "off", placeholder: "Or type a change: “move to Friday 6pm”", "aria-label": "Change it by typing" });
+    var kids = [
+      h("div", { class: "sgrab", "aria-hidden": "true" }),
+      h("div", { class: "row shead" }, title, h("button", { class: "iconbtn", type: "button", id: "sh-close", "aria-label": "Close", onclick: closeSheet }, icon("x"))),
+      h("p", { class: "lbl", text: "How urgent" }), prioSlider(t),
+      h("p", { class: "lbl", text: "When" }),
+      h("div", { class: "row" }, whenChip("sh-today", "Today", t.date === today || (!t.date && t.repeat === "once"), setDate(today)), whenChip("sh-tom", "Tomorrow", t.date === tom, setDate(tom)),
+        whenChip("sh-week", "+1 week", false, setDate(dayKey(addDays(t.date ? parseDay(t.date) : new Date(), 7)))),
+        whenChip("sh-notime", tm ? "Clear time" : "No time", !tm, function () { t.time = ""; save(); render(false); })),
+      ui.sheetTime ? h("div", { class: "wheels", "aria-label": "Time" },
+          wheel("wh-h", hours, tm ? +tm.slice(0, 2) : 9, function (v) { return (v % 12 || 12) + (v < 12 ? " AM" : " PM"); }, function (v) { t.time = pad(v) + ":" + (t.time ? t.time.slice(3) : "00"); if (t.repeat === "once" && !t.date) t.date = today; save(); }, "Hour"),
+          wheel("wh-m", mins, tm ? Math.round(+tm.slice(3) / 5) * 5 % 60 : 0, function (v) { return ":" + pad(v); }, function (v) { t.time = (t.time ? t.time.slice(0, 2) : "09") + ":" + pad(v); if (t.repeat === "once" && !t.date) t.date = today; save(); }, "Minutes"))
+        : h("button", { class: "btn", type: "button", id: "sh-time", onclick: function () { ui.sheetTime = true; render(false); } }, icon("clock"), tm ? " " + hmText(tm) + " · change" : " Pick a time"),
+      h("p", { class: "lbl", text: "How long" }),
+      wheel("wh-dur", [0].concat(range(5, 240, 5)), t.dur ? Math.round(t.dur / 5) * 5 : 0, function (v) { return v ? durText(v) : "No length"; }, function (v) { t.dur = v; save(); }, "Length"),
+      h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); var d = taskToDraft(t); if (!fixFields(typed.value, d).length) { toast("Try “Friday 6pm”, “urgent” or “45 min”."); return; } commitDraft(d, t.id, "Updated"); S.asst = null; save(); render(false); } },
+        typed, h("button", { class: "btn", type: "submit", id: "sh-say-go" }, "Apply")),
+      h("div", { class: "racts" },
+        !done && t.type !== "READ" ? h("button", { class: "ract", type: "button", id: "sh-focus", onclick: function () { ui.sheet = null; if (S.session) { go("focus"); return; } ui.focusMins = t.dur || null; go("focus", t.id); } }, icon("timer"), h("span", { text: "Focus" })) : null,
+        t.type === "READ" && docOf(t) ? h("button", { class: "ract", type: "button", id: "sh-read", onclick: function () { ui.sheet = null; openReading(t); } }, icon("book"), h("span", { text: "Read" })) : null,
+        h("button", { class: "ract", type: "button", id: "sh-done", onclick: function () { ui.sheet = null; toggleDone(t); } }, icon("check"), h("span", { text: done ? "Not done" : "Done" })),
+        h("button", { class: "ract", type: "button", id: "sh-more", onclick: function () { ui.sheet = null; go("task", t.id); } }, icon("list"), h("span", { text: "Details" })),
+        h("button", { class: "ract", type: "button", id: "sh-del", onclick: function () { ui.sheet = null; deleteTask(t); } }, icon("trash"), h("span", { text: "Delete" })))
+    ];
+    var sheet = h("div", { class: "sheet", id: "sheet", role: "dialog", "aria-modal": "true", "aria-label": t.title }, kids);
+    var y0 = null;
+    sheet.addEventListener("touchstart", function (e) { y0 = e.target.closest(".wheel, .pslider, input") ? null : e.touches[0].clientY; }, { passive: true });
+    sheet.addEventListener("touchend", function (e) { if (y0 !== null && e.changedTouches[0].clientY - y0 > 90 && sheet.scrollTop <= 0) closeSheet(); y0 = null; });
+    sheet.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSheet(); });
+    return h("div", { class: "sheetwrap" }, h("div", { class: "scrim", onclick: closeSheet }), sheet);
+  }
+
+  // ============ a focus timer that follows you around ============
+  function miniFocus() {
+    var m = $("minifocus"); if (!m) return;
+    var se = S.session, show = !!se && ui.screen !== "focus" && !ui.selecting && !ui.sheet;
+    m.hidden = !show; if (!show) return;
+    var left = se.end - Date.now(), total = se.end - se.start, t = se.taskId ? taskById(se.taskId) : null;
+    m.style.setProperty("--p", String(Math.max(0, Math.min(1, 1 - left / total))));
+    $("mf-time").textContent = left > 0 ? mmss(left) : "Done";
+    $("mf-task").textContent = t ? t.title : "Focus";
+    m.setAttribute("aria-label", "Focus timer: " + (left > 0 ? mmss(left) + " left" : "finished") + (t ? " on " + t.title : "") + ". Open");
+  }
+  setInterval(miniFocus, 1000);
+  // ============ Today as tiles, grouped by time of day: everything visible at once ============
+  var PARTS = [["overdue", "Overdue"], ["morning", "Morning"], ["afternoon", "Afternoon"], ["evening", "Evening"], ["night", "Night"], ["routine", "Every day"], ["any", "Anytime"]];
+  function partOf(t, now) {
+    var d = dueAt(t, now);
+    if (t.repeat === "once" && !isDone(t, now) && ((d !== null && d < now.getTime() - 30 * 60000) || (t.date && t.date < dayKey(now)))) return "overdue";
+    if (!t.time) return t.repeat !== "once" ? "routine" : "any";
+    var hr = +t.time.slice(0, 2);
+    return hr < 12 ? "morning" : hr < 17 ? "afternoon" : hr < 21 ? "evening" : "night";
+  }
+  function tileTap(t) {
+    if (gest && gest.suppress) { gest.suppress = false; return; }
+    if (ui.selecting) { togglePick(t.id); return; }
+    openSheet(t.id);
+  }
+  function tile(t, now, future) {
+    var done = isDone(t, now), d = dueAt(t, now), picking = !!ui.selecting, picked = picking && ui.picked.indexOf(t.id) >= 0, bk = t.type === "READ" ? docOf(t) : null;
+    var meta = [t.time ? hmText(t.time) : "", t.dur ? durText(t.dur) : "", bk ? "p. " + (bk.pos || 1) : "", t.items.length ? t.items.filter(function (i) { return itemDone(t, i, now); }).length + "/" + t.items.length : ""].filter(Boolean).join(" · ");
+    var lead = picking ? h("button", { class: "check pick", type: "button", "data-pick": t.id, "aria-pressed": picked ? "true" : "false", "aria-label": (picked ? "Unselect " : "Select ") + t.title, onclick: function () { togglePick(t.id); } }, icon("check"))
+      : future ? null : h("button", { class: "check", type: "button", "data-check": t.id, "aria-pressed": done ? "true" : "false", "aria-label": (done ? "Not done: " : "Done: ") + t.title, onclick: function () { toggleDone(t); } }, icon("check"));
+    var body = h("button", { class: "tbody", type: "button", onclick: function () { tileTap(t); }, "aria-label": t.title + (meta ? ", " + meta : "") + (t.priority !== "normal" ? ", " + t.priority + " priority" : "") + ". Open" },
+      h("span", { class: "ttitle", text: t.title }), meta || t.priority !== "normal" ? h("span", { class: "tmeta" }, t.priority === "urgent" || t.priority === "high" ? h("span", { class: "pdot p-" + t.priority, "aria-hidden": "true" }) : null, h("span", { text: meta || (t.priority === "low" ? "Low" : "") })) : null,
+      t.pending ? h("span", { class: "pending" }, h("span", { class: "dots", "aria-hidden": "true" }, h("i"), h("i"), h("i")), "Sorting…") : null);
+    var el = h("div", { class: "tile2 pr-" + t.priority + (done ? " done" : "") + (picked ? " picked" : "") + (ui.justDone === t.id ? " pop" : ""), "data-task": t.id }, lead, body);
+    attachGestures(el, el, t, { swipeDone: false, reorder: false, noSwipe: true });
+    return el;
+  }
+  function gridView(now, off) {
+    var day = addDays(now, off || 0), list = off ? S.tasks.filter(function (t) { return occursOn(t, day); }) : S.tasks.filter(function (t) { return inToday(t, now); });
+    var open = list.filter(function (t) { return off || (!isDone(t, now) && !(t.snoozeUntil > now.getTime())); }), finished = off ? [] : list.filter(function (t) { return isDone(t, now); });
+    var snoozed = off ? [] : list.filter(function (t) { return !isDone(t, now) && t.snoozeUntil > now.getTime(); });
+    var out = [];
+    if (!open.length) out.push(h("p", { class: "empty", id: off ? "day-empty" : open.length || finished.length ? "all-done" : "no-today", text: off ? "Nothing planned for this day." : finished.length ? "All done for today." : S.tasks.length ? "Nothing on today's list." : "Nothing here yet. Type or say anything above." }));
+    var bt = byTop(now);
+    PARTS.forEach(function (p) {
+      var ts = open.filter(function (t) { return partOf(t, day) === p[0]; }).sort(function (a, b) { return (a.time || "99") < (b.time || "99") ? -1 : (a.time || "99") > (b.time || "99") ? 1 : bt(a, b); });
+      if (!ts.length) return;
+      out.push(h("section", { class: "part part-" + p[0], "aria-labelledby": "pt-" + p[0] }, h("h3", { class: "parth", id: "pt-" + p[0] }, p[1], h("span", { class: "n", text: String(ts.length) })),
+        h("div", { class: "tgrid", id: off ? null : p[0] === "overdue" ? "today-list" : null }, ts.map(function (t) { return tile(t, day, !!off); }))));
+    });
+    if (snoozed.length) out.push(h("p", { class: "small", text: snoozed.length + " snoozed until later." }));
+    if (finished.length) {
+      out.push(h("section", { class: "part part-done" },
+        h("button", { class: "btn disc", type: "button", id: "toggle-done", "aria-expanded": ui.showDone ? "true" : "false", onclick: function () { ui.showDone = !ui.showDone; render(false); } },
+          h("span", { text: "Finished (" + finished.length + ")" }), icon(ui.showDone ? "up" : "down")),
+        ui.showDone ? h("div", { class: "donewrap", id: "done-list" }, finished.map(function (t) {
+          return h("button", { class: "donechip", type: "button", "data-task": t.id, "data-check": t.id, "aria-pressed": "true", "aria-label": "Not done: " + t.title, onclick: function () { toggleDone(t); } }, icon("check"), h("span", { text: t.title }));
+        }), finished.some(function (t) { return t.repeat === "once"; }) ? h("button", { class: "btn link", type: "button", id: "clear-done", onclick: clearFinished }, "Clear finished") : null) : null));
+    }
+    return out;
+  }
+
+  // ============ daily check-ins: "did you do this today?" (not tasks) ============
+  var CHECK_IDEAS = ["Breathwork, 5 minutes", "Meditated", "Walked outside", "Moved my body", "Drank enough water", "Phone out of the bedroom", "Journaled", "Read a few pages", "Grateful for one thing", "Called someone I love", "In bed on time", "Cold shower"];
+  function checkedToday() { return S.checkLog[dayKey()] || []; }
+  function toggleCheck(id) {
+    var k = dayKey(), l = S.checkLog[k] || (S.checkLog[k] = []), i = l.indexOf(id);
+    if (i >= 0) l.splice(i, 1); else { l.push(id); chime("soft"); }
+    var ks = Object.keys(S.checkLog).sort(); while (ks.length > 120) delete S.checkLog[ks.shift()];
+    save(); render(false); var f = $("ck-" + id); if (f) f.focus();
+    if (S.checkins.length && l.length === S.checkins.length && i < 0) celebrate("All check-ins done", "Nice day.");
+  }
+  function addCheckins(list) {
+    var added = 0;
+    list.forEach(function (x) { x = String(x || "").trim().slice(0, 60); if (x && !S.checkins.some(function (c) { return c.text.toLowerCase() === x.toLowerCase(); })) { S.checkins.push({ id: newId(), text: cap(x) }); added++; } });
+    return added;
+  }
+  function checkinsBlock() {
+    if (!S.checkins.length) return null;
+    var c = checkedToday();
+    return h("section", { class: "checkins", id: "checkins", "aria-labelledby": "ck-h" },
+      h("div", { class: "sect" }, h("h2", { id: "ck-h", text: "Did you do these today?" }), h("button", { class: "btn link", type: "button", id: "ck-edit", onclick: function () { go("checkins"); } }, c.length + " of " + S.checkins.length)),
+      h("div", { class: "ckwrap" }, S.checkins.map(function (x) {
+        var on = c.indexOf(x.id) >= 0;
+        return h("button", { class: "ckchip" + (on ? " on" : ""), type: "button", id: "ck-" + x.id, "aria-pressed": on ? "true" : "false", onclick: function () { toggleCheck(x.id); } }, icon(on ? "check" : "circle"), h("span", { text: x.text }));
+      })));
+  }
+  // "Tell me about you": speak (or type) freely; Ten Days learns what helps you and builds the check-ins.
+  var AI_INTAKE = "A voice note is attached in which the person talks about themselves: what they like, their routines, what helps them relax, what they struggle with. Transcribe it and reply with JSON only: " +
+    '{"transcript":"","about":["short facts about them, max 12"],"checkins":["daily habits to check in on, phrased short like Breathwork, 5 minutes, max 8"]}. ' +
+    "Favour calming, body-based habits they mention or clearly would like: breathwork, grounding, meditation, time outside, movement, sleep, connection. Only include things grounded in what they said.";
+  function aiIntake(b64, typedText) {
+    setAsst({ kind: "thinking", src: "About you", voice: true });
+    render(false);
+    var p = b64 ? aiCall(AI_INTAKE + " " + nowLine(), "Voice note follows.", { json: true, audio: { mime: "audio/wav", b64: b64 }, wait: 60000, max: 1500 })
+      : aiCall(AI_INTAKE.replace("A voice note is attached in which", "Below,").replace("Transcribe it and reply", "Reply"), typedText, { json: true, max: 1500 });
+    p.then(function (r) {
+      if (!r.ok) { setAsst({ kind: "unsure", src: "About you", aiq: "AI not available: " + aiWhy(r) + " You can set up check-ins by hand in You." }); render(false); return; }
+      var d = obj(r.data) || {}, about = (Array.isArray(d.about) ? d.about : []).map(function (x) { return str(x, 140).trim(); }).filter(Boolean).slice(0, 12);
+      var n = addCheckins(Array.isArray(d.checkins) ? d.checkins.slice(0, 8) : []);
+      about.forEach(function (x) { if (S.about.indexOf(x) < 0) S.about.push(x); }); S.about = S.about.slice(-40);
+      S.intakeDone = true; save();
+      setAsst({ kind: "intake", heard: str(d.transcript, 600), about: about, n: n }); render(false);
+    });
+  }
+  function intakeCard(a) {
+    return [cardHead("heart", "I got to know you a little", "care"),
+      a.heard ? h("p", { class: "small", text: "You said: “" + a.heard + (a.heard.length >= 600 ? "…" : "") + "”" }) : null,
+      a.about && a.about.length ? h("ul", { class: "orglist" }, a.about.map(function (x) { return h("li", null, icon("check"), h("span", { text: x })); })) : null,
+      h("p", { text: a.n ? "Added " + a.n + " daily check-ins. They're on Today: just tick what you did." : "Your check-ins are on Today." }),
+      h("div", { class: "row links" }, h("button", { class: "btn", type: "button", id: "in-edit", onclick: function () { setAsst(null); go("checkins"); } }, "Edit check-ins"), closeLink("Done"))];
+  }
+  function intakePrompt() {
+    if (S.intakeDone || S.checkins.length || skipped("intake")) return null;
+    return h("section", { class: "card intake", id: "intake" },
+      h("p", { class: "status", text: "Tell Ten Days about you" }),
+      h("p", { class: "small", text: "Tap and talk for a minute or two: what you like, what helps you calm down, your routines. Ten Days builds a daily check-in list from it." }),
+      h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "in-rec", onclick: function () { if (aiOn("support") || aiOn("tasks")) startRec("intake"); else go("checkins"); } }, icon("mic"), aiOn("tasks") ? " Speak" : " Set it up"),
+        h("button", { class: "btn link", type: "button", id: "in-later", onclick: function () { notNow("intake"); } }, "Later")));
+  }
+
+  // ============ reading on Today ============
+  function readingBlock() {
+    var books = S.docs.filter(function (d) { return d.status === "ready"; }).sort(function (a, b) { return (b.lastRead || b.at || 0) - (a.lastRead || a.at || 0); }).slice(0, 4);
+    if (!books.length) return null;
+    return h("section", { class: "reading", id: "reading-tiles", "aria-labelledby": "rd-h" }, h("h2", { class: "sect-h", id: "rd-h", text: "Reading" }),
+      h("div", { class: "booktiles" }, books.map(function (d) {
+        var n = readToday(d).length, g = d.goal || 5;
+        return h("button", { class: "booktile", type: "button", "data-book": d.id, onclick: function () { openBook(d); }, "aria-label": d.name + ", page " + (d.pos || 1) + " of " + d.pages + ", " + n + " of " + g + " pages today. Open" },
+          icon("book"), h("span", { class: "bt-name", text: d.name }), h("span", { class: "bt-pos", text: "p. " + (d.pos || 1) + " / " + d.pages }),
+          h("span", { class: "sbar", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, Math.round(n / g * 100)) + "%" })),
+          (d.kind === "learning" && quizDue(d.id).length) ? h("span", { class: "bt-quiz", text: quizDue(d.id).length + " to review" }) : null);
+      })));
+  }
+  // A page counts as read only after you stay on it long enough to read it, so flipping past pages doesn't count.
+  function readThreshold(d, page) {
+    var tx = docCache[d.id] && docCache[d.id][page - 1], words = tx ? tx.split(/\s+/).length : 0;
+    return Math.max(8, Math.min(90, words ? Math.round(words * .12) : 15)) * 1000 * READ_SCALE;   // about 500 words a minute, 8–90 seconds
+  }
+  var rdT = null, READ_SCALE = 1;
+  function tickRead() {
+    clearTimeout(rdT);
+    if (ui.screen !== "read" || !ui.rd) return;
+    rdT = setTimeout(function () {
+      var r = ui.rd, d = r && S.docs.filter(function (x) { return x.id === r.doc; })[0], el = $("read-count");
+      if (!d || ui.screen !== "read") return;
+      if (document.hidden) { r.since += 500; tickRead(); return; }   // time away from the app doesn't count
+      var thr = readThreshold(d, r.page), left = thr - (Date.now() - r.since), already = readToday(d).indexOf(r.page) >= 0;
+      if (!already && left <= 0) { markRead(d, r.page); already = true; announce("Page " + r.page + " counted."); }
+      if (el) { el.textContent = already ? "✓ Page " + r.page + " counted" : "Reading… this page counts in " + Math.ceil(left / 1000) + "s"; el.classList.toggle("ok", already); }
+      var t2 = $("read-today"); if (t2) t2.textContent = "Today: " + readToday(d).length + " of " + (d.goal || 5) + " pages";
+      if (!already) tickRead();
+    }, 500);
+  }
+
+  // ============ quizzes for learning books ============
+  var BOX_DAYS = [1, 2, 4, 7, 15, 30];
+  function guessKind(text) {
+    var t = String(text || "").toLowerCase().slice(0, 60000);
+    var learn = (t.match(/\b(definition|defined as|theorem|equation|formula|example \d|figure \d|table \d|interest rate|asset|liabilit|revenue|percent|molecule|cell|chapter \d+ summary|according to|research|data|law of|principle of|calculate|price|market|investment|tax)\b/g) || []).length;
+    var mind = (t.match(/\b(mind|habit|urge|peace|happiness|soul|purpose|gratitude|ego|fear|discipline|meditat|calm|craving|addiction|freedom|self|heart|spirit|love)\b/g) || []).length;
+    return learn > mind * .6 ? "learning" : "mindset";
+  }
+  function quizDue(docId) { var k = dayKey(); return S.quiz.filter(function (q) { return (!docId || q.docId === docId) && q.due <= k; }); }
+  function clozeQuestions(d, pages, maxN) {
+    var cands = [], out = [];
+    pages.forEach(function (pn) {
+      (passages((docCache[d.id] || [])[pn - 1] || "")).forEach(function (para) {
+        (para.match(/[^.!?]+[.!?]/g) || []).forEach(function (sn) {
+          sn = sn.trim(); if (sn.length < 40 || sn.length > 260) return;
+          var m = sn.match(/\b\d[\d,.]*%?/) || sn.slice(1).match(/\b[A-Z][a-z]+(?: [A-Z][a-z]+)+/) || sn.match(/\b[a-z]{9,}\b/);
+          if (m) cands.push({ s: sn, a: m[0], page: pn, kind: /\d/.test(m[0]) ? "n" : /[A-Z]/.test(m[0]) ? "c" : "w" });
+        });
+      });
+    });
+    cands.forEach(function (c) {
+      if (out.length >= maxN) return;
+      var pool = cands.filter(function (o) { return o.kind === c.kind && o.a.toLowerCase() !== c.a.toLowerCase(); }).map(function (o) { return o.a; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
+      if (pool.length < 3) return;
+      var choices = pool.sort(function () { return Math.random() - .5; }).slice(0, 3).concat([c.a]).sort(function () { return Math.random() - .5; });
+      out.push({ q: "Fill in the blank: “" + c.s.replace(c.a, "_____") + "”", choices: choices, answer: choices.indexOf(c.a), explain: "From page " + c.page + ".", page: c.page, by: "text" });
+    });
+    return out;
+  }
+  var AI_QUIZ = "Write questions that help the person remember this material. Ask about specific details: definitions, numbers, steps, causes and effects, distinctions between ideas, how to apply them. " +
+    "Never ask about the author, title, or anything outside the text. Each question has 4 short choices and one correct answer. Reply with JSON only: " +
+    '{"questions":[{"q":"","choices":["","","",""],"answer":0,"explain":"one sentence","page":1}]} with 5 questions.';
+  function makeQuiz(d, done) {
+    var pages = Object.keys(d.read || {}).reduce(function (a, k) { return a.concat(d.read[k]); }, []).filter(function (v, i, a) { return a.indexOf(v) === i; });
+    if (!pages.length) pages = [d.pos || 1];
+    pages = pages.sort(function (a, b) { return b - a; }).slice(0, 4);
+    var finish = function (qs, by) {
+      var k = dayKey();
+      qs.forEach(function (x) { x = obj(x) || {}; var ch = (Array.isArray(x.choices) ? x.choices : []).map(function (c) { return str(c, 140); }).slice(0, 4), a = Math.round(+x.answer);
+        if (str(x.q, 300) && ch.length >= 2 && a >= 0 && a < ch.length && !S.quiz.some(function (o) { return o.q === x.q; })) S.quiz.push({ id: newId(), docId: d.id, page: Math.max(1, Math.round(+x.page || pages[0])), q: str(x.q, 300), choices: ch, answer: a, explain: str(x.explain, 200), box: 0, due: k, by: by }); });
+      S.quiz = S.quiz.slice(-400); save(); done(qs.length);
+    };
+    var load = docCache[d.id] ? Promise.resolve() : idbGet("docs", d.id).then(function (x) { docCache[d.id] = x && Array.isArray(x.pages) ? x.pages : ["__missing__"]; });
+    load.then(function () {
+      if (aiOn("library")) {
+        var txt = pages.map(function (p) { return "[p. " + p + "]\n" + ((docCache[d.id] || [])[p - 1] || ""); }).join("\n\n").slice(0, 9000);
+        aiCall(AI_QUIZ, txt, { json: true, max: 1800 }).then(function (r) {
+          if (r.ok && obj(r.data) && Array.isArray(r.data.questions) && r.data.questions.length) finish(r.data.questions, "ai"); else finish(clozeQuestions(d, pages, 5), "text");
+        });
+      } else finish(clozeQuestions(d, pages, 5), "text");
+    }).catch(function () { done(0); });
+  }
+
+  // ============ the deck: shuffled passages from your books, your words and the Gita ============
+  function deckPool() {
+    var out = [], books = S.docs.map(function (d) { return d.id; }).sort(function () { return Math.random() - .5; }).slice(0, 3);
+    S.kept.forEach(function (k) { out.push({ text: k.text, label: k.label, by: "kept" }); });
+    S.cards.filter(function (c) { return books.indexOf(c.docId) >= 0 || S.docs.length <= 3; }).forEach(function (c) { out.push({ text: c.quote, label: "Exact quote · " + c.docName + (c.page ? ", p. " + c.page : ""), by: "quote", doc: c.docId, page: c.page }); });
+    S.collection.forEach(function (c) { if (c.kind !== "image") out.push({ text: c.text, label: c.kind === "quote" ? (c.source ? "Saved by you · " + c.source : "Saved by you") : "Your reminder", by: "you" }); });
+    if (krishna()) GITA.forEach(function (g) { out.push({ text: g[2], label: gitaLabel(g), by: "gita" }); });
+    if (out.length < 4) (REFRAMES[S.profile.style] || REFRAMES.gentle).forEach(function (t) { out.push({ text: t, label: "From Ten Days", by: "app" }); });
+    var seen = {}; out = out.filter(function (x) { if (seen[x.text]) return false; seen[x.text] = 1; return true; });
+    // your kept cards first, then your own passages and words shuffled, then the guide's lines
+    var shuf = function (a) { return a.sort(function () { return Math.random() - .5; }); };
+    return out.filter(function (x) { return x.by === "kept"; }).concat(shuf(out.filter(function (x) { return x.by === "quote" || x.by === "you"; })), shuf(out.filter(function (x) { return x.by === "gita"; })), out.filter(function (x) { return x.by === "app"; }));
+  }
+  function deckView(sup) {
+    if (!sup.deck) { sup.deck = deckPool(); sup.di = 0; }
+    var deck = sup.deck; if (!deck.length) return null;
+    var cur = deck[sup.di % deck.length], next = function (dir) {
+      var c = deck[sup.di % deck.length];
+      if (dir > 0 && !S.kept.some(function (k) { return k.text === c.text; })) { S.kept.unshift({ text: c.text, label: c.label }); S.kept = S.kept.slice(0, 50); save(); toast("Kept. It comes up first next time."); }
+      sup.di++; S.supIdx = (S.supIdx || 0) + 1; save(); render(false); announce(deck[sup.di % deck.length].text);
+    };
+    var top = h("div", { class: "dcard top", id: "deck-top" },
+      h("blockquote", { class: "quote", id: "sup-quote", text: cur.text }),
+      h("p", { class: "src", id: "sup-src" }, icon(cur.by === "quote" ? "quote" : cur.by === "gita" ? "sparkle" : cur.by === "kept" ? "heart" : "heart"), cur.label),
+      h("div", { class: "row links" }, listenBtn(cur.text, "say-deck"), cur.doc && S.docs.some(function (d) { return d.id === cur.doc && d.status === "ready"; }) ? h("button", { class: "btn link inl", type: "button", id: "deck-read", onclick: function () { var d = S.docs.filter(function (x) { return x.id === cur.doc; })[0]; openBook(d, cur.page || 1); } }, "Read on") : null));
+    var sx = null, dx = 0;
+    top.addEventListener("touchstart", function (e) { if (e.target.closest("button")) return; sx = e.touches[0].clientX; dx = 0; top.style.transition = "none"; }, { passive: true });
+    top.addEventListener("touchmove", function (e) { if (sx === null) return; dx = e.touches[0].clientX - sx; if (Math.abs(dx) > 8) e.preventDefault(); top.style.transform = "translateX(" + dx + "px) rotate(" + dx / 22 + "deg)"; top.classList.toggle("keep", dx > 90); top.classList.toggle("skip", dx < -90); }, { passive: false });
+    top.addEventListener("touchend", function () {
+      if (sx === null) return; sx = null; top.style.transition = "";
+      if (Math.abs(dx) > 90) { top.classList.add(dx > 0 ? "fly-r" : "fly-l"); var dir = dx > 0 ? 1 : -1; setTimeout(function () { next(dir); }, reduced() ? 0 : 220); }
+      else top.style.transform = "";
+    });
+    return h("div", { class: "deckwrap" },
+      h("div", { class: "deck", id: "deck", "aria-roledescription": "card deck" }, h("div", { class: "dcard under2", "aria-hidden": "true" }), h("div", { class: "dcard under1", "aria-hidden": "true" }), top),
+      h("div", { class: "deckbtns", role: "group", "aria-label": "Deck" },
+        h("button", { class: "btn", type: "button", id: "sup-another", onclick: function () { next(-1); } }, icon("left"), " Next"),
+        h("button", { class: "btn", type: "button", id: "deck-keep", onclick: function () { next(1); } }, icon("heart"), " Keep"),
+        h("button", { class: "btn", type: "button", id: "deck-shuffle", onclick: function () { sup.deck = null; render(false); } }, icon("shuffle"), " Shuffle")),
+      h("p", { class: "small center", text: "Swipe right to keep a card, left for the next one." }));
+  }
+
+  // ============ your week, in a few paragraphs, read aloud ============
+  function localWeek() {
+    var f = weekFacts(), ck = 0, days = 0;
+    for (var i = 0; i < 7; i++) { var l = S.checkLog[dayKey(addDays(new Date(), -i))] || []; if (l.length) days++; ck += l.length; }
+    var moods = {}; S.notes.filter(function (n) { return Date.now() - n.at < 7 * 864e5; }).forEach(function (n) { var m = moodOf(n.text); if (m) moods[m] = (moods[m] || 0) + 1; });
+    var top = Object.keys(moods).sort(function (a, b) { return moods[b] - moods[a]; })[0], g = gitaFor(top, f.done + ck);
+    var p1 = "This week you finished " + f.done + (f.done === 1 ? " task" : " tasks") + (f.focus ? " and spent " + durText(f.focus) + " in focus" : "") + ", and you made progress on " + f.active + " of 7 days.";
+    var p2 = S.checkins.length ? "Your check-ins came up " + ck + " times across " + days + " days." + (days < 4 ? " A few more small check-ins would steady the week." : " That steadiness matters more than any single day.") : "";
+    var p3 = top ? "Your notes leaned toward " + { anger: "frustration", anxiety: "worry", urge: "urges", low: "feeling low", lazy: "feeling stuck", restless: "restlessness", results: "pressure about results" }[top] + ". " + g[2] + " (" + gitaLabel(g) + ")" : g[2] + " (" + gitaLabel(g) + ")";
+    return [p1, p2, p3].filter(Boolean).join("\n\n");
+  }
+  function weekInput() {
+    var f = weekFacts(), lines = [nowLine(), "Last 7 days: " + f.done + " tasks done, " + f.focus + " focus minutes, progress on " + f.active + " of 7 days."];
+    if (S.checkins.length) lines.push("Check-ins (name: days done this week): " + S.checkins.map(function (c) { var n = 0; for (var i = 0; i < 7; i++) if ((S.checkLog[dayKey(addDays(new Date(), -i))] || []).indexOf(c.id) >= 0) n++; return c.text + ": " + n; }).join("; ") + ".");
+    if (aiOn("support")) { var ns = S.notes.filter(function (n) { return Date.now() - n.at < 7 * 864e5; }).slice(0, 12).map(function (n) { return "- " + n.text.slice(0, 200); }); if (ns.length) lines.push("Their notes this week:\n" + ns.join("\n")); }
+    return lines.join("\n");
+  }
+  var AI_WEEK = "Write two or three short paragraphs to the person about their week: what went well, patterns you notice (including what seems to trigger hard moments, if their notes show it), and one gentle shift for next week. Plain sentences, no lists, no headings, under 180 words.";
+
   var SCREENS = {
     a2hs: function () {
       return { title: "Add Ten Days to your Home Screen", body: [
@@ -3808,7 +4511,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         h("button", { class: "add", type: "submit", id: "qa-add", "aria-label": "Add" }, icon("send")));
       // once a day the list is organized in the background
       if (S.ai.orgDay !== dayKey() && !orgBusy && S.tasks.filter(function (t) { return !t.private && !isDone(t); }).length >= 3) { S.ai.orgDay = dayKey(); setTimeout(function () { if (ui.screen === "home" && !(S.org && S.org.day === dayKey())) organize(true); }, 800); }
-      var ns = nextStep(), st0 = todayStats(now), p = st0.total ? st0.done / st0.total : 0, L = levelOf(xpTotal());
+      var st0 = todayStats(now), p = st0.total ? st0.done / st0.total : 0, L = levelOf(xpTotal()), view = S.view || "grid";
+      var tb = function (id, ic, label, fn, extra) { var b = h("button", Object.assign({ class: "tbtn", type: "button", id: id, onclick: fn }, extra || {}), icon(ic), h("span", { text: label })); return b; };
       var tool = function (id, ic, label, fn) { return h("button", { class: "tool", type: "button", id: id, onclick: fn }, icon(ic), h("span", { text: label })); };
       var upOpen = !!ui.showUp;
       return { title: "Today", body: [
@@ -3821,18 +4525,27 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         recCard(),
         asstView(),
         alertCard,
-        ns.step !== "clear" ? stepCard(ns) : null,
+        intakePrompt(),
+        doFirstCard(now),
         orgLine(),
         noticedCard(),
+        checkinsBlock(),
+        readingBlock(),
         horizon(),
-        h("div", { class: "sect" }, h("h2", { text: ui.day ? (ui.day === 1 ? "Tomorrow" : fmtDate(addDays(now, ui.day).getTime())) : st0.total - st0.done > 3 ? "Top 3" : "Today" }), h("button", { class: "btn link", type: "button", id: "all-tasks", onclick: function () { go("m-tasks"); } }, "All tasks")),
-        h("div", { class: "group", id: "task-area" }, ui.day ? dayView(ui.day) : todayView(now)),
+        h("div", { class: "sect" }, h("h2", { text: ui.day ? (ui.day === 1 ? "Tomorrow" : fmtDate(addDays(now, ui.day).getTime())) : "Today" }),
+          h("div", { class: "tbar", role: "toolbar", "aria-label": "List tools" },
+            tb("tb-select", "check", ui.selecting ? "Done" : "Select", function () { if (ui.selecting) endSelect(); else { ui.selecting = true; ui.picked = []; render(false); } }, { "aria-pressed": ui.selecting ? "true" : "false" }),
+            tb("tb-undo", "undo", "Undo", undoHist, { disabled: !hist.length }),
+            tb("tb-view", view === "grid" ? "list" : "grid", view === "grid" ? "List" : "Grid", function () { S.view = view === "grid" ? "list" : "grid"; save(); render(false); }),
+            tb("all-tasks", "list", "All", function () { go("m-tasks"); }))),
+        h("div", { class: "group", id: "task-area" }, view === "grid" ? gridView(now, ui.day || 0) : ui.day ? dayView(ui.day) : todayView(now)),
         h("div", { class: "tools", role: "group", "aria-label": "Tools" },
           tool("t-breathe", "wind", "Breathe", function () { go("breathe"); }),
           tool("t-focus", "timer", S.session ? "Focus · on" : "Focus", function () { go("focus"); }),
-          tool("t-notes", "note", "Notes", function () { go("notes"); })),
-        h("p", { class: "small hint2", text: "Tap a task to open it. Swipe right for done, left to delete. Hold to select several; hold and drag to reorder." })
-      ], float: selBar() };
+          tool("t-notes", "note", "Notes", function () { go("notes"); }),
+          quizDue().length ? tool("t-quiz", "book", "Review " + quizDue().length, function () { ui.qz = null; go("quiz"); }) : null),
+        h("p", { class: "small hint2", text: view === "grid" ? "Tap a task for its options. Hold to select several." : "Tap a task to open it. Swipe right for done, left to delete. Hold to select; hold and drag to reorder." })
+      ], float: [selBar(), sheetView()] };
     },
     breathe: function () {
       back("home");
@@ -3868,7 +4581,15 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         h("div", { class: "field" }, h("label", { class: "lbl", for: "note-in", text: "New note" }), ta),
         h("button", { class: "btn primary", type: "button", id: "note-add", onclick: function () { if (!ta.value.trim()) { toast("Write something first."); ta.focus(); return; } saveNote(ta.value); ta.value = ""; render(false); } }, "Save note"),
         S.notes.length ? h("div", { class: "group", id: "note-list" }, S.notes.map(function (n) {
+          var mood = moodOf(n.text), g = gitaFor(mood, Math.floor(n.at / 1000));
           return h("div", { class: "card note" }, h("p", { class: "small", text: fmtDate(n.at) + ", " + fmtTime(n.at) }), h("p", { class: "ntext", text: n.text }),
+            krishna() && (mood || n.reply) ? h("div", { class: "reflect", id: "rf-" + n.id }, h("p", { class: "lbl" }, icon("sparkle"), " A thought for this"),
+              n.reply ? [h("p", { text: n.reply }), h("p", { class: "src", text: "Written by AI in the guide's voice" })] : [h("p", { text: g[2] }), h("p", { class: "src", text: gitaLabel(g) })],
+              h("div", { class: "row links" }, listenBtn(n.reply || g[2], "say-" + n.id),
+                aiOn("support") ? h("button", { class: "btn link inl", type: "button", id: "ask-" + n.id, onclick: function () {
+                  ui.asking = n.id; render(false);
+                  aiCall("The person wrote this note. Answer with one to three short sentences that offer a mindset shift for this moment.", n.text, { temp: .7, max: 220, area: "support" }).then(function (r) { ui.asking = null; if (r.ok) { n.reply = r.text.slice(0, 500); save(); } else toast("AI not available: " + aiWhy(r)); render(false); });
+                } }, ui.asking === n.id ? " Thinking…" : n.reply ? " Ask again" : " Ask the guide") : null)) : null,
             h("div", { class: "row links" }, h("button", { class: "btn link", type: "button", "data-note-task": n.id, onclick: function () { var r = submitAsk(n.text); if (r) go("home"); } }, "Make it a task"),
               h("button", { class: "btn link", type: "button", "data-note-del": n.id, onclick: function () { var i = S.notes.indexOf(n); S.notes = S.notes.filter(function (x) { return x !== n; }); save(); toast("Deleted.", 6000, { label: "Undo", fn: function () { S.notes.splice(i, 0, n); save(); render(false); } }); render(false); } }, "Delete")));
         })) : h("p", { class: "empty", id: "notes-empty", text: "No notes yet." })
@@ -3913,7 +4634,15 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       var got = MILES.filter(function (m) { return S.miles[m[0]]; }), next = MILES.filter(function (m) { return !S.miles[m[0]]; }).slice(0, 3);
       return { title: "Progress", body: [
         h("p", { class: "sub", text: "Missed days don't erase anything here, and levels never go down." }),
-        lvl, hero,
+        lvl,
+        h("div", { class: "card", id: "week-card" }, h("p", { class: "lbl" }, icon("sparkle"), krishna() ? " Your week, in the guide's words" : " Your week"),
+          ui.weekBusy ? aiSpin("Writing…", "week-busy") : S.week ? [h("p", { class: "weektext", id: "week-text", text: S.week.text }), h("p", { class: "src", text: S.week.by === "ai" ? "Written by AI from your week" : "Put together from your week on this phone" })] : h("p", { class: "small", text: "A few paragraphs about how your week went, what patterns show up, and one shift for next week. Tap Listen to hear it." }),
+          h("div", { class: "row" }, h("button", { class: "btn", type: "button", id: "week-go", disabled: !!ui.weekBusy, onclick: function () {
+            if (!aiOn("summaries")) { S.week = { day: dayKey(), text: localWeek(), by: "local" }; save(); render(false); return; }
+            ui.weekBusy = true; render(false);
+            aiCall(AI_WEEK, weekInput(), { temp: .6, max: 700, area: "summary" }).then(function (r) { ui.weekBusy = false; S.week = r.ok ? { day: dayKey(), text: r.text, by: "ai" } : { day: dayKey(), text: localWeek(), by: "local" }; if (!r.ok) toast("AI not available: " + aiWhy(r) + " Wrote it from your data instead."); save(); render(false); });
+          } }, S.week ? "Write it again" : "Write my week"), S.week ? listenBtn(S.week.text, "say-week") : null)),
+        hero,
         aiOn("summaries") ? h("div", { class: "card", id: "ai-day" }, h("p", { class: "lbl" }, icon("sparkle"), " Today in a few lines"),
           aiBlock(ui.aiDay, "ai-day-text"),
           h("button", { class: "btn", type: "button", id: "ai-day-go", disabled: !!(ui.aiDay && ui.aiDay.busy), onclick: function () { ui.aiDay = ui.aiDay || {}; runSummary(ui, "aiDay", "today"); } }, ui.aiDay && ui.aiDay.text ? "Write it again" : "Write it with AI")) : null,
@@ -3989,11 +4718,10 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         h("p", { class: "sub", id: "sup-line", text: supportLines() }),
         checkinBlock(),
         h("div", { class: "card supcard", id: "sup-card" }, visual,
-          h("blockquote", { class: "quote", id: "sup-quote", text: it.text }), h("p", { class: "src", id: "sup-src" }, icon(it.by === "quote" ? "quote" : it.by === "you" ? "heart" : "spark"), it.label),
           why ? h("p", { class: "why" }, "Your why: ", h("b", { text: "“" + why + "”" })) : null),
+        deckView(sup),
         h("div", { class: "choices", role: "group", "aria-label": "What would help?" },
           choice("sup-stay", "Stay with me", sup.mode === "stay", function () { sup.mode = sup.mode === "stay" ? "" : "stay"; if (sup.mode === "stay") sup.since = Date.now(); render(false); }),
-          choice("sup-another", "Another perspective", false, function () { S.supIdx = (S.supIdx || 0) + 1; save(); render(false); announce($("sup-quote").textContent); }),
           choice("sup-step", "Help me take one step", sup.mode === "step", function () { sup.mode = sup.mode === "step" ? "" : "step"; render(false); var f = $("opt-0"); if (f) f.focus(); }),
           aiOn("support") ? choice("sup-ai", "Words from AI", false, function () {
             if (sup.ai && sup.ai.busy) return;
@@ -4013,7 +4741,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       ] };
     },
     "me-support": function () {
-      var P = S.profile, sel0 = ui.meSel || (ui.meSel = { habitKey: P.habitKey, style: P.style });
+      var P = S.profile, sel0 = ui.meSel || (ui.meSel = { habitKey: P.habitKey, style: P.style, guide: P.guide });
       var habit = h("input", { type: "text", id: "me-habit", value: P.habit, maxlength: "60", autocomplete: "off", placeholder: "Like “late-night scrolling”" });
       var reasons = h("textarea", { id: "me-reasons", rows: "3", value: P.reasons.join("\n"), placeholder: "One per line" });
       var step = h("input", { type: "text", id: "me-step", value: P.step, maxlength: "120", autocomplete: "off", placeholder: STEPS[sel0.habitKey] || STEPS.other });
@@ -4030,13 +4758,15 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         h("div", { class: "field" }, h("label", { class: "lbl", for: "me-habit", text: "In your own words (optional)" }), habit),
         h("div", { class: "field" }, h("label", { class: "lbl", for: "me-reasons", text: "Why it matters to you" }), reasons),
         h("p", { class: "lbl", text: "How should I talk to you?" }), chipRow([["gentle", "Gentle"], ["direct", "Direct"], ["practical", "Practical"]], "style", "me-style"),
+        h("p", { class: "lbl", text: "Guide's voice" }), chipRow([["krishna", "Krishna (Bhagavad Gita)"], ["plain", "Plain"]], "guide", "me-guide"),
+        h("p", { class: "small", text: "Krishna: calm, short guidance drawn from the Gita. Built-in lines are labeled paraphrases with the verse number; add a Gita PDF in Library for exact wording." }),
         h("p", { class: "small", id: "me-example", text: "Example: “" + ex + "”" }),
         h("div", { class: "field" }, h("label", { class: "lbl", for: "me-when", text: "When does it usually hit? (optional)" }), when),
         h("div", { class: "field" }, h("label", { class: "lbl", for: "me-step", text: "Then I will… (your go-to step)" }), step),
         h("p", { class: "small", text: "A plan like “When it's late at night, then I put my phone in the kitchen” is easier to follow in the moment than a general intention." }),
         h("div", { class: "group push" },
           h("button", { class: "btn primary", type: "button", id: "me-save", onclick: function () {
-            P.habitKey = sel0.habitKey || ""; P.style = sel0.style || "gentle"; P.habit = habit.value.trim().slice(0, 60);
+            P.habitKey = sel0.habitKey || ""; P.style = sel0.style || "gentle"; P.guide = sel0.guide === "plain" ? "plain" : "krishna"; P.habit = habit.value.trim().slice(0, 60);
             P.reasons = reasons.value.split("\n").map(function (x) { return x.trim().slice(0, 140); }).filter(Boolean).slice(0, 5);
             P.step = step.value.trim().slice(0, 120); P.when = when.value.trim().slice(0, 80);
             if (save()) { toast("Saved."); ui.meSel = null; go("you"); }
@@ -4127,7 +4857,9 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       if (d.pos !== n) { d.pos = n; save(); }
       var link = S.tasks.filter(function (t) { return t.docId === d.id && t.type === "READ"; })[0], goal = d.goal || 5, readN = readToday(d).length;
       var close = function () { go(ui.readPrev && ui.readPrev !== "read" ? ui.readPrev : "home"); };
-      var goPage = function (m, read) { if (read) markRead(d, n); ui.arg = { id: d.id, page: m }; render(false); window.scrollTo(0, 0); };
+      var goPage = function (m) { ui.arg = { id: d.id, page: m }; render(false); window.scrollTo(0, 0); };
+      if (!ui.rd || ui.rd.doc !== d.id || ui.rd.page !== n) ui.rd = { doc: d.id, page: n, since: Date.now() };
+      d.lastRead = Date.now();
       var wrap = h("div", { class: "pdfwrap" + ((ui.zoom || 1) > 1 ? " zoomed" : ""), id: "pdf-page" }, aiSpin("Opening page " + n + "…", "pdf-loading"));
       var sx = null;
       wrap.addEventListener("touchstart", function (e) { sx = e.touches.length === 1 ? e.touches[0].clientX : null; }, { passive: true });
@@ -4146,6 +4878,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
           } }, "Completed")),
         h("div", { class: "prog", role: "progressbar", "aria-label": "Pages read today", "aria-valuemin": "0", "aria-valuemax": String(goal), "aria-valuenow": String(Math.min(readN, goal)) }, h("i", { style: "width:" + Math.min(100, Math.round(readN / goal * 100)) + "%" })),
         h("p", { class: "small", id: "read-today", text: "Today: " + readN + " of " + goal + " pages" + (link ? " · " + link.title : "") + ". Swipe or use the buttons to turn pages." }),
+        h("p", { class: "small rcount" + (readToday(d).indexOf(n) >= 0 ? " ok" : ""), id: "read-count", text: readToday(d).indexOf(n) >= 0 ? "✓ Page " + n + " counted" : "Reading… this page counts once you've had time to read it" }),
         wrap,
         h("div", { class: "pager", role: "group", "aria-label": "Pages" },
           h("button", { class: "btn", type: "button", id: "rd-prev", disabled: n <= 1, onclick: function () { goPage(n - 1); } }, "Previous"),
@@ -4154,7 +4887,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         h("div", { id: "read-ps-slot" }, readPassages(d, n)),
         h("div", { class: "row" },
           h("button", { class: "btn", type: "button", id: "rd-zoom", "aria-pressed": (ui.zoom || 1) > 1 ? "true" : "false", onclick: function () { ui.zoom = (ui.zoom || 1) > 1 ? 1 : 1.7; render(false); } }, (ui.zoom || 1) > 1 ? "Fit width" : "Zoom in"),
-          h("button", { class: "btn", type: "button", id: "rd-passages", onclick: function () { go("doc", { id: d.id, page: n }); } }, "All passages")),
+          h("button", { class: "btn", type: "button", id: "rd-passages", onclick: function () { go("doc", { id: d.id, page: n }); } }, "All passages"),
+          d.kind === "learning" ? h("button", { class: "btn", type: "button", id: "rd-quiz", onclick: function () { ui.qz = null; go("quiz", { docId: d.id }); } }, "Quiz me") : null),
         h("p", { class: "small", text: "Tip: press and hold words on the page to highlight them, then tap Save highlight." }),
         h("div", { class: "small", id: "read-note", hidden: true }, file, h("button", { class: "btn", type: "button", id: "read-attach", onclick: function () { file.click(); } }, "Add the PDF again"))
       ] };
@@ -4213,7 +4947,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       }
       var search = h("input", { type: "search", id: "doc-q", value: ui.docQ || "", placeholder: "Find a passage, like “discomfort”", autocomplete: "off", "aria-label": "Search this document" });
       search.addEventListener("input", function () { ui.docQ = search.value; clearTimeout(ui.docQT); ui.docQT = setTimeout(function () { render(false); }, 250); });
-      var goPage = function (n, read) { if (read) markRead(d, pg); ui.arg = { id: d.id, page: n }; render(false); window.scrollTo(0, 0); var f = $("pg-label"); if (f) f.focus(); };
+      var goPage = function (n) { ui.arg = { id: d.id, page: n }; render(false); window.scrollTo(0, 0); var f = $("pg-label"); if (f) f.focus(); };
       var pager = function (sfx) {
         return h("div", { class: "pager", role: "group", "aria-label": "Pages" },
           h("button", { class: "btn", type: "button", id: "pg-prev" + sfx, disabled: pg <= 1, onclick: function () { goPage(pg - 1); } }, "Previous"),
@@ -4245,6 +4979,9 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
             } }, "Read it every day"))),
         h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "doc-read", onclick: function () { openBook(d, pg); } }, icon("book"), " Read the book"),
           ps && ps.some(function (t) { return !saved(t) && !chosen(t); }) ? h("button", { class: "btn", type: "button", id: "sel-all", onclick: function () { ps.forEach(function (t) { if (!saved(t) && !chosen(t)) selS.items.push({ text: t, page: pg }); }); render(false); } }, "Select all on this page") : null),
+        h("div", { class: "row", role: "group", "aria-label": "What kind of book" }, h("span", { class: "lbl", text: "This book is for" }),
+          [["mindset", "Mindset · quotes"], ["learning", "Learning · quizzes"]].map(function (o) { return h("button", { class: "chip sm", type: "button", id: "kind-" + o[0], "aria-pressed": (d.kind || "mindset") === o[0] ? "true" : "false", onclick: function () { d.kind = o[0]; save(); render(false); } }, o[1]); })),
+        d.kind === "learning" ? h("button", { class: "btn", type: "button", id: "doc-quiz", onclick: function () { ui.qz = null; go("quiz", { docId: d.id }); } }, "Quiz me on what I've read" + (quizDue(d.id).length ? " · " + quizDue(d.id).length + " due" : "")) : null,
         h("p", { class: "small", id: "doc-hint", text: "Tap passages to select them, on this page or others, then save them all as cards. Saved cards come up when you tap I need you." }),
         search,
         q.length >= 3 ? h("p", { class: "lbl", "aria-live": "polite", text: "Search results" }) : pager(""),
@@ -4316,6 +5053,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
               h("button", { class: "btn", type: "button", onclick: function () { if (!TIME_RE.test(t.value)) { toast("Pick a time."); return; } remember(m.key, t.value); save(); toast("Updated."); render(false); } }, "Update"),
               h("button", { class: "btn", type: "button", "data-forget": m.key, onclick: function () { S.memory = S.memory.filter(function (x) { return x !== m; }); save(); toast("Forgotten.", 6000, { label: "Undo", fn: function () { S.memory.push(m); save(); render(false); } }); render(false); } }, "Forget")));
         })) : h("p", { class: "empty", id: "mem-empty", text: "Nothing yet. When you say something like “after class”, Ten Days asks when that is, and you can tick “Remember this”." }),
+        S.about.length ? h("h2", { class: "sect-h", text: "What you told me about you" }) : null,
+        S.about.length ? h("div", { class: "card", id: "about-list" }, S.about.map(function (a2, i) { return h("div", { class: "logrow" }, h("span", { text: a2 }), h("div", { class: "row" }, h("button", { class: "btn", type: "button", "data-about": String(i), onclick: function () { S.about.splice(i, 1); save(); render(false); } }, "Forget"))); })) : null,
         h("h2", { class: "sect-h", text: "Learned from what you do" }),
         h("label", { class: "toggle", for: "learn-toggle" }, h("input", { type: "checkbox", id: "learn-toggle", checked: S.learn !== false, onchange: function (e) { S.learn = e.target.checked; save(); render(false); } }),
           h("span", { text: "Notice my routines and suggest next steps" })),
@@ -4408,6 +5147,62 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
           } }, "Save model"))
       ] };
     },
+    checkins: function () {
+      back("home");
+      var inp = h("input", { type: "text", id: "ck-new", maxlength: "60", autocomplete: "off", placeholder: "Like “Breathwork, 5 minutes”" });
+      var about = h("textarea", { id: "ck-about", rows: "4", maxlength: "3000", placeholder: "What you like, what calms you, your routines, what you struggle with…" });
+      var ideas = CHECK_IDEAS.filter(function (x) { return !S.checkins.some(function (c) { return c.text.toLowerCase() === x.toLowerCase(); }); });
+      return { title: "Daily check-ins", body: [
+        h("p", { text: "Not tasks: a short list you tick each day, like “Did you do your breathwork today?”" }),
+        S.checkins.length ? h("div", { class: "group", id: "ck-list" }, S.checkins.map(function (c) {
+          return h("div", { class: "row ckrow" }, h("span", { text: c.text }), h("button", { class: "btn link", type: "button", "data-ck-del": c.id, onclick: function () { var i = S.checkins.indexOf(c); S.checkins.splice(i, 1); save(); toast("Removed.", 5000, { label: "Undo", fn: function () { S.checkins.splice(i, 0, c); save(); render(false); } }); render(false); } }, "Remove"));
+        })) : h("p", { class: "empty", text: "No check-ins yet." }),
+        h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); if (addCheckins([inp.value])) { inp.value = ""; save(); render(false); } else toast("Type a new one first."); } }, h("label", { class: "sr-only", for: "ck-new", text: "New check-in" }), inp, h("button", { class: "btn", type: "submit", id: "ck-add" }, "Add")),
+        ideas.length ? h("div", { class: "row", id: "ck-ideas" }, ideas.slice(0, 8).map(function (x, i) { return h("button", { class: "chip sm", type: "button", id: "ck-idea-" + i, onclick: function () { addCheckins([x]); save(); render(false); } }, "+ " + x); })) : null,
+        h("h2", { class: "sect-h", text: "Tell Ten Days about you" }),
+        h("p", { class: "small", text: aiOn("tasks") ? "Speak or type freely. AI listens for what helps you and suggests check-ins." : "Turn on the AI helper in You to have this turned into check-ins automatically. You can still add them above." }),
+        h("div", { class: "row" }, h("button", { class: "btn", type: "button", id: "ck-speak", disabled: !aiOn("tasks"), onclick: function () { go("home"); startRec("intake"); } }, icon("mic"), " Speak (up to 5 min)")),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "ck-about", text: "Or type it" }), about),
+        h("button", { class: "btn primary", type: "button", id: "ck-about-go", disabled: !aiOn("tasks"), onclick: function () { if (!about.value.trim()) { toast("Write something first."); return; } go("home"); aiIntake(null, about.value.trim()); } }, "Understand me")
+      ] };
+    },
+    quiz: function (arg) {
+      back(arg && arg.docId ? "library" : "home");
+      var d = arg && arg.docId ? S.docs.filter(function (x) { return x.id === arg.docId; })[0] : null, qz = ui.qz;
+      if (!qz || qz.doc !== (d ? d.id : "")) {
+        var due = quizDue(d ? d.id : "").slice(0, 10);
+        qz = ui.qz = { doc: d ? d.id : "", ids: due.map(function (q) { return q.id; }), i: 0, right: 0, picked: -1, making: false };
+        if (!due.length && d) { qz.making = true; makeQuiz(d, function (n) { if (ui.qz !== qz) return; qz.making = false; qz.ids = quizDue(d.id).slice(0, 10).map(function (q) { return q.id; }); qz.none = !n; render(false); }); }
+      }
+      var title = d ? "Quiz: " + d.name : "Review";
+      if (qz.making) return { title: title, body: [aiSpin(aiOn("library") ? "Writing questions from the pages you read…" : "Making questions from the pages you read…", "qz-busy")] };
+      if (!qz.ids.length) return { title: title, body: [h("p", { class: "empty", id: "qz-none", text: qz.none ? "Couldn't make questions from these pages yet. Read a few more pages, then try again." : "Nothing to review right now. Come back tomorrow." })] };
+      if (qz.i >= qz.ids.length) return { title: title, body: [
+        h("p", { class: "status ok", id: "qz-score", text: qz.right + " of " + qz.ids.length + " right." }),
+        h("p", { class: "small", text: "Questions you got right come back later; the ones you missed come back tomorrow. That spacing is what makes them stick." }),
+        h("button", { class: "btn primary", type: "button", id: "qz-again", onclick: function () { ui.qz = null; render(false); } }, "Check for more"),
+        d ? h("button", { class: "btn", type: "button", id: "qz-read", onclick: function () { openBook(d); } }, "Back to the book") : null] };
+      var q = S.quiz.filter(function (x) { return x.id === qz.ids[qz.i]; })[0];
+      if (!q) { qz.i++; return SCREENS.quiz(arg); }
+      var answered = qz.picked >= 0, right = answered && qz.picked === q.answer;
+      return { title: title, body: [
+        h("p", { class: "lbl", id: "qz-n", text: "Question " + (qz.i + 1) + " of " + qz.ids.length + (q.page ? " · page " + q.page : "") }),
+        h("p", { class: "qzq", id: "qz-q", text: q.q }),
+        h("div", { class: "group", role: "group", "aria-labelledby": "qz-q", id: "qz-choices" }, q.choices.map(function (c, i) {
+          var cls = "btn qzc" + (answered && i === q.answer ? " right" : "") + (answered && i === qz.picked && !right ? " wrong" : "");
+          return h("button", { class: cls, type: "button", id: "qz-c" + i, disabled: answered, "aria-pressed": answered && i === qz.picked ? "true" : "false", onclick: function () {
+            qz.picked = i; var ok2 = i === q.answer;
+            q.box = ok2 ? Math.min(BOX_DAYS.length - 1, q.box + 1) : 0; q.due = dayKey(addDays(new Date(), ok2 ? BOX_DAYS[q.box] : 1));
+            if (ok2) { qz.right++; haptic("success"); chime("soft"); } else haptic("warn");
+            save(); render(false); announce(ok2 ? "Right." : "Not quite. The answer is " + q.choices[q.answer] + "."); var f = $("qz-next"); if (f) f.focus();
+          } }, c);
+        })),
+        answered ? h("p", { class: "status " + (right ? "ok" : "bad"), id: "qz-fb", text: right ? "Right." : "Not quite: " + q.choices[q.answer] + "." }) : null,
+        answered && q.explain ? h("p", { class: "small", text: q.explain }) : null,
+        answered ? h("button", { class: "btn primary", type: "button", id: "qz-next", onclick: function () { qz.i++; qz.picked = -1; render(false); } }, qz.i + 1 < qz.ids.length ? "Next question" : "See how I did") : null,
+        h("p", { class: "small", text: q.by === "ai" ? "Question written by AI from the page." : "Question made from a sentence on the page." })
+      ] };
+    },
     checkin: function () {
       var item = function (id, label, hint, to) { return h("button", { class: "btn", type: "button", id: id, onclick: function () { go(to); } }, h("span", { text: label }), hint ? h("span", { class: "hint", text: hint }) : null); };
       return { title: "Check-in with him", body: [
@@ -4462,12 +5257,13 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
           fm(),
           h("div", { class: "field" }, h("label", { class: "lbl", for: "f-task", text: "Task" }), pick),
           h("p", { class: "lbl", text: "Length" }),
+          wheel("f-wheel", range(1, 180), Math.min(180, Math.max(1, mins)), function (v) { return v + " min"; }, function (v) { ui.focusMins = v; ui.focusTask = pick.value; var b2 = $("focus-start"); if (b2) b2.textContent = "Start " + v + " min"; }, "Minutes"),
           h("div", { class: "row", id: "f-mins" }, choices.map(function (m) {
             return h("button", { class: "chip", type: "button", "data-mins": String(m), "aria-pressed": m === mins ? "true" : "false", onclick: function () { ui.focusMins = m; ui.focusTask = pick.value; render(false); } }, m + " min");
           })),
           h("div", { class: "group push" },
             h("button", { class: "btn primary", type: "button", id: "focus-start", onclick: function () {
-              var t = Date.now(); S.session = { taskId: pick.value, start: t, end: t + mins * 60000 }; ui.focusTask = "";
+              var t = Date.now(), mm = ui.focusMins || mins; S.session = { taskId: pick.value, start: t, end: t + mm * 60000 }; ui.focusTask = ""; ui.focusMins = null;
               if (save()) render(false);
             } }, "Start " + mins + " min"),
             back("home"))
@@ -4927,7 +5723,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   SCREENS.breath = SCREENS.support;   // older saved state
   SCREENS["m-free"] = SCREENS.progress;
   SCREENS.more = SCREENS.you;
-  var TAB_OF = { home: "home", breathe: "home", notes: "home", "m-tasks": "home", task: "home", "task-edit": "home", focus: "home", progress: "progress", "m-log": "progress" };
+  var TAB_OF = { home: "home", breathe: "home", notes: "home", checkins: "home", quiz: "home", "m-tasks": "home", task: "home", "task-edit": "home", focus: "home", progress: "progress", "m-log": "progress" };
   var MODE_OF = { focus: "focus", breathe: "support", support: "support", line: "support", progress: "grow" };
   function updateChrome() {
     document.body.setAttribute("data-mode", MODE_OF[ui.screen] || "plan");
@@ -4952,7 +5748,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     (function flat(list) { list.forEach(function (n) { if (Array.isArray(n)) flat(n); else if (n) nodes.push(n); }); })(out.body);
     root.replaceChildren.apply(root, nodes);
     // bars that float above the dock live outside the animated screen, so they stay put while you scroll
-    $("float").replaceChildren.apply($("float"), out.float ? [out.float] : []);
+    $("float").replaceChildren.apply($("float"), [].concat(out.float || []).filter(Boolean));
+    miniFocus();
     root.setAttribute("data-screen", ui.screen);                       // style hook only
     updateChrome();
     // the entrance animation plays when you arrive on a screen, not on every refresh (no flicker after a tap)
@@ -4964,6 +5761,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       if (active && $(active)) $(active).focus();
     } else { try { h1.focus({ preventScroll: true }); } catch (e) { h1.focus(); } }
     if (ui.screen === "support") tickSupport();
+    if (ui.screen === "read") tickRead();
     if (ui.screen === "focus") tickFocus();
     else if (focusWake) { focusWake = false; if (!cdT && !(S.lastSOS && S.lastSOS.status === "sending")) releaseAwake(); }
   }
@@ -5017,6 +5815,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   // pressing the button would clear the highlight on a phone, so it saves on press-down; click covers keyboards
   $("hlbtn").addEventListener("pointerdown", function (e) { e.preventDefault(); saveHighlight(); });
   $("hlbtn").addEventListener("click", saveHighlight);
+  $("minifocus").addEventListener("click", function () { go("focus"); });
   $("sos").addEventListener("click", onSOS);
   $("cd-cancel").addEventListener("click", cancelSOS);
   function measureBar() { document.documentElement.style.setProperty("--bar", $("sosbar").offsetHeight + "px"); }
@@ -5046,7 +5845,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     go("home");
   }
   if (location.hash) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
-  if (location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__td = { parse: parseQuick, intent: intentOf, plan: planFor, fix: fixFields, next: nextQuestion, draft: newDraft, passages: passages, xp: xpTotal };   // local testing only
+  if (location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__td = { readScale: function (v) { READ_SCALE = v; }, parse: parseQuick, intent: intentOf, plan: planFor, fix: fixFields, next: nextQuestion, draft: newDraft, passages: passages, xp: xpTotal };   // local testing only
   measureBar();
   start();
   pollReplies();
