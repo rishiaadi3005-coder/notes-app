@@ -640,7 +640,7 @@ async function axe(page, name) {
       // organize: one tap, applied, listed, undoable; private tasks never sent
       await page.click("#nav-home"); await ask(page, "#private Secret appointment");
       const pre = JSON.stringify((await S(page)).tasks.map(t => [t.id, t.title, t.group, t.repeat]));
-      await page.click("#org-go"); await page.waitForSelector("#org-list");
+      await page.click("#all-tasks"); await page.click("#org-go2"); await page.waitForSelector("#org-list");
       ok(!calls[calls.length - 1].data.includes("Secret appointment"), "private task not sent to the organizer");
       let st = await S(page);
       ok(st.tasks.some(t => t.title === "Stretch" && t.repeat === "daily") && st.tasks.filter(t => t.group === "School").length >= 2 && (await page.locator("#org-list li").count()) === 2, "organize applied straight away; bad ids dropped");
@@ -655,8 +655,8 @@ async function axe(page, name) {
       // errors fall back to rules
       mode = "429";
       await page.click("#nav-home"); await ask(page, LONG);
-      await page.waitForSelector("#asst-note");
-      ok((await page.textContent("#asst-note")).includes("free AI limit"), "rate limit falls back to rules with a note");
+      await page.waitForTimeout(400);
+      ok((await page.textContent("#toast")).includes("free AI limit"), "rate limit: still saved, with a note");
       // the key never goes into the app's saved data or backups
       st = await S(page);
       ok(!JSON.stringify(st).includes("AIzaTESTKEY"), "key not in saved data or backup");
@@ -712,6 +712,40 @@ async function axe(page, name) {
       await page.waitForSelector("#pdf-page canvas", { timeout: 20000 });
       ok(await page.isVisible("#read-close"), "read on opens the book itself");
       await page.click("#read-close");
+      // reading: tap to save passages under the page, or highlight words on the page
+      await page.click("#nav-you"); await page.click("#y-lib"); await page.click("[data-doc]"); await page.click("#doc-read");
+      await page.waitForSelector("#pdf-page canvas", { timeout: 20000 });
+      if ((await page.textContent("#read-page")) !== "Page 2 of 2") { await page.click("#rd-next"); }
+      await page.waitForSelector("#pdf-page[data-ready='2']");
+      const c0 = (await S(page)).cards.length;
+      await page.click("#toggle-ps"); await page.locator("#read-ps-list .passage").last().click();
+      ok((await S(page)).cards.length === c0 + 1 && (await page.locator("#read-ps-list .passage").last().getAttribute("aria-pressed")) === "true", "tap a passage while reading saves it");
+      ok((await page.textContent("#toast")).includes("Saved to cards"), "saved-to-cards flash");
+      await page.locator("#read-ps-list .passage").last().click();
+      ok((await S(page)).cards.length === c0, "tap again removes it");
+      await page.waitForSelector(".textLayer span", { timeout: 10000 });
+      await page.evaluate(() => { const sp = Array.from(document.querySelectorAll(".textLayer span")).find(x => x.textContent.length > 20); const r = document.createRange(); r.selectNodeContents(sp); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); });
+      await page.waitForSelector("#hlbtn:not([hidden])");
+      await page.dispatchEvent("#hlbtn", "click");
+      const hc = (await S(page)).cards;
+      ok(hc.length === c0 + 1 && hc[hc.length - 1].page === 2, "highlight on the page saved as a card");
+      await page.click("#read-close");
+      // notes, breathing, top 3
+      await page.click("#nav-home"); await ask(page, "note: feeling calmer after the walk");
+      ok((await S(page)).notes[0].text === "feeling calmer after the walk", "note: goes to Notes");
+      await page.click("#t-notes"); ok((await page.textContent("#note-list")).includes("feeling calmer"), "notes listed");
+      await page.click("#nav-home"); await page.click("#t-breathe");
+      await page.click("#br-sigh"); await page.click("#br-m1"); await page.click("#br-start");
+      await page.waitForTimeout(700);
+      ok((await page.textContent("#br-label")) === "Breathe in" && (await page.getAttribute("#br-orb", "data-phase")) === "in", "breathing guides in and out");
+      const st0 = (await S(page)).steps.length;
+      await page.click("#br-stop");
+      const bs = await S(page);
+      ok(bs.breathLog.length === 1 && bs.steps.length === st0 + 1 && bs.brPat === "sigh", "breathing session logged");
+      await page.click("#back");
+      for (const t of ["Laundry", "Dishes", "Water plants", "Email landlord"]) { await ask(page, t); }
+      await page.click("#asst-close").catch(() => {});
+      ok(await page.locator("#today-list .trow").count() === 3 && await page.isVisible("#toggle-rest"), "Today shows the top 3; the rest is tucked away");
       await page.click("#nav-you"); await page.click("#y-mem");
       ok(await page.isVisible("#learn-toggle"), "learning can be switched off");
       ok(!errors.length, "manager: no errors " + errors.join(" | "));

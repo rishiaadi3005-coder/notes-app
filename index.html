@@ -462,6 +462,49 @@ input[type=search], input[type=number] { width: 100%; min-width: 0; min-height: 
 #screen { overflow-wrap: anywhere; }
 #screen .btn.link { overflow-wrap: break-word; flex: 0 1 auto; }
 
+/* calmer Today */
+#screen[data-screen="home"] h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.topline { display: flex; align-items: center; gap: .7em; width: 100%; min-height: 48px; padding: .3em .2em; border: 0; background: none; color: var(--ink); text-align: left; }
+.topline .ring { --p: 0; width: 30px; height: 30px; border-radius: 50%; flex: none; background: conic-gradient(var(--corner) calc(var(--p) * 1turn), var(--field) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4.5px)); }
+.topline .tl-date { font-weight: 800; font-size: 1.15em; letter-spacing: -.01em; }
+.topline .tl-stat { margin-left: auto; font-size: .85em; font-weight: 700; color: var(--muted); }
+.tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5em; }
+.tool { min-height: 64px; border-radius: 20px; border: 1px solid var(--line); background: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); color: var(--ink);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3em; font-weight: 700; font-size: .85em; padding: .5em; }
+.tool svg { width: 22px; height: 22px; color: var(--corner); }
+.orgline { display: flex; flex-direction: column; gap: .3em; padding: .5em .8em; border-radius: 16px; border: 1px dashed var(--line); }
+.orgline .row { gap: .2em .9em; }
+.orgline .btn.link { min-height: 40px; }
+.pending { display: inline-flex; align-items: center; gap: .35em; color: var(--ty-meeting); font-weight: 700; }
+.pending .dots, .aispin .dots { display: inline-flex; gap: 4px; }
+.pending .dots i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; animation: dotup 900ms ease-in-out infinite; }
+.pending .dots i:nth-child(2) { animation-delay: 150ms; } .pending .dots i:nth-child(3) { animation-delay: 300ms; }
+.rm .pending .dots i { animation: none; }
+/* breathing */
+.brstage { display: flex; flex-direction: column; align-items: center; gap: .6em; padding: 1em 0; }
+.brorb { width: min(64vw, 240px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; transform: scale(.55); transition-property: transform; transition-timing-function: ease-in-out; transition-duration: 4s;
+  background: radial-gradient(circle at 50% 36%, var(--orb-shine), transparent 32%), radial-gradient(circle, var(--orb-1), var(--orb-2) 55%, var(--orb-3) 72%); box-shadow: 0 0 70px var(--orb-halo), inset 0 0 40px var(--orb-halo); }
+.brorb[data-phase="in"], .brorb[data-phase="hold"] { transform: scale(1); }
+.brorb[data-phase="in2"] { transform: scale(1.1); }
+.brorb[data-phase="out"], .brorb[data-phase="holdlow"] { transform: scale(.55); }
+.brorb[data-phase="rest"] { transform: scale(.7); }
+.brorb span { font-size: 2.6em; font-weight: 800; font-variant-numeric: tabular-nums; }
+.rm .brorb { transition: none; transform: scale(.8) !important; }
+.brlabel { font-size: 1.5em; font-weight: 800; letter-spacing: -.01em; text-align: center; margin: 0; }
+.brpats { display: grid; grid-template-columns: 1fr 1fr; gap: .5em; }
+.brpats .chip { border-radius: 18px; text-align: left; padding: .6em .9em; display: flex; flex-direction: column; align-items: flex-start; }
+.brpats .chip[aria-pressed="true"] .small { color: inherit; }
+.card.note .ntext { white-space: pre-wrap; }
+/* highlight to save */
+.pagebox { position: relative; }
+.pagebox canvas { position: absolute; inset: 0; }
+.textLayer { position: absolute; inset: 0; overflow: hidden; line-height: 1; -webkit-text-size-adjust: none; text-size-adjust: none; transform-origin: 0 0; z-index: 2; opacity: 1; }
+.textLayer span, .textLayer br { color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: 0% 0%; }
+.textLayer ::selection { background: rgba(80, 120, 255, .35); }
+.hlbtn { position: fixed; z-index: 45; left: 50%; transform: translateX(-50%); bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 14px); min-height: 48px; padding: 0 1.4em; border-radius: 99px; border: 0;
+  background: var(--prim-grad); color: var(--prim-ink); font-weight: 800; box-shadow: 0 10px 30px var(--shadow); }
+
 /* voice */
 .qa .mic { width: 48px; height: 48px; flex: none; border-radius: 17px; border: 1px solid var(--line); background: var(--field); color: var(--ink); display: grid; place-items: center; padding: 0; }
 .qa .mic svg { width: 22px; height: 22px; }
@@ -561,6 +604,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
 <div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
 <div class="sr-only" id="announce" aria-live="polite"></div>
 <div id="float"></div>
+<button id="hlbtn" class="hlbtn" type="button" hidden>Save highlight</button>
 
 <script>
 (function () {
@@ -709,7 +753,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     var P = obj(s.profile) || {};
     s.profile = { habitKey: ["phone", "porn", "alcohol", "nicotine", "gaming", "other"].indexOf(P.habitKey) >= 0 ? P.habitKey : "", habit: str(P.habit, 60), step: str(P.step, 120),
       reasons: (Array.isArray(P.reasons) ? P.reasons : []).map(function (x) { return str(x, 140).trim(); }).filter(Boolean).slice(0, 5),
-      style: ["gentle", "direct", "practical"].indexOf(P.style) >= 0 ? P.style : "gentle" };
+      style: ["gentle", "direct", "practical"].indexOf(P.style) >= 0 ? P.style : "gentle", when: str(P.when, 80) };
     s.memory = (Array.isArray(s.memory) ? s.memory : []).filter(obj).map(function (m) { return { id: str(m.id, 40) || newId(), key: str(m.key, 40), value: TIME_RE.test(m.value || "") ? m.value : "", text: str(m.text, 120), at: +m.at || Date.now() }; })
       .filter(function (m) { return m.key && m.value; }).slice(0, 50);
     var F = obj(s.fx) || {};
@@ -755,6 +799,9 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (s.asst && !s.asst.src) s.asst.src = "";
     s.askText = str(s.askText, 300);
     // what Ten Days has learned, and suggestions you've set aside
+    s.notes = (Array.isArray(s.notes) ? s.notes : []).filter(obj).map(function (n) { return { id: str(n.id, 40) || newId(), text: str(n.text, 2000), at: +n.at || Date.now() }; }).filter(function (n) { return n.text; }).slice(0, 500);
+    s.breathLog = (Array.isArray(s.breathLog) ? s.breathLog : []).filter(function (e) { return obj(e) && typeof e.at === "number"; }).map(function (e) { return { at: e.at, mins: Math.max(1, Math.min(60, Math.round(+e.mins || 1))) }; }).slice(-500);
+    s.brPat = ["calm", "sigh", "box", "sleep"].indexOf(s.brPat) >= 0 ? s.brPat : "calm"; s.brMins = [1, 3, 5, 10].indexOf(+s.brMins) >= 0 ? +s.brMins : 3;
     s.learn = s.learn !== false; s.patNo = obj(s.patNo) || {}; s.sugNo = obj(s.sugNo) || {}; s.lastLink = str(s.lastLink, 40);
     s.org = obj(s.org) && DATE_RE.test(s.org.day || "") && Array.isArray(s.org.done) && !s.org.busy ? s.org : null;
     var lt = obj(s.lastTask); s.lastTask = lt && typeof lt.at === "number" ? { id: str(lt.id, 40), at: lt.at } : null;
@@ -792,7 +839,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (t.repeat === "once" && t.doneOn === "once" && t.hist.indexOf("once") < 0) t.hist.push("once");   // older one-off tasks count toward progress too
     t.dur = Math.max(0, Math.min(600, Math.round(+t.dur || 0)));
     t.anchor = str(t.anchor, 40); t.place = str(t.place, 60); t.dep = str(t.dep, 60); t.depId = str(t.depId, 40); t.plan = str(t.plan, 40);
-    t.remindAt = +t.remindAt || 0; t.group = str(t.group, 40); t.docId = str(t.docId, 40);
+    t.remindAt = +t.remindAt || 0; t.group = str(t.group, 40); t.docId = str(t.docId, 40); t.pending = t.pending === true;
     if (t.kind !== "presleep") delete t.kind;
     return t;
   }
@@ -1252,7 +1299,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     sparkle: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z", shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",
     help: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.7-2.5 2-2.5 4M12 17h.01", pin: "M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z",
     quote: "M9 7H5v5h4v1a3 3 0 0 1-3 3M19 7h-4v5h4v1a3 3 0 0 1-3 3", bell: "M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0",
-    up: "M6 15l6-6 6 6", down: "M6 9l6 6 6-6", left: "M15 5l-7 7 7 7", x: "M6 6l12 12M18 6L6 18", mic: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21", stop: "M7 7h10v10H7z"
+    up: "M6 15l6-6 6 6", down: "M6 9l6 6 6-6", left: "M15 5l-7 7 7 7", x: "M6 6l12 12M18 6L6 18", mic: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21", stop: "M7 7h10v10H7z", wind: "M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7", note: "M5 4h10l4 4v12H5zM15 4v4h4M8 12h8M8 16h5"
   };
   function icon(name) {
     return svg("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": name === "more" ? "3.2" : "2", "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true", focusable: "false" },
@@ -1460,6 +1507,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     if (/\b(?:overwhelm\w*|too much to do|so much to do|too much on my plate|can't keep up|stressed(?: out)?|drowning|burn(?:ed|t) out|behind on everything|don't know where to start|everything at once)\b/.test(s)) return "overwhelm";
     if (/\b(?:encourage(?:ment)?|motivat\w*|pep talk|giving up|want to give up|feel(?:ing)? (?:down|low|useless|hopeless|like a failure|stuck)|need (?:some )?(?:hope|strength|a push)|cheer me up|i can't do this)\b/.test(s)) return "encourage";
     if (/\b(?:how am i doing|how'm i doing|my progress|show (?:me )?(?:my )?progress|how did i do|review (?:my )?(?:week|day|progress)|weekly review|my stats|what have i done)\b/.test(s)) return "review";
+    if (/^\s*(?:note|thought|idea|journal)\s*[:\-–]/.test(s) || /^\s*remember that\b/.test(s)) return "note";
     if (/^\s*(?:actually|no[,.]|nope|wait[,.]?|instead|make (?:that|it)|change (?:that|it)|move (?:that|it)|push (?:that|it)|set (?:that|it)|rename (?:that|it)|call it)\b/.test(s)) return "fix";
     if (/\?\s*$/.test(s) && !/^\s*(?:can you |could you |please )?remind/.test(s)) return "unsure";
     return "task";
@@ -1601,6 +1649,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   function taskRow(t, now, mode) {
     var done = isDone(t, now), ms = now.getTime(), d = dueAt(t, now), snz = !done && t.snoozeUntil > ms, over = !done && d !== null && d < ms;
     var meta = [], k = streak(t), it = t.items.length;
+    if (t.pending) meta.push(h("span", { class: "pending" }, h("span", { class: "dots", "aria-hidden": "true" }, h("i"), h("i"), h("i")), "Sorting…"));
     if (mode === "upcoming") { if (t.time) meta.push(h("span", null, icon("clock"), fmtTime(new Date(2000, 0, 1, +t.time.slice(0, 2), +t.time.slice(3)).getTime()))); }
     else if (snz) meta.push(h("span", null, icon("moon"), "Snoozed until " + whenText(t.snoozeUntil)));
     else if (d !== null) meta.push(h("span", { class: over ? "ov" : d - ms <= 3600e3 && !done ? "hot" : "" }, icon("clock"), (over ? "Overdue · " : "") + whenText(d)));
@@ -1629,27 +1678,6 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       if (PR[a.priority] !== PR[b.priority]) return PR[a.priority] - PR[b.priority];
       return (a.created || 0) - (b.created || 0);
     };
-  }
-  function todayView(now) {
-    var list = S.tasks.filter(function (t) { return inToday(t, now); });
-    var open = list.filter(function (t) { return !isDone(t, now); }).sort(byUrgency(now));
-    var done = list.filter(function (t) { return isDone(t, now); }).sort(function (a, b) { return (b.doneAt || 0) - (a.doneAt || 0); });
-    var out = [];
-    if (!list.length) out.push(h("p", { class: "empty", id: "no-today", text: S.tasks.length ? "Nothing on today's list. Tell me something above, or open Coming up." : "No tasks yet. Type one above, like “Workout 6pm daily”." }));
-    else if (!open.length) out.push(h("p", { class: "empty", id: "all-done", text: "All done for today." }));
-    // grouped: what needs you now, what has a time later today, and anytime
-    var ms = now.getTime(), soon = [], later = [], any = [];
-    open.forEach(function (t) { var d = dueAt(t, now); if (t.priority === "high" || (d !== null && d - ms < 2 * 3600e3)) soon.push(t); else if (d !== null) later.push(t); else any.push(t); });
-    var groups = [["Now", soon], ["Later today", later], ["Anytime", any]].filter(function (g) { return g[1].length; });
-    out.push(h("div", { class: "tlist", id: "today-list" }, groups.map(function (g) {
-      return [groups.length > 1 ? h("p", { class: "dayhead", text: g[0] }) : null].concat(g[1].map(function (t) { return taskRow(t, now, "today"); }));
-    })));
-    if (done.length) {
-      out.push(h("button", { class: "btn link", type: "button", id: "toggle-done", "aria-expanded": ui.showDone ? "true" : "false", onclick: function () { ui.showDone = !ui.showDone; render(false); } },
-        (ui.showDone ? "Hide done" : "Show done") + " (" + done.length + ")"));
-      if (ui.showDone) out.push(h("div", { class: "tlist", id: "done-list" }, done.map(function (t) { return taskRow(t, now, "today"); })));
-    }
-    return out;
   }
   function occursOn(t, d) {
     if (isDone(t, d) && t.repeat !== "once" && !dayBased(t)) return false;
@@ -2068,6 +2096,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     text = normText(text);
     if (!text) { toast("Type what's happening first."); return false; }
     var intent = intentOf(text), a = S.asst;
+    if (intent === "note") { saveNote(text); S.asst = null; save(); return true; }
     if (intent === "fix") {
       var draftA = a && a.kind === "task" ? a : null, t = draftA ? (draftA.editing ? taskById(draftA.editing) : null) : lastTask();
       if (!draftA && !t) { setAsst({ kind: "nofix", src: text }); return true; }
@@ -2080,7 +2109,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     }
     if (intent === "support") { openSupport("text"); return "nav"; }
     if (intent === "plan") { setAsst({ kind: "plan", p: planFor(text), src: text }); return true; }
-    if (needsAi(text, intent)) { aiThink(text, intent); return true; }   // the rules couldn't read it well; AI is on
+    if (needsAi(text, intent)) { if (intent === "task" && quickThenAi(text)) return true; aiThink(text, intent); return true; }   // saved now, sorted by AI in the background
     if (intent !== "task") { setAsst({ kind: intent, src: text, i: 0 }); return true; }
     return asTask(text);
   }
@@ -2720,7 +2749,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   }
   function organize(auto) {
     if (orgBusy) return;
-    S.ai.orgDay = dayKey();
+    S.ai.orgDay = dayKey(); if (!auto) ui.showOrg = true;
     var applyAll = function (changes, summary, note) {
       var before = JSON.stringify(S.tasks), lines = changes.map(describe).filter(Boolean);
       changes.forEach(applyChange);
@@ -2776,7 +2805,15 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       c.setAttribute("role", "img"); c.setAttribute("aria-label", "Page " + n + " of " + d.name);
       if (pageTask) { try { pageTask.cancel(); } catch (e) {} }
       pageTask = pg.render({ canvasContext: c.getContext("2d"), viewport: vp });
-      return pageTask.promise.then(function () { if (wrap.isConnected) { wrap.replaceChildren(c); wrap.setAttribute("data-ready", String(n)); } });
+      return pageTask.promise.then(function () {
+        if (!wrap.isConnected) return;
+        // an invisible text layer on top of the picture, so words can be highlighted and saved
+        var vpc = pg.getViewport({ scale: scale }), tl = h("div", { class: "textLayer" }), box = h("div", { class: "pagebox", style: "width:" + Math.floor(vpc.width) + "px;height:" + Math.floor(vpc.height) + "px" }, c, tl);
+        tl.style.setProperty("--scale-factor", String(scale));
+        wrap.replaceChildren(box); wrap.setAttribute("data-ready", String(n));
+        var lib = window.pdfjsLib;
+        if (lib && lib.renderTextLayer) pg.getTextContent().then(function (tc) { return lib.renderTextLayer({ textContentSource: tc, container: tl, viewport: vpc, textDivs: [] }).promise; }).catch(function () {});
+      });
     }).catch(function (e) {
       if (e && e.name === "RenderingCancelledException") return;
       if (!wrap.isConnected) return;
@@ -2816,8 +2853,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     return !newDraft(text) || words >= 14 || /[.!?;]\s+\S/.test(text) || /\b(?:and then|and also|plus|as well as)\b/i.test(text);
   }
   var AI_PARSE = "Read the person's note and reply with JSON only, in this shape: " +
-    '{"kind":"tasks|overwhelm|encourage|review|support|unclear","tasks":[{"title":"","date":"","time":"","minutes":0,"repeat":"once","priority":"normal","items":[]}],"question":""}. ' +
-    "kind is support if they describe an urge, a craving, a relapse or a crisis. For tasks, give each separate thing to do as its own task: a short title in their words (under 60 characters), " +
+    '{"kind":"tasks|note|overwhelm|encourage|review|support|unclear","tasks":[{"title":"","date":"","time":"","minutes":0,"repeat":"once","priority":"normal","items":[]}],"question":""}. ' +
+    "kind is support if they describe an urge, a craving, a relapse or a crisis; note if it's a thought, feeling or idea rather than something to do. For tasks, give each separate thing to do as its own task: a short title in their words (under 60 characters), " +
     "date as YYYY-MM-DD only if the note says or clearly implies a day, time as 24-hour HH:MM only if the note gives one, minutes only if it gives a length, repeat as once, daily, weekdays or weekly, items for a shopping list, " +
     "and priority as high when it's urgent or due within a day, low for someday things, otherwise normal. " +
     "Never invent dates, times or details. If something essential is missing, put one short question in question.";
@@ -2856,6 +2893,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     var kind = data.kind, tasks = (Array.isArray(data.tasks) ? data.tasks : []).slice(0, 12), q = str(data.question, 200).trim();
     if (kind === "support") { setAsst({ kind: "unsure", src: text, aiq: "That sounds like a hard moment. Want the support screen?" }); return; }
     if (kind === "overwhelm" || kind === "encourage" || kind === "review") { setAsst({ kind: kind, src: text, i: 0 }); return; }
+    if (kind === "note") { saveNote(heard || text, true); setAsst(null); return; }
     if (!tasks.length) { setAsst({ kind: "unsure", src: text, aiq: q || "" }); return; }
     saveAiTasks(text, tasks, q, heard);
   }
@@ -3171,6 +3209,169 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     return made;
   }
 
+  // ============ Today, calmer: your top 3, everything else tucked away ============
+  function topScore(t, now) {
+    var d = dueAt(t, now), ms = now.getTime();
+    if (d !== null && d - ms < 2 * 3600e3) return 0;          // overdue or due within two hours
+    if (t.priority === "high") return 1;
+    if (d !== null) return 2;                                 // has a time later today
+    return t.priority === "low" ? 4 : 3;
+  }
+  function byTop(now) {
+    var u = byUrgency(now);
+    return function (a, b) { return topScore(a, now) - topScore(b, now) || u(a, b); };
+  }
+  function todayView(now) {
+    var list = S.tasks.filter(function (t) { return inToday(t, now); });
+    var open = list.filter(function (t) { return !isDone(t, now) && !(t.snoozeUntil > now.getTime()); }).sort(byTop(now));
+    var later = list.filter(function (t) { return !isDone(t, now) && t.snoozeUntil > now.getTime(); });
+    var done = list.filter(function (t) { return isDone(t, now); }).sort(function (a, b) { return (b.doneAt || 0) - (a.doneAt || 0); });
+    var out = [], top = open.slice(0, 3), rest = open.slice(3).concat(later);
+    if (!list.length) out.push(h("p", { class: "empty", id: "no-today", text: S.tasks.length ? "Nothing on today's list." : "Nothing here yet. Type or say anything above." }));
+    else if (!open.length) out.push(h("p", { class: "empty", id: "all-done", text: later.length ? "Your top tasks are done. The rest are snoozed." : "All done for today." }));
+    out.push(h("div", { class: "tlist", id: "today-list" }, top.map(function (t) { return taskRow(t, now, "today"); })));
+    if (rest.length) {
+      out.push(h("button", { class: "btn disc", type: "button", id: "toggle-rest", "aria-expanded": ui.showRest ? "true" : "false", "aria-controls": "rest-list", onclick: function () { ui.showRest = !ui.showRest; render(false); } },
+        h("span", { text: "Everything else today (" + rest.length + ")" }), icon(ui.showRest ? "up" : "down")));
+      if (ui.showRest) out.push(h("div", { class: "tlist", id: "rest-list" }, rest.map(function (t) { return taskRow(t, now, "today"); })));
+    }
+    if (done.length) {
+      out.push(h("button", { class: "btn link", type: "button", id: "toggle-done", "aria-expanded": ui.showDone ? "true" : "false", onclick: function () { ui.showDone = !ui.showDone; render(false); } },
+        (ui.showDone ? "Hide done" : "Show done") + " (" + done.length + ")"));
+      if (ui.showDone) out.push(h("div", { class: "tlist", id: "done-list" }, done.map(function (t) { return taskRow(t, now, "today"); })));
+    }
+    return out;
+  }
+  // Organizing happens in the background; Today shows one quiet line about it.
+  function orgLine() {
+    var o = S.org; if (!o || o.day !== dayKey() || o.closed) return null;
+    if (o.busy) return h("div", { class: "orgline", id: "org" }, aiSpin("Organizing in the background…", "org-busy"));
+    if (!o.done || !o.done.length) return o.auto ? null : h("div", { class: "orgline", id: "org", role: "status" }, h("span", { text: o.note || o.summary || "Your list is already in order." }),
+      h("button", { class: "btn link", type: "button", id: "org-close", onclick: function () { S.org.closed = true; save(); render(false); } }, "OK"));
+    var open = ui.showOrg;
+    return h("div", { class: "orgline", id: "org" },
+      h("div", { class: "row" }, h("span", { class: "state ai" }, icon("sparkle"), "Organized " + o.done.length + (o.done.length === 1 ? " thing" : " things")),
+        h("button", { class: "btn link", type: "button", id: "org-see", "aria-expanded": open ? "true" : "false", onclick: function () { ui.showOrg = !open; render(false); } }, open ? "Hide" : "See"),
+        o.undo ? h("button", { class: "btn link", type: "button", id: "org-undo", onclick: function () { S.tasks = JSON.parse(o.undo).map(normTask).filter(Boolean); S.org.closed = true; save(); toast("Put everything back."); render(false); } }, "Undo") : null,
+        h("button", { class: "btn link", type: "button", id: "org-close", onclick: function () { S.org.closed = true; save(); render(false); } }, "OK")),
+      open ? h("ul", { class: "orglist", id: "org-list" }, o.done.map(function (l) { return h("li", null, icon("check"), h("span", { text: l })); })) : null,
+      open && o.note ? h("p", { class: "small", text: o.note }) : null);
+  }
+
+  // ============ capture: saved at once, sorted by AI in the background ============
+  function quickThenAi(text) {
+    var d = newDraft(text) || blankDraft(text), t = draftToTask(d);
+    if (!t) return false;
+    t.pending = true; S.tasks.push(t); S.lastTask = { id: t.id, at: Date.now() }; S.asst = null;
+    save(); toast("Saved. AI is sorting it…");
+    aiCall(AI_PARSE + " " + nowLine(), text, { json: true }).then(function (r) {
+      var cur = taskById(t.id), untouched = cur && cur.title === t.title && !isDone(cur);
+      if (cur) cur.pending = false;
+      if (!r.ok) { save(); render(false); toast("Saved as one task. AI couldn't sort it: " + aiWhy(r), 6000); return; }
+      var data = obj(r.data) || {}, tasks = (Array.isArray(data.tasks) ? data.tasks : []).slice(0, 12), q = str(data.question, 200).trim();
+      if (data.kind === "note" && untouched) { S.tasks = S.tasks.filter(function (x) { return x !== cur; }); saveNote(text, true); }
+      else if ((data.kind === "support" || data.kind === "overwhelm" || data.kind === "encourage" || data.kind === "review") && untouched) {
+        S.tasks = S.tasks.filter(function (x) { return x !== cur; });
+        if (data.kind === "support") setAsst({ kind: "unsure", src: text, aiq: "That sounds like a hard moment. Want the support screen?" }); else setAsst({ kind: data.kind, src: text, i: 0 });
+      } else if (tasks.length && untouched) { S.tasks = S.tasks.filter(function (x) { return x !== cur; }); saveAiTasks(text, tasks, q); }
+      save(); render(false);
+    });
+    return true;
+  }
+
+  // ============ notes: thoughts that aren't tasks ============
+  function saveNote(text, quiet) {
+    var n = { id: newId(), text: String(text).replace(/^\s*(?:note|thought|idea|journal)\s*[:\-–]\s*/i, "").replace(/^\s*remember that\s+/i, "").trim().slice(0, 2000), at: Date.now() };
+    if (!n.text) return;
+    S.notes.unshift(n); if (S.notes.length > 500) S.notes.pop();
+    save();
+    toast(quiet ? "That sounded like a thought, so it's in Notes." : "Saved to Notes.", 6000, { label: "Undo", fn: function () { S.notes = S.notes.filter(function (x) { return x !== n; }); save(); render(false); } });
+  }
+
+  // ============ breathing ============
+  // Calm: longer out-breath. Sigh: two breaths in, long out ("cyclic sighing" did well for mood in a 2023 Stanford study).
+  // Box: equal sides. Sleep: 4-7-8.
+  var BREATHS = [
+    ["calm", "Calm", "In 4, out 6", [["Breathe in", 4, "in"], ["Breathe out", 6, "out"]]],
+    ["sigh", "Sigh", "Two in, long out", [["Breathe in", 2, "in"], ["A little more in", 1, "in2"], ["Long breath out", 6, "out"]]],
+    ["box", "Box", "4 · 4 · 4 · 4", [["Breathe in", 4, "in"], ["Hold", 4, "hold"], ["Breathe out", 4, "out"], ["Hold", 4, "holdlow"]]],
+    ["sleep", "Sleep", "4 · 7 · 8", [["Breathe in", 4, "in"], ["Hold", 7, "hold"], ["Breathe out", 8, "out"]]]
+  ];
+  var brT = null;
+  function brPattern() { return BREATHS.filter(function (b) { return b[0] === (ui.brPat || S.brPat || "calm"); })[0] || BREATHS[0]; }
+  function brPhase(pat, el) {
+    var cyc = pat[3].reduce(function (a, p) { return a + p[1]; }, 0) * 1000, t = el % cyc, acc = 0;
+    for (var i = 0; i < pat[3].length; i++) { var len = pat[3][i][1] * 1000; if (t < acc + len) return { i: i, left: acc + len - t, len: len }; acc += len; }
+    return { i: 0, left: pat[3][0][1] * 1000, len: pat[3][0][1] * 1000 };
+  }
+  function tickBreathe() {
+    clearTimeout(brT);
+    if (ui.screen !== "breathe" || !ui.br) return;
+    brT = setTimeout(function () {
+      var b = ui.br; if (!b || ui.screen !== "breathe") return;
+      var el = Date.now() - b.start, pat = brPattern(), ph = brPhase(pat, el);
+      if (el >= b.mins * 60000 && ph.i === 0 && b.last !== 0) { finishBreathe(); return; }
+      var lab = $("br-label"), cnt = $("br-count"), orb = $("br-orb"), left = $("br-left");
+      if (ph.i !== b.last) {
+        b.last = ph.i;
+        var p = pat[3][ph.i];
+        if (lab) lab.textContent = p[0];
+        if (orb) { orb.style.transitionDuration = p[1] + "s"; orb.setAttribute("data-phase", p[2]); }
+        try { if (S.haptics !== false && HX.vibrate) navigator.vibrate(12); } catch (e) {}
+        chime("soft");
+      }
+      if (cnt) cnt.textContent = String(Math.ceil(ph.left / 1000));
+      if (left) left.textContent = mmss(Math.max(0, b.mins * 60000 - el)) + " left";
+      tickBreathe();
+    }, 100);
+  }
+  function finishBreathe() {
+    var b = ui.br; ui.br = null; clearTimeout(brT);
+    var m = Math.max(1, Math.round((Date.now() - b.start) / 60000));
+    S.steps.push({ at: Date.now() }); S.breathLog.push({ at: Date.now(), mins: m }); if (S.breathLog.length > 500) S.breathLog.shift();
+    save(); chime("big"); announce("Done. " + m + (m === 1 ? " minute" : " minutes") + " of breathing.");
+    ui.brDone = m; render(false); afterProgress(true);
+  }
+  // Passages from the page you're reading: one tap saves, another tap removes. The page stays put.
+  function readPassages(d, n) {
+    var pages = docCache[d.id];
+    if (!pages) { idbGet("docs", d.id).then(function (x) { docCache[d.id] = x && Array.isArray(x.pages) ? x.pages : ["__missing__"]; var box = $("read-ps-slot"); if (box && ui.screen === "read") box.replaceChildren(readPassages(d, n) || h("span")); }).catch(function () {}); return null; }
+    if (pages[0] === "__missing__" || pages[0] === "__error__") return null;
+    var ps = passages(pages[n - 1] || ""); if (!ps.length) return null;
+    var open = !!ui.showPs;
+    var cardOf = function (t) { return S.cards.filter(function (c) { return c.docId === d.id && c.quote === t; })[0]; };
+    var paint = function (b, on) { b.classList.toggle("chosen", on); b.setAttribute("aria-pressed", on ? "true" : "false"); var l = b.querySelector(".plabel"); if (l) l.textContent = on ? "Saved to cards" : "Tap to save"; };
+    return h("section", { class: "group", id: "read-ps" },
+      h("button", { class: "btn disc", type: "button", id: "toggle-ps", "aria-expanded": open ? "true" : "false", "aria-controls": "read-ps-list", onclick: function () { ui.showPs = !open; var s = $("read-ps-slot"); if (s) s.replaceChildren(readPassages(d, n)); } },
+        h("span", { text: "Save passages from this page (" + ps.length + ")" }), icon(open ? "up" : "down")),
+      open ? h("div", { class: "group", id: "read-ps-list" }, ps.map(function (t, i) {
+        var on = !!cardOf(t);
+        return h("button", { type: "button", class: "passage sel" + (on ? " chosen" : ""), id: "rp-" + i, "aria-pressed": on ? "true" : "false", onclick: function (e) {
+          var b = e.currentTarget, c = cardOf(t);
+          if (c) { S.cards = S.cards.filter(function (x) { return x !== c; }); save(); paint(b, false); toast("Removed from cards."); return; }
+          var made = makeCards(d, [{ text: t, page: n }], S.lastLink || "urge"); save(); paint(b, true);
+          toast("Saved to cards ✓ It comes up when you tap I need you.", 5000, { label: "Undo", fn: function () { S.cards = S.cards.filter(function (x) { return made.indexOf(x.id) < 0; }); save(); paint(b, false); } });
+        } }, h("span", { class: "ptext", text: t }), h("span", { class: "pfoot" }, h("span", { class: "small plabel", text: on ? "Saved to cards" : "Tap to save" }), h("span", { class: "tick", "aria-hidden": "true" }, icon("check"))));
+      })) : null);
+  }
+  // Highlight words on the page itself, then tap "Save highlight".
+  var hlText = "";
+  function saveHighlight() {
+    var a = ui.arg || {}, d = S.docs.filter(function (x) { return x.id === a.id; })[0], t = hlText.replace(/\s+/g, " ").trim().slice(0, 600);
+    if (!d || t.length < 12) return;
+    var made = makeCards(d, [{ text: t, page: a.page || d.pos || 1 }], S.lastLink || "urge"); save();
+    try { window.getSelection().removeAllRanges(); } catch (e) {}
+    hlText = ""; $("hlbtn").hidden = true;
+    toast(made.length ? "Saved to cards ✓ It comes up when you tap I need you." : "That's already a card.", 5000, made.length ? { label: "Undo", fn: function () { S.cards = S.cards.filter(function (x) { return made.indexOf(x.id) < 0; }); save(); } } : null);
+  }
+  document.addEventListener("selectionchange", function () {
+    var btn = $("hlbtn"); if (!btn) return;
+    if (ui.screen !== "read") { btn.hidden = true; return; }
+    var s = window.getSelection(), pg = $("pdf-page"), txt = s ? s.toString().replace(/\s+/g, " ").trim() : "";
+    var inside = !!(s && s.rangeCount && pg && s.anchorNode && pg.contains(s.anchorNode));
+    if (inside && txt.length >= 12) { hlText = txt; btn.hidden = false; } else if (!inside || !txt) btn.hidden = true;
+  });
+
   var SCREENS = {
     a2hs: function () {
       return { title: "Add Ten Days to your Home Screen", body: [
@@ -3240,8 +3441,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       ] };
     },
     home: function () {
-      var now = new Date(), hr = now.getHours(), alertCard = null;
-      var greet = hr < 5 ? "Still up?" : hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
+      var now = new Date(), alertCard = null;
       if (S.lastSOS && S.lastSOS.status === "notsent" && !S.lastSOS.dismissed && Date.now() - S.lastSOS.at < 2 * 3600e3) {
         alertCard = h("div", { class: "card bad" }, h("p", { class: "status bad", text: "Not sent. Your last check-in didn't go out." }),
           h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "resend", onclick: function () { resend(); go("support"); } }, "Resend"), callLink(false)),
@@ -3253,53 +3453,88 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
           h("div", { class: "row" }, h("button", { class: "btn", type: "button", id: "finish-setup", onclick: function () { go(isStandalone() ? (S.topics.alert ? "ob-his" : "ob-topics") : "a2hs"); } }, "Finish setup"),
             h("button", { class: "btn link", type: "button", id: "setup-later", onclick: function () { notNow("setup"); } }, "Not today")));
       }
-      // the one box
+      // one box for everything: tasks, plans, thoughts, how you feel
       var qa = h("input", { type: "text", id: "qa", maxlength: "300", autocomplete: "off", autocapitalize: "sentences", enterkeyhint: "send", value: ui.askText != null ? ui.askText : S.askText,
-        placeholder: "What's happening?", "aria-label": "What's happening? Add a task, plan something, or ask for help", "aria-describedby": "qa-hint" });
+        placeholder: "Add anything…", "aria-label": "Add anything: a task, a plan, a thought, or how you feel", "aria-describedby": "qa-hint" });
       var keepT = 0;
       qa.addEventListener("input", function () { ui.askText = qa.value; clearTimeout(keepT); keepT = setTimeout(function () { S.askText = qa.value.slice(0, 300); save(); }, 400); });
-      var form = h("form", { class: "qa", id: "qa-form", role: "search", "aria-label": "Tell Ten Days", onsubmit: function (e) {
+      var form = h("form", { class: "qa", id: "qa-form", role: "search", "aria-label": "Add anything", onsubmit: function (e) {
         e.preventDefault();
         var r = submitAsk(qa.value);
         if (!r) return;
         ui.askText = ""; S.askText = ""; qa.value = ""; save();
         if (r === "nav") return;
         render(false);
-        var st = $("asst-state"); if (st && !$("aq-first")) { st.setAttribute("tabindex", "-1"); st.focus(); } else if ($("aq-first")) $("aq-first").focus();
+        var st = $("asst-state"); if (st && !$("aq-first")) { st.setAttribute("tabindex", "-1"); st.focus(); } else if ($("aq-first")) $("aq-first").focus(); else { var q = $("qa"); if (q) q.focus(); }
       } }, qa, h("button", { class: "mic" + (rec || sr ? " on" : ""), type: "button", id: "qa-mic", "aria-pressed": rec || sr ? "true" : "false", "aria-label": rec || sr ? "Stop recording" : "Record a voice note", onclick: micTap }, icon(rec || sr ? "stop" : "mic")),
-        h("button", { class: "add", type: "submit", id: "qa-add", "aria-label": "Send" }, icon("send")));
-      var showHint = !S.asst && S.tasks.length < 4;
-      // once a day, with AI on, the manager looks over the list by itself (it only proposes; you apply)
+        h("button", { class: "add", type: "submit", id: "qa-add", "aria-label": "Add" }, icon("send")));
+      // once a day the list is organized in the background
       if (S.ai.orgDay !== dayKey() && !orgBusy && S.tasks.filter(function (t) { return !t.private && !isDone(t); }).length >= 3) { S.ai.orgDay = dayKey(); setTimeout(function () { if (ui.screen === "home" && !(S.org && S.org.day === dayKey())) organize(true); }, 800); }
-      // next step
-      var ns = nextStep(), st0 = todayStats(now), left = st0.total - st0.done, stepNode;
-      if (ns.step === "clear") stepNode = h("p", { class: "clear", id: "next-step" }, icon("check"), left ? "Nothing due in the next 2 hours." : st0.total ? "You're clear. Everything on today's list is done." : "You're clear.");
-      else stepNode = stepCard(ns);
-      // progress strip
-      var p = st0.total ? st0.done / st0.total : 0, L = levelOf(xpTotal());
-      var strip = h("button", { class: "strip", type: "button", id: "strip", onclick: function () { go("progress"); }, "aria-label": (st0.total ? st0.done + " of " + st0.total + " done today" : "Nothing on today's list") + (S.fx.rpg ? ". Level " + L.level + ". Open Progress" : ". Open Progress") },
-        h("span", { class: "sbar", "aria-hidden": "true" }, h("i", { style: "width:" + Math.round(p * 100) + "%" })),
-        h("span", { class: "stxt", "aria-hidden": "true" }, h("b", { text: st0.total ? st0.done + " of " + st0.total + " done" : "Nothing on today's list" }), S.fx.rpg ? h("span", { text: "Lv " + L.level + " · " + rankOf(L.level) }) : null));
+      var ns = nextStep(), st0 = todayStats(now), p = st0.total ? st0.done / st0.total : 0, L = levelOf(xpTotal());
+      var tool = function (id, ic, label, fn) { return h("button", { class: "tool", type: "button", id: id, onclick: fn }, icon(ic), h("span", { text: label })); };
       var upOpen = !!ui.showUp;
-      return { title: greet, body: [
-        h("p", { class: "eyebrow", id: "today-date", text: now.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }) }),
+      return { title: "Today", body: [
+        h("button", { class: "topline", type: "button", id: "strip", onclick: function () { go("progress"); }, "aria-label": now.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }) + ". " + (st0.total ? st0.done + " of " + st0.total + " done today" : "Nothing on today's list") + (S.fx.rpg ? ". Level " + L.level : "") + ". Open Progress" },
+          h("span", { class: "ring", "aria-hidden": "true", style: "--p:" + p }), h("span", { class: "tl-date", "aria-hidden": "true", id: "today-date", text: now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }) }),
+          h("span", { class: "tl-stat", "aria-hidden": "true", text: (st0.total ? st0.done + " of " + st0.total + " done" : "A clear day") + (S.fx.rpg ? " · Lv " + L.level : "") })),
         S.lastReply && Date.now() - S.lastReply.at < 12 * 3600e3 ? h("p", { class: "pill", id: "status-line", text: statusLine() }) : null,
         form,
-        showHint ? h("p", { class: "small", id: "qa-hint", text: "Try “Study calculus for an hour tomorrow”, “I have an exam Friday, help me prepare” or “I'm overwhelmed”." }) : h("span", { id: "qa-hint", hidden: true, text: "Type a task, a plan, or how you feel." }),
+        !S.tasks.length && !S.asst ? h("p", { class: "small", id: "qa-hint", text: "Type or tap the mic and say it all: “Groceries after class, call Mom, gym at 6.” Ten Days sorts it." }) : h("span", { id: "qa-hint", hidden: true, text: "Tasks, plans, thoughts, or how you feel." }),
         recCard(),
         asstView(),
         alertCard,
-        stepNode,
-        orgCard(),
+        ns.step !== "clear" ? stepCard(ns) : null,
+        orgLine(),
         noticedCard(),
-        strip,
-        h("div", { class: "sect" }, h("h2", { text: "Today" }), h("div", { class: "row" },
-          h("button", { class: "btn link", type: "button", id: "org-go", disabled: orgBusy, onclick: function () { organize(false); } }, "Organize"),
-          h("button", { class: "btn link", type: "button", id: "all-tasks", onclick: function () { go("m-tasks"); } }, "All tasks"))),
+        h("div", { class: "sect" }, h("h2", { text: st0.total - st0.done > 3 ? "Top 3" : "Today" }), h("button", { class: "btn link", type: "button", id: "all-tasks", onclick: function () { go("m-tasks"); } }, "All tasks")),
         h("div", { class: "group", id: "task-area" }, todayView(now)),
+        h("div", { class: "tools", role: "group", "aria-label": "Tools" },
+          tool("t-breathe", "wind", "Breathe", function () { go("breathe"); }),
+          tool("t-focus", "timer", S.session ? "Focus · on" : "Focus", function () { go("focus"); }),
+          tool("t-notes", "note", "Notes", function () { go("notes"); })),
         h("button", { class: "btn disc", type: "button", id: "toggle-up", "aria-expanded": upOpen ? "true" : "false", "aria-controls": "up-area", onclick: function () { ui.showUp = !ui.showUp; render(false); } },
           h("span", { text: "Coming up" }), icon(upOpen ? "up" : "down")),
         upOpen ? h("div", { class: "group", id: "up-area" }, upcomingView(now)) : null
+      ] };
+    },
+    breathe: function () {
+      back("home");
+      var pat = brPattern(), b = ui.br, mins = ui.brMins || S.brMins || 3;
+      var orb = h("div", { class: "brorb", id: "br-orb", "data-phase": b ? pat[3][brPhase(pat, Date.now() - b.start).i][2] : "rest", "aria-hidden": "true" }, h("span", { id: "br-count", text: b ? "" : "" }));
+      if (b) { b.last = -1; setTimeout(tickBreathe, 0); }
+      var done = ui.brDone;
+      return { title: "Breathe", body: [
+        h("p", { class: "sub", text: b ? "Follow the circle. If your mind wanders, that's fine. Come back to the next breath." : "A few slow minutes. Pick a rhythm and start." }),
+        h("div", { class: "brstage" }, orb, h("p", { class: "brlabel", id: "br-label", "aria-live": "polite", text: b ? pat[3][brPhase(pat, Date.now() - b.start).i][0] : done ? "Done. " + done + (done === 1 ? " minute" : " minutes") + " of calm." : "Ready when you are" }),
+          h("p", { class: "small", id: "br-left", text: b ? mmss(mins * 60000) + " left" : "" })),
+        b ? null : h("div", { class: "group" },
+          h("p", { class: "lbl", id: "br-pat-l", text: "Rhythm" }),
+          h("div", { class: "brpats", role: "group", "aria-labelledby": "br-pat-l" }, BREATHS.map(function (x) {
+            return h("button", { class: "chip", type: "button", id: "br-" + x[0], "aria-pressed": pat[0] === x[0] ? "true" : "false", onclick: function () { ui.brPat = x[0]; S.brPat = x[0]; save(); render(false); } },
+              h("b", { text: x[1] }), h("span", { class: "small block", text: x[2] }));
+          })),
+          h("p", { class: "lbl", id: "br-min-l", text: "How long" }),
+          h("div", { class: "row", role: "group", "aria-labelledby": "br-min-l" }, [1, 3, 5, 10].map(function (m) {
+            return h("button", { class: "chip", type: "button", id: "br-m" + m, "aria-pressed": mins === m ? "true" : "false", onclick: function () { ui.brMins = m; S.brMins = m; save(); render(false); } }, m + " min");
+          }))),
+        h("div", { class: "group push" },
+          b ? h("button", { class: "btn", type: "button", id: "br-stop", onclick: function () { finishBreathe(); } }, "Stop")
+            : h("button", { class: "btn primary", type: "button", id: "br-start", onclick: function () { ui.brDone = 0; ui.br = { start: Date.now(), mins: mins, last: -1 }; render(false); } }, done ? "Again" : "Start"),
+          h("p", { class: "small", text: "If you feel dizzy, stop and breathe normally." }))
+      ] };
+    },
+    notes: function () {
+      back("home");
+      var ta = h("textarea", { id: "note-in", rows: "3", maxlength: "2000", placeholder: "A thought, an idea, how today felt…" });
+      return { title: "Notes", body: [
+        h("p", { class: "small", text: "Thoughts that aren't tasks. They stay on this phone. The box on Today sends things here when you start with “note:” or “thought:”." }),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "note-in", text: "New note" }), ta),
+        h("button", { class: "btn primary", type: "button", id: "note-add", onclick: function () { if (!ta.value.trim()) { toast("Write something first."); ta.focus(); return; } saveNote(ta.value); ta.value = ""; render(false); } }, "Save note"),
+        S.notes.length ? h("div", { class: "group", id: "note-list" }, S.notes.map(function (n) {
+          return h("div", { class: "card note" }, h("p", { class: "small", text: fmtDate(n.at) + ", " + fmtTime(n.at) }), h("p", { class: "ntext", text: n.text }),
+            h("div", { class: "row links" }, h("button", { class: "btn link", type: "button", "data-note-task": n.id, onclick: function () { var r = submitAsk(n.text); if (r) go("home"); } }, "Make it a task"),
+              h("button", { class: "btn link", type: "button", "data-note-del": n.id, onclick: function () { var i = S.notes.indexOf(n); S.notes = S.notes.filter(function (x) { return x !== n; }); save(); toast("Deleted.", 6000, { label: "Undo", fn: function () { S.notes.splice(i, 0, n); save(); render(false); } }); render(false); } }, "Delete")));
+        })) : h("p", { class: "empty", id: "notes-empty", text: "No notes yet." })
       ] };
     },
     progress: function () {
@@ -3376,6 +3611,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         sect("y-s3", "Tasks", [
           item("y-tasks", "list", "All tasks", S.tasks.length + (S.tasks.length === 1 ? " task" : " tasks"), "m-tasks"),
           item("y-goals", "flag", "Goals and starter tasks", S.goals.map(function (g) { return (GOALS.filter(function (x) { return x[0] === g; })[0] || [])[1]; }).filter(Boolean).join(", ") || "None", "m-goals"),
+          item("y-notes", "note", "Notes", S.notes.length ? S.notes.length + (S.notes.length === 1 ? " note" : " notes") : "Thoughts that aren't tasks", "notes"),
           item("y-contacts", "people", "Contacts", S.contacts.length ? S.contacts.length + " saved" : "Import or type them in", "contacts")]),
         sect("y-s4", "App", [
           item("y-mem", "brain", "What Ten Days remembers", S.memory.length ? S.memory.length + (S.memory.length === 1 ? " thing" : " things") : "Nothing yet", "memory"),
@@ -3396,7 +3632,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         var ph = (Date.now() - sup.since) % 10000;
         var fill = h("div", { class: "fill" });
         stay = h("div", { class: "card stay", id: "stay" },
-          h("p", { class: "small", text: "Breathe in for 4, out for 6. Follow the circle or just read along." }),
+          h("p", { class: "small" }, "Breathe in for 4, out for 6. Follow the circle or just read along. ", h("button", { class: "btn link inl", type: "button", id: "sup-breathe", onclick: function () { go("breathe"); } }, "More rhythms")),
           h("div", { class: "breath cycle", "aria-hidden": "true", style: "--bdelay:-" + ph + "ms" }, fill, h("span", { class: "cue", id: "cue", text: ph < 4000 ? "In" : "Out" })),
           h("p", { class: "small", id: "stay-time", "aria-hidden": "true", text: "You've stayed " + mmss(Date.now() - sup.since) }),
           sup.g < 0 ? h("button", { class: "btn", type: "button", id: "ground-start", onclick: function () { sup.g = 0; render(false); var f = $("ground-next"); if (f) f.focus(); } }, "Try 5-4-3-2-1 grounding")
@@ -3409,7 +3645,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         return h("button", { class: "btn opt", type: "button", id: "opt-" + i, onclick: function () { if (o[1]) { S.steps.push({ at: Date.now() }); save(); o[1](); } else didStep(o[0]); } }, o[0]);
       }));
       else stepNode = h("div", { class: "card onestep", id: "one-step" },
-        h("p", { class: "lbl", text: "One thing you can do now" }), h("p", { class: "status", id: "step-text", text: S.profile.step || defaultStep() }),
+        h("p", { class: "lbl", text: "One thing you can do now" }), h("p", { class: "status", id: "step-text", text: (S.profile.when ? "When " + S.profile.when.replace(/^when\s+/i, "") + ": " : "") + (S.profile.step || defaultStep()) }),
         sup.stepDone ? h("p", { class: "status ok", id: "step-done", text: "Done. That's a real step." }) : h("button", { class: "btn primary", type: "button", id: "did-step", onclick: function () { didStep(); } }, "I did it"));
       var choice = function (id, label, on, fn) { return h("button", { class: "chip", type: "button", id: id, "aria-pressed": on ? "true" : "false", onclick: fn }, label); };
       return { title: "I'm here.", body: [
@@ -3444,6 +3680,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       var habit = h("input", { type: "text", id: "me-habit", value: P.habit, maxlength: "60", autocomplete: "off", placeholder: "Like “late-night scrolling”" });
       var reasons = h("textarea", { id: "me-reasons", rows: "3", value: P.reasons.join("\n"), placeholder: "One per line" });
       var step = h("input", { type: "text", id: "me-step", value: P.step, maxlength: "120", autocomplete: "off", placeholder: STEPS[sel0.habitKey] || STEPS.other });
+      var when = h("input", { type: "text", id: "me-when", value: P.when, maxlength: "80", autocomplete: "off", placeholder: "Like “late at night in bed”" });
       var chipRow = function (opts, key, id) {
         return h("div", { class: "row", id: id, role: "group" }, opts.map(function (o) {
           return h("button", { class: "chip", type: "button", "data-v": o[0], "aria-pressed": sel0[key] === o[0] ? "true" : "false", onclick: function () { sel0[key] = sel0[key] === o[0] && key === "habitKey" ? "" : o[0]; render(false); } }, o[1]);
@@ -3457,12 +3694,14 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
         h("div", { class: "field" }, h("label", { class: "lbl", for: "me-reasons", text: "Why it matters to you" }), reasons),
         h("p", { class: "lbl", text: "How should I talk to you?" }), chipRow([["gentle", "Gentle"], ["direct", "Direct"], ["practical", "Practical"]], "style", "me-style"),
         h("p", { class: "small", id: "me-example", text: "Example: “" + ex + "”" }),
-        h("div", { class: "field" }, h("label", { class: "lbl", for: "me-step", text: "Your go-to step when an urge hits" }), step),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "me-when", text: "When does it usually hit? (optional)" }), when),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "me-step", text: "Then I will… (your go-to step)" }), step),
+        h("p", { class: "small", text: "A plan like “When it's late at night, then I put my phone in the kitchen” is easier to follow in the moment than a general intention." }),
         h("div", { class: "group push" },
           h("button", { class: "btn primary", type: "button", id: "me-save", onclick: function () {
             P.habitKey = sel0.habitKey || ""; P.style = sel0.style || "gentle"; P.habit = habit.value.trim().slice(0, 60);
             P.reasons = reasons.value.split("\n").map(function (x) { return x.trim().slice(0, 140); }).filter(Boolean).slice(0, 5);
-            P.step = step.value.trim().slice(0, 120);
+            P.step = step.value.trim().slice(0, 120); P.when = when.value.trim().slice(0, 80);
             if (save()) { toast("Saved."); ui.meSel = null; go("you"); }
           } }, "Save"), back("you"))
       ] };
@@ -3575,9 +3814,11 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
           h("button", { class: "btn", type: "button", id: "rd-prev", disabled: n <= 1, onclick: function () { goPage(n - 1); } }, "Previous"),
           h("p", { class: "lbl", text: n + " / " + d.pages }),
           n < d.pages ? h("button", { class: "btn primary", type: "button", id: "rd-next", onclick: function () { goPage(n + 1, true); } }, "Next") : h("button", { class: "btn", type: "button", id: "rd-end", onclick: function () { markRead(d, n); toast("That's the last page."); render(false); } }, "Last page")),
+        h("div", { id: "read-ps-slot" }, readPassages(d, n)),
         h("div", { class: "row" },
           h("button", { class: "btn", type: "button", id: "rd-zoom", "aria-pressed": (ui.zoom || 1) > 1 ? "true" : "false", onclick: function () { ui.zoom = (ui.zoom || 1) > 1 ? 1 : 1.7; render(false); } }, (ui.zoom || 1) > 1 ? "Fit width" : "Zoom in"),
-          h("button", { class: "btn", type: "button", id: "rd-passages", onclick: function () { go("doc", { id: d.id, page: n }); } }, "Pick passages")),
+          h("button", { class: "btn", type: "button", id: "rd-passages", onclick: function () { go("doc", { id: d.id, page: n }); } }, "All passages")),
+        h("p", { class: "small", text: "Tip: press and hold words on the page to highlight them, then tap Save highlight." }),
         h("div", { class: "small", id: "read-note", hidden: true }, file, h("button", { class: "btn", type: "button", id: "read-attach", onclick: function () { file.click(); } }, "Add the PDF again"))
       ] };
     },
@@ -4340,8 +4581,8 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
   SCREENS.breath = SCREENS.support;   // older saved state
   SCREENS["m-free"] = SCREENS.progress;
   SCREENS.more = SCREENS.you;
-  var TAB_OF = { home: "home", "m-tasks": "home", task: "home", "task-edit": "home", focus: "home", progress: "progress", "m-log": "progress" };
-  var MODE_OF = { focus: "focus", support: "support", line: "support", progress: "grow" };
+  var TAB_OF = { home: "home", breathe: "home", notes: "home", "m-tasks": "home", task: "home", "task-edit": "home", focus: "home", progress: "progress", "m-log": "progress" };
+  var MODE_OF = { focus: "focus", breathe: "support", support: "support", line: "support", progress: "grow" };
   function updateChrome() {
     document.body.setAttribute("data-mode", MODE_OF[ui.screen] || "plan");
     var tab = TAB_OF[ui.screen] || (ui.screen === "support" || ui.screen === "line" ? "" : "you"), tabs = $("tabs");
@@ -4422,6 +4663,9 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
     $("tabs").appendChild(h("button", { class: "tab", type: "button", id: "nav-" + t[0], "data-tab": t[0], onclick: function () { if (ui.screen === t[0]) window.scrollTo(0, 0); else go(t[0]); } }, icon(t[1]), h("span", { text: t[2] })));
   });
   applyMotion();
+  // pressing the button would clear the highlight on a phone, so it saves on press-down; click covers keyboards
+  $("hlbtn").addEventListener("pointerdown", function (e) { e.preventDefault(); saveHighlight(); });
+  $("hlbtn").addEventListener("click", saveHighlight);
   $("sos").addEventListener("click", onSOS);
   $("cd-cancel").addEventListener("click", cancelSOS);
   function measureBar() { document.documentElement.style.setProperty("--bar", $("sosbar").offsetHeight + "px"); }
@@ -4445,6 +4689,7 @@ details.card > summary { min-height: 44px; display: flex; align-items: center; c
       return go("ob-topics");
     }
     if (addStarters()) save();
+    S.tasks.forEach(function (t) { t.pending = false; });   // a sort that was cut off by closing the app
     if (!S.milesInit) { afterProgress(true); S.milesInit = true; save(); }   // what you'd already done counts, without a burst of banners
     if (S.breathEnd > Date.now()) { ui.sup = { mode: "stay", since: Date.now(), g: -1 }; return go("support"); }
     go("home");
