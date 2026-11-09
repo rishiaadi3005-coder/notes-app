@@ -1,11 +1,11 @@
-# Ten Days Moments server
+# Ten Days server
 
 A small Cloudflare Worker that stores the photos, reactions, replies and ten-day chapters
 you share with your circle (you and your brother, later a few friends).
 
 - **Photos** go to R2 (Cloudflare's file storage). **Everything else** goes to D1 (Cloudflare's database).
 - **Access:** every member has their own secret key. The server keeps only a SHA-256 hash of it.
-- **Joining:** someone new joins with an invite code. Each code works once and expires after 7 days.
+- **Joining:** someone new joins with a 6-character code (no O/0 or I/1). Each code works once, expires after 15 minutes, and guessing is rate-limited.
 - **History:** a new member sees moments from the 10 days before they joined onward, never older ones.
 - **Deleting:** only the person who posted a moment can delete it. Deleting removes the photo from storage.
 - **Leaving:** leaving a circle can also delete everything you shared.
@@ -14,47 +14,9 @@ you share with your circle (you and your brother, later a few friends).
 Your private reminder photos in Ten Days are never sent here.
 Tasks, check-ins, "I need you" alerts, urges and notes never reach this server either.
 
-## Deploy (about 10 minutes, once)
+## Deploy
 
-You need a free Cloudflare account and Node.js on a computer.
-
-> **Before you start:** R2 has a free tier, but Cloudflare may ask you to add a payment method before you can turn it on.
-
-1. Open a terminal in this `worker` folder and sign in:
-   ```bash
-   npx wrangler login
-   ```
-2. Create the database:
-   ```bash
-   npx wrangler d1 create ten-days-moments
-   ```
-   The command prints a `database_id`. Paste it into `wrangler.toml` in place of `PASTE-THE-ID-FROM-wrangler-d1-create`.
-3. Create the tables:
-   ```bash
-   npx wrangler d1 execute ten-days-moments --remote --file=schema.sql
-   ```
-4. Create the photo bucket:
-   ```bash
-   npx wrangler r2 bucket create ten-days-moments-photos
-   ```
-5. In `wrangler.toml`, set `ALLOWED_ORIGINS` to the address you open Ten Days from.
-   It's already set to `https://rishiaadi3005-coder.github.io`. Then deploy:
-   ```bash
-   npx wrangler deploy
-   ```
-   The command prints an address like `https://ten-days-moments.<your-name>.workers.dev`.
-
-## Connect the app
-
-1. In Ten Days, open **You → You and Audi → Moments**.
-2. Paste the server address and tap **Start our circle**.
-3. Tap **Invite someone** and send the link.
-
-On iPhone, links open in Safari, not in the Ten Days icon on the Home Screen, so the person you invite should:
-
-1. Copy the link.
-2. Open Ten Days from the Home Screen.
-3. Paste the link in **You → Moments**.
+See the deployment checklist in the top-level `README.md`. The same Worker serves the app and this server, with a cron every minute for "I need you" alerts and reminders.
 
 ## API (v1)
 
@@ -63,9 +25,22 @@ Every call except creating and joining a circle needs `Authorization: Bearer <me
 | Method | Path | What it does |
 |---|---|---|
 | POST | `/v1/circles` | `{memberName}` → start a circle; returns your key |
-| POST | `/v1/join` | `{code, name}` → join with an invite; returns your key |
+| POST | `/v1/join` | `{code, name}` → join with a 6-character code (15 minutes, once); returns your key |
+| GET | `/v1/push/key` | the public VAPID key |
+| POST / DELETE | `/v1/push/subscribe` | register or remove this phone for push |
+| PUT | `/v1/push/schedule` | `{items:[{key, at, title, body, kind, url}]}`: reminders for the next week |
+| POST | `/v1/push/test` | a test notification to your phones |
+| POST | `/v1/alerts` | `{wait, title, body, call, ntfy}`: "I need you", fired by the cron after the wait |
+| GET / DELETE | `/v1/alerts/:id` | its state / cancel it |
+| POST | `/v1/alerts/:id/fire` | `{ntfyDone}`: send now |
+| POST | `/v1/signal` | `{kind: notgreat \| message, text}` |
+| PUT | `/v1/word` | `{word, day}` |
+| PUT | `/v1/capsules/:period` | a time capsule, first three days of a run |
+| POST / DELETE | `/v1/breathe` | breathe together (shared start time) |
+| POST | `/v1/challenges`, `/v1/challenges/:id/progress` | a challenge and your count |
+| POST / GET | `/v1/transfer`, `/v1/transfer/:id` | the encrypted move bundle (24 hours, one download) |
 | GET | `/v1/circle` | members |
-| POST | `/v1/invites` | new single-use invite code (7 days) |
+| POST | `/v1/invites` | a new 6-character join code |
 | GET | `/v1/sync?since=ms` | moments (with reactions and replies), chapters and members changed since a time |
 | POST | `/v1/moments` | body = photo bytes; headers `x-moment-id`, `x-caption` (URI-encoded), `x-for-story` |
 | GET | `/v1/moments/:id/photo` | the photo |

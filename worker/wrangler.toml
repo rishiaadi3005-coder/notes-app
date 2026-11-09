@@ -1,17 +1,30 @@
-# Ten Days Moments server. See README.md for the five deploy steps.
-name = "ten-days-moments"
+# Ten Days: the app and its server, one Worker. See README.md for the deploy steps.
+name = "ten-days"
 main = "src/index.js"
-compatibility_date = "2024-11-01"
+compatibility_date = "2025-01-01"
+
+# The app's files (index.html, sw.js, icons) are served from the repository root.
+# .assetsignore there keeps tests, the worker source and git out of it.
+[assets]
+directory = "../"
+binding = "ASSETS"
+
+# Every minute: fire "I need you" alerts whose wait ran out, and send due reminders.
+[triggers]
+crons = ["* * * * *"]
 
 [vars]
-# Your Ten Days address, so only the app can call this server from a browser. Comma-separate several.
-ALLOWED_ORIGINS = "https://rishiaadi3005-coder.github.io"
+# The app is served from this same Worker, so "*" only matters for old copies (like GitHub Pages).
+ALLOWED_ORIGINS = "*"
+VAPID_SUBJECT = "mailto:rishiaadi3005@gmail.com"
+# VAPID_PUBLIC goes here after running: node vapid.mjs  (the private key is a secret, never in this file)
+VAPID_PUBLIC = ""
 
 [[d1_databases]]
 binding = "DB"
-database_name = "ten-days-moments"
+database_name = "ten-days"
 database_id = "PASTE-THE-ID-FROM-wrangler-d1-create"
 
 [[r2_buckets]]
 binding = "PHOTOS"
-bucket_name = "ten-days-moments-photos"
+bucket_name = "ten-days-photos"

@@ -7,9 +7,10 @@ const path = require("path"), fs = require("fs"), http = require("http");
 const ROOT = path.resolve(__dirname, ".."), FIX = path.join(__dirname, "fixtures");
 const PDFJS = path.join(path.dirname(require.resolve("pdfjs-dist/package.json")), "build") + "/";
 const AXE = fs.readFileSync(require.resolve("axe-core/axe.min.js"), "utf8");
-const TYPES = { ".html": "text/html", ".webmanifest": "application/manifest+json", ".png": "image/png" };
+const TYPES = { ".html": "text/html", ".webmanifest": "application/manifest+json", ".png": "image/png", ".js": "text/javascript" };
 const server = http.createServer((req, res) => {
-  const f = path.join(ROOT, decodeURIComponent(req.url.split("?")[0]));
+  if (req.url.startsWith("/v1")) { res.writeHead(200, { "content-type": "application/json" }); return res.end("{}"); }   // not a Ten Days server: the app stays local
+  const f = path.join(ROOT, decodeURIComponent(req.url.split("?")[0]).replace(/\/$/, "/index.html"));
   if (!f.startsWith(ROOT) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); }
   res.writeHead(200, { "content-type": TYPES[path.extname(f)] || "application/octet-stream" }); fs.createReadStream(f).pipe(res);
 });
@@ -34,15 +35,16 @@ async function boot(browser, opts) {
   const errors = [], posts = [];
   page.on("pageerror", e => errors.push(String(e)));
   page.on("console", m => { if (m.type() === "error" && !/ERR_FAILED|net::|status of 500/.test(m.text())) errors.push(m.text()); });
-  await page.route("https://ntfy.sh/**", r => { const u = r.request().url(); if (r.request().method() === "POST") posts.push({ url: u, body: r.request().postData() }); r.fulfill({ status: 200, body: u.includes("/json") ? "" : "{}" }); });
-  await page.route("https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/*", r => {
+  await ctx.route("https://ntfy.sh/**", r => { const u = r.request().url(); if (r.request().method() === "POST") posts.push({ url: u, body: r.request().postData() }); r.fulfill({ status: 200, body: u.includes("/json") ? "" : "{}" }); });
+  await ctx.route("https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/*", r => {
     if (opts.offlineReader) return r.abort();
     const f = r.request().url().split("/").pop();
     r.fulfill({ status: 200, contentType: "application/javascript", headers: { "access-control-allow-origin": "*" }, body: fs.readFileSync(PDFJS + f) });
   });
   if (opts.seed !== null) await page.addInitScript(s => { if (!sessionStorage.getItem("seeded")) { sessionStorage.setItem("seeded", "1"); localStorage.setItem("tendays.v1", s); } }, JSON.stringify(opts.seed || SEED));
   if (opts.at) await page.clock.setSystemTime(opts.at);
-  if (opts.route) await page.route(opts.route[0], opts.route[1]);
+  if (opts.route) await ctx.route(opts.route[0], opts.route[1]);
+  if (opts.init) await page.addInitScript(opts.init[0], opts.init[1]);
   await page.goto(APP + (opts.hash || ""));
   await page.waitForSelector("#screen h1");
   return { ctx, page, errors, posts };
@@ -1079,7 +1081,7 @@ async function axe(page, name) {
       const srvCalls = [];
       const viaWorker = async route => {
         const rq = route.request(), all = await rq.allHeaders(), headers = {};
-        for (const k of Object.keys(all)) if (/^(authorization|content-type|origin|x-moment-id|x-caption|x-for-story|access-control-request-.*)$/.test(k)) headers[k] = all[k];
+        for (const k of Object.keys(all)) if (/^(authorization|content-type|origin|x-moment-id|x-caption|x-for-story|x-move-id|cf-connecting-ip|access-control-request-.*)$/.test(k)) headers[k] = all[k];
         const init = { method: rq.method(), headers };
         if (!["GET", "HEAD", "OPTIONS"].includes(rq.method())) { const b = rq.postDataBuffer(); if (b) init.body = b; }
         srvCalls.push(rq.method() + " " + new URL(rq.url()).pathname);
@@ -1089,20 +1091,21 @@ async function axe(page, name) {
       };
       // Rishi starts the circle
       const seedR = JSON.parse(JSON.stringify(SEED)); seed_name(seedR, "Rishi");
-      const R = await boot(browser, { seed: seedR });
-      await R.page.route("https://moments.test/**", viaWorker);
+      const MO = new URL(APP).origin + "/v1**";   // the app and its server at one address, like the deployed Worker
+      const R = await boot(browser, { seed: seedR, route: [MO, viaWorker] });
+      await R.page.waitForTimeout(300);
       await R.page.click("#nav-you"); await R.page.click("#y-people");
-      ok(await R.page.isVisible("#mo-setup"), "Moments: set up from You and Audi");
-      await R.page.fill("#mo-srv", "ftp://nope"); await R.page.click("#mo-start");
-      ok((await R.page.textContent("#toast")).includes("https://"), "only an https server address");
-      await R.page.fill("#mo-srv", "https://moments.test"); await R.page.click("#mo-start");
-      await R.page.waitForSelector("#mo-sum");
+      ok(await R.page.isVisible("#mo-setup") && !(await R.page.isVisible("#mo-srv")), "Moments: set up from You and Audi, no server address to type");
+      await R.page.click("#mo-start");
+      await R.page.waitForSelector("#mo-code-show");
       let s = await S(R.page);
       const tokR = await R.page.evaluate(() => localStorage.getItem("tendays.motoken"));
       ok(s.mo.circle && s.mo.me.name === "Rishi" && tokR && !JSON.stringify(s).includes(tokR), "circle started; the key is kept out of app data and backups");
-      await R.page.click("#mo-invite"); await R.page.waitForSelector("#mo-invite-link");
-      const invite = await R.page.textContent("#mo-invite-link");
-      ok(/#moments=1&srv=https%3A%2F%2Fmoments\.test&code=[a-z0-9]+&from=Rishi$/.test(invite), "invite link made");
+      const code = (await R.page.textContent("#mo-code-show")).replace(/\s/g, "");
+      ok(/^[A-HJ-NP-Z2-9]{6}$/.test(code), "a big 6-character code: " + code);
+      await R.page.waitForSelector("#mo-qr svg");
+      ok(await R.page.isVisible("#mo-qr svg") && (await R.page.textContent("#mo-code-left")).includes("15 more minutes"), "with a QR code, one use, 15 minutes");
+      ok(!(await R.page.isVisible("#mo-invite-link")), "the link is only a hidden fallback");
       // Rishi posts a photo
       const [fc] = await Promise.all([R.page.waitForEvent("filechooser"), R.page.click("#mo-add")]);
       await fc.setFiles(FIX + "/scan.png");
@@ -1114,12 +1117,29 @@ async function axe(page, name) {
       ok(R.posts.some(p => p.url.includes(SEED.topics.alert) && p.body.includes("Shared a moment: Leg day")), "a nudge goes to his phone");
       // Audi joins from the link and sees it
       const seedA = JSON.parse(JSON.stringify(SEED)); seed_name(seedA, ""); seedA.topics = { alert: "td-audialertchan01", replies: "tp-audireplies0001" };
-      const A = await boot(browser, { seed: seedA, hash: invite.slice(invite.indexOf("#")), route: ["https://moments.test/**", viaWorker] });
-      ok(await A.page.isVisible("#mo-offer") && (await A.page.textContent("#mo-offer-q")).includes("Rishi"), "the link asks Audi to join Rishi's moments");
-      await A.page.fill("#mo-join-name", "Audi"); await A.page.click("#mo-join-yes");
+      const A = await boot(browser, { seed: seedA, route: [MO, viaWorker] });
+      await A.page.waitForTimeout(300);
+      await A.page.click("#nav-you"); await A.page.click("#y-people");
+      await A.page.fill("#mo-myname", "Audi");
+      await A.page.fill("#mo-code", "ABCDEF"); await A.page.click("#mo-code-go"); await A.page.waitForTimeout(300);
+      ok((await A.page.textContent("#toast")).includes("didn't work") && !(await S(A.page)).mo.circle, "a mistyped code: a clear no");
+      await A.page.fill("#mo-code", "OI0123"); await A.page.click("#mo-code-go");
+      ok((await A.page.textContent("#toast")).includes("no O, 0, I or 1"), "letters that look alike are caught before sending");
+      await A.page.fill("#mo-code", code.slice(0, 3).toLowerCase() + " " + code.slice(3)); await A.page.click("#mo-code-go");
       await A.page.waitForSelector("#mo-sum");
       s = await S(A.page);
-      ok(s.moments.length === 1 && s.moments[0].caption === "Leg day" && s.mo.members.length === 2, "Audi is in and has the moment");
+      ok(s.moments.length === 1 && s.moments[0].caption === "Leg day" && s.mo.members.length === 2, "Audi typed the code and he's in, with the moment");
+      const seedX = JSON.parse(JSON.stringify(SEED)); seed_name(seedX, "Late");
+      const X = await boot(browser, { seed: seedX, route: [MO, viaWorker] }); await X.page.waitForTimeout(300);
+      await X.page.click("#nav-you"); await X.page.click("#y-people"); await X.page.fill("#mo-code", code); await X.page.click("#mo-code-go"); await X.page.waitForTimeout(300);
+      ok(!(await S(X.page)).mo.circle, "a used code doesn't work twice");
+      await R.page.click("#nav-you"); await R.page.click("#y-people");
+      await R.page.click("#mo-newcode"); await R.page.waitForFunction(c => document.getElementById("mo-code-show").textContent.replace(/\s/g, "") !== c, code);
+      const code2 = (await R.page.textContent("#mo-code-show")).replace(/\s/g, "");
+      menv.DB._db.prepare("UPDATE invites SET expires = ? WHERE used_by IS NULL").run(Date.now() - 1);
+      await X.page.fill("#mo-code", code2); await X.page.click("#mo-code-go"); await X.page.waitForTimeout(300);
+      ok(!(await S(X.page)).mo.circle && (await X.page.textContent("#toast")).includes("15 minutes"), "an expired code (15 minutes): no, and it says why it might be");
+      await X.ctx.close();
       await A.page.click("#nav-home");
       ok((await A.page.textContent("#mo-today-cap")) === "Leg day" && (await A.page.textContent("#mo-today .mometa")).includes("Rishi"), "Today: the latest moment, who and when");
       await A.page.waitForSelector("#mo-today .mophoto img");
@@ -1171,14 +1191,29 @@ async function axe(page, name) {
       await A.page.evaluate(() => window.__td.moSync());
       s = await S(A.page);
       ok(s.chapters.length === 1 && s.chapters[0].title === "Leg day week", "Audi gets the chapter");
+      // the narrated chapter: the real photo, the chapter's words, play/pause, skip, scrubber, a video file
+      await R.page.click("#ch-play"); await R.page.waitForSelector("#sl-cap");
+      ok((await R.page.textContent("#sl-cap")) === "Leg day week" && await R.page.isVisible("#sl-ai"), "the slideshow opens on the title; AI's part is labeled");
+      await R.page.evaluate(() => window.__td.slideMs(200)); if (await R.page.$("#sl-voice")) await R.page.uncheck("#sl-voice");
+      await R.page.click("#sl-play");
+      await R.page.waitForFunction(() => document.getElementById("sl-n").textContent.startsWith("2 of"), null, { timeout: 6000 });
+      ok((await R.page.textContent("#sl-cap")).includes("Leg day") && await R.page.isVisible("#sl-stage .mophoto"), "then the real photo with the chapter's own words, in order");
+      await R.page.waitForFunction(() => document.getElementById("sl-play").textContent === "Play", null, { timeout: 6000 });
+      ok(true, "it stops at the end");
+      await R.page.evaluate(() => { const r = document.getElementById("sl-scrub"); r.value = "0"; r.dispatchEvent(new Event("input", { bubbles: true })); });
+      ok((await R.page.textContent("#sl-n")).startsWith("1 of"), "the scrubber jumps");
+      await R.page.click("#sl-next"); ok((await R.page.textContent("#sl-n")).startsWith("2 of"), "skip");
+      await R.page.click("#sl-export"); await R.page.waitForSelector("#sl-download", { timeout: 20000 });
+      ok(/^blob:/.test(await R.page.getAttribute("#sl-download", "href")) && (await R.page.textContent("#screen")).includes("no voice"), "saved as a video file, honestly silent");
+      await R.page.click("#back"); await R.page.click("[id^='ch-open-']");
       // a friend joins by pasting the link inside the app (iPhone opens links in Safari, so pasting is the real path)
-      await R.page.click("#back"); await R.page.click("#back"); await R.page.click("#mo-invite"); await R.page.waitForSelector("#mo-invite-link");
-      const inv2 = await R.page.textContent("#mo-invite-link");
+      await R.page.click("#back"); await R.page.click("#back"); await R.page.click((await R.page.$("#mo-newcode")) ? "#mo-newcode" : "#mo-invite"); await R.page.waitForSelector("#mo-link-fallback");
+      await R.page.click("#mo-link-fallback summary"); const inv2 = await R.page.textContent("#mo-invite-link");
       const seedF = JSON.parse(JSON.stringify(SEED)); seed_name(seedF, "Sam");
-      const F = await boot(browser, { seed: seedF, route: ["https://moments.test/**", viaWorker] });
-      await F.page.click("#nav-you"); await F.page.click("#y-people"); await F.page.fill("#mo-link", inv2); await F.page.click("#mo-link-go");
+      const F = await boot(browser, { seed: seedF, route: [MO, viaWorker] }); await F.page.waitForTimeout(300);
+      await F.page.click("#nav-you"); await F.page.click("#y-people"); await F.page.click("#mo-adv-srv summary"); await F.page.fill("#mo-link", inv2); await F.page.click("#mo-link-go");
       await F.page.click("#mo-join-yes"); await F.page.waitForSelector("#mo-sum");
-      ok((await S(F.page)).mo.members.filter(m => !m.left).length === 3, "a third person joins by pasting the link: ready for a small group");
+      ok((await S(F.page)).mo.members.filter(m => !m.left).length === 3, "the hidden fallback: a third person joins by pasting the link");
       await F.ctx.close();
       await R.page.click("#mo-open"); await R.page.click("[id^='ch-open-']");
       // Rishi deletes his moment: gone for Audi too
@@ -1187,16 +1222,17 @@ async function axe(page, name) {
       await A.page.evaluate(() => window.__td.moSync());
       ok(!(await S(A.page)).moments.length, "deleted for everyone");
       // offline post stays "not shared yet" and retries
-      await R.page.unroute("https://moments.test/**"); await R.page.route("https://moments.test/**", r => r.abort("failed"));
+      await R.page.unroute(MO); await R.page.route(MO, r => r.abort("failed"));
       const [fc2] = await Promise.all([R.page.waitForEvent("filechooser"), R.page.click("#mo-add")]);
       await fc2.setFiles(FIX + "/scan.png"); await R.page.waitForSelector("#mo-cap"); await R.page.click("#mo-post");
       await R.page.waitForFunction(() => document.querySelector("[id^='mo-pend-']"));
       ok((await R.page.textContent("[id^='mo-pend-']")).includes("Not shared yet"), "no connection: honest “not shared yet”");
-      await R.page.unroute("https://moments.test/**"); await R.page.route("https://moments.test/**", viaWorker);
+      await R.page.unroute(MO); await R.page.route(MO, viaWorker);
       await R.page.click("[id^='mo-retry-']"); await R.page.waitForTimeout(500);
       ok(!(await S(R.page)).moments.some(m => m.pending), "Retry shares it");
       await axe(R.page, "moments");
-      ok(!R.errors.length && !A.errors.length, "moments: no errors " + R.errors.concat(A.errors).join(" | "));
+      const realErr = R.errors.concat(A.errors).filter(e => !/status of 403/.test(e));   // the wrong codes typed on purpose above
+      ok(!realErr.length, "moments: no errors " + realErr.join(" | "));
       await R.ctx.close(); await A.ctx.close();
     }
     // ---------- v10: one-scroll reader, AI cards, a shelf, check-ins by time of day, a brother who notices ----------
@@ -1339,6 +1375,157 @@ async function axe(page, name) {
       const r = await boot(browser, { reducedMotion: "reduce" });
       ok(await r.page.evaluate(() => getComputedStyle(document.body, "::before").animationName) === "none", "reduced motion: the aurora holds still");
       await r.ctx.close();
+    }
+    // ---------- final round: a real app, push, server-side I need you, moving in, the slideshow, the extras ----------
+    console.log("final");
+    {
+      const kit = require("./pushkit"), { makeEnv } = require("./cfshim");
+      const W = await import(path.join(__dirname, "../worker/src/index.js")), worker = W.default;
+      const keys = await kit.vapidKeys();
+      const menv = makeEnv(fs.readFileSync(path.join(__dirname, "../worker/schema.sql"), "utf8"), { ALLOWED_ORIGINS: "*", VAPID_PUBLIC: keys.VAPID_PUBLIC, VAPID_PRIVATE_JWK: keys.VAPID_PRIVATE_JWK, VAPID_SUBJECT: "mailto:t@example.com" });
+      const out = [], realFetch = globalThis.fetch;
+      globalThis.fetch = async (u, init) => { const s = String(u); if (/^https:\/\/(push\.test|ntfy\.sh)\//.test(s)) { out.push({ url: s, init, body: init && init.body }); return new Response(null, { status: 201 }); } return realFetch(u, init); };
+      const viaWorker = async route => {
+        const rq = route.request(), all = await rq.allHeaders(), headers = {};
+        for (const k of Object.keys(all)) if (/^(authorization|content-type|x-moment-id|x-caption|x-for-story|x-move-id)$/.test(k)) headers[k] = all[k];
+        const init = { method: rq.method(), headers };
+        if (!["GET", "HEAD", "OPTIONS"].includes(rq.method())) { const b = rq.postDataBuffer(); if (b) init.body = b; }
+        const res = await worker.fetch(new Request(rq.url(), init), menv);
+        const h = {}; res.headers.forEach((v, k) => { h[k] = v; });
+        await route.fulfill({ status: res.status, headers: h, body: Buffer.from(await res.arrayBuffer()) });
+      };
+      const MO = new URL(APP).origin + "/v1**";
+      const pushStub = sub => {
+        try { Object.defineProperty(Notification, "permission", { get: () => window.__perm || "default", configurable: true }); } catch (e) {}
+        Notification.requestPermission = async () => { window.__perm = "granted"; return "granted"; };
+        PushManager.prototype.subscribe = async function () { return { endpoint: sub.endpoint, toJSON() { return sub; } }; };
+        PushManager.prototype.getSubscription = async function () { return null; };
+      };
+      const subR = await kit.fakeSubscription("https://push.test/rishi"), subA = await kit.fakeSubscription("https://push.test/aadi");
+      const pushesTo = async sub => { const r = []; for (const x of out.filter(o => o.url === sub.json.endpoint)) r.push(await kit.decrypt(sub, x.body)); return r; };
+
+      // the installed app: manifest, Apple icon, a service worker that opens offline
+      const seedR = JSON.parse(JSON.stringify(SEED)); seed_name(seedR, "Rishi");
+      seedR.checkins = [{ id: "kc1", text: "Grounding" }, { id: "kc3", text: "Journal" }]; seedR.checkTimes = { kc1: [480, 485, 490], kc3: [1290, 1295, 1300] };
+      seedR.nudge = { items: { kc3: { ign: 0, quiet: Date.now() + 8 * 864e5 } } }; seedR.self = "555 123 4567";
+      const R = await boot(browser, { seed: seedR, route: [MO, viaWorker], init: [pushStub, subR.json] });
+      const man = await R.page.evaluate(() => fetch("manifest.webmanifest").then(r => r.json()));
+      ok(man.id && man.display === "standalone" && man.icons.some(i => i.purpose === "maskable") && await R.page.getAttribute('link[rel="apple-touch-icon"]', "href") === "apple-touch-icon.png", "manifest with a stable id, standalone, icons; Apple touch icon");
+      await R.page.waitForFunction(() => navigator.serviceWorker && navigator.serviceWorker.ready.then(() => true), null, { timeout: 10000 });
+      await R.page.reload(); await R.page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 10000 });
+      const cached = await R.page.evaluate(() => caches.open("td-shell-v11").then(c => c.keys()).then(k => k.map(r => r.url)));
+      ok(cached.some(u => u.endsWith("/index.html")) && cached.some(u => u.endsWith("qrcode.js")) && !cached.some(u => /\/v1|ntfy|googleapis/.test(u)), "the app shell is cached; your data and AI answers never are");
+      await R.ctx.setOffline(true); await R.page.reload(); await R.page.waitForSelector("#screen h1", { timeout: 10000 });
+      ok((await R.page.textContent("#screen h1")) === "Today", "opens offline");
+      await R.ctx.setOffline(false); await R.page.reload(); await R.page.waitForSelector("#screen h1"); await R.page.waitForTimeout(400);
+
+      // turn on notifications: one tap; it joins the server and registers this phone
+      ok(await R.page.isVisible("#push-card"), "a one-time “Turn on notifications” card");
+      await R.page.click("#push-on");
+      await R.page.waitForFunction(() => JSON.parse(localStorage.getItem("tendays.v1")).push.on, null, { timeout: 10000 });
+      let s = await S(R.page);
+      ok(s.mo.circle && menv.DB._db.prepare("SELECT COUNT(*) AS n FROM push_subs WHERE endpoint = 'https://push.test/rishi'").get().n === 1, "permission, subscription, registered with the server for Rishi");
+      let sched = [];
+      for (let i = 0; i < 40 && !sched.length; i++) { await R.page.waitForTimeout(250); sched = menv.DB._db.prepare("SELECT k FROM push_sched").all().map(r => r.k); }
+      ok(sched.some(k => k.startsWith("nudge:kc1:")) && !sched.some(k => k.startsWith("nudge:kc3:")), "lock-screen nudges at learned times; the one he waved off twice stays quiet");
+      // Aadi joins by code on his phone, and turns on notifications too
+      await R.page.click("#nav-you"); await R.page.click("#y-people"); await R.page.click("#mo-invite"); await R.page.waitForSelector("#mo-code-show");
+      const code = (await R.page.textContent("#mo-code-show")).replace(/\s/g, "");
+      const seedA = JSON.parse(JSON.stringify(SEED)); seed_name(seedA, "Aadi"); seedA.topics = { alert: "td-aadialertchan01", replies: "tp-aadireplies0001" };
+      const A = await boot(browser, { seed: seedA, route: [MO, viaWorker], init: [pushStub, subA.json] }); await A.page.waitForTimeout(400);
+      await A.page.click("#nav-you"); await A.page.click("#y-people"); await A.page.fill("#mo-code", code); await A.page.click("#mo-code-go"); await A.page.waitForSelector("#mo-sum");
+      await A.page.click("#push-on2"); await A.page.waitForFunction(() => JSON.parse(localStorage.getItem("tendays.v1")).push.on, null, { timeout: 10000 });
+      let rp = await pushesTo(subR);
+      ok(rp.some(p => p.title === "Aadi joined your circle"), "Rishi's phone hears that Aadi joined");
+
+      // one word, a time capsule, a challenge, breathing together
+      await R.page.fill("#word-in", "locked in"); await R.page.click("#word-set");
+      await A.page.evaluate(() => window.__td.moSync()); await A.page.click("#nav-home"); await A.page.click("#nav-you"); await A.page.click("#y-people");
+      ok((await A.page.textContent("#pp-word")) === "locked in", "one word next to his name");
+      await R.page.click("#mo-open"); await R.page.fill("#cap-text", "Ten days from now: you didn't quit."); await R.page.click("#cap-seal"); await R.page.waitForSelector("#cap-sealed");
+      await A.page.evaluate(() => window.__td.moSync());
+      ok(!(await S(A.page)).capsules.some(c => c.text.includes("didn't quit")), "the time capsule is sealed on his phone");
+      await R.page.click("#back");
+      await R.page.click("#chal-new summary"); await R.page.fill("#chal-title", "Workouts"); await R.page.fill("#chal-target", "3"); await R.page.fill("#chal-days", "5"); await R.page.click("#chal-go");
+      await R.page.waitForTimeout(500); await R.page.click("#nav-home");
+      ok(await R.page.isVisible("#chal-bar") && (await R.page.textContent("#chal-bar")).includes("Workouts"), "a live challenge bar on Today");
+      await A.page.evaluate(() => window.__td.moSync()); await A.page.click("#nav-home");
+      const chId = (await S(A.page)).challenges[0].id;
+      await A.page.click("#chal-plus-" + chId); await A.page.waitForTimeout(300);
+      await R.page.evaluate(() => window.__td.moSync()); await R.page.waitForTimeout(200);
+      ok((await R.page.textContent("#chal-" + chId)).includes("1/3"), "both bars side by side: his +1 shows on Rishi's phone");
+      ok((await pushesTo(subA)).some(p => p.title === "Rishi started a challenge"), "he hears about the challenge");
+      await R.page.click("#nav-you"); await R.page.click("#y-people"); await R.page.click("#bt-go2"); await R.page.waitForSelector("#bt-orb");
+      await A.page.evaluate(() => window.__td.moSync()); await A.page.click("#nav-you"); await A.page.click("#nav-home");
+      ok(await A.page.isVisible("#bt-invite"), "his phone: “Rishi is breathing. Join him?”");
+      await A.page.click("#bt-join"); await A.page.waitForSelector("#bt-orb");
+      const phase = async p => p.evaluate(() => { const b = JSON.parse(localStorage.getItem("tendays.v1")).breathe, sk = JSON.parse(localStorage.getItem("tendays.v1")).mo.skew || 0; return ((Date.now() + sk - b.start) % 10000 + 10000) % 10000; });
+      const ph1 = await phase(R.page), ph2 = await phase(A.page);
+      ok(Math.abs(ph1 - ph2) < 1500 || Math.abs(ph1 - ph2) > 8500, "the same rhythm on both phones (" + Math.round(ph1) + " vs " + Math.round(ph2) + " ms)");
+      ok((await pushesTo(subA)).some(p => p.kind === "breathe"), "he got a gentle notification to join");
+      await R.page.click("#bt-stop"); await A.page.click("#nav-home");
+
+      // "I need you" with the app closed: the server fires it on time, with the Call screen and his ntfy
+      await R.page.click("#nav-home"); out.length = 0;
+      await R.page.evaluate(() => { const s = JSON.parse(localStorage.getItem("tendays.v1")); return s.sosWait; });
+      await R.page.click("#nav-you"); await R.page.click("#y-people"); await R.page.click("#sw-60");
+      await R.page.click("#sos"); await R.page.waitForTimeout(800);
+      await R.page.waitForFunction(() => { const a = JSON.parse(localStorage.getItem("tendays.v1")).sosAlert; return a && a.id; }, null, { timeout: 5000 });
+      const alertId = (await S(R.page)).sosAlert.id;
+      await R.page.close();   // the app is closed now
+      await W.runDue(menv, Date.now() + 30e3);
+      ok(!(await pushesTo(subA)).some(p => p.kind === "sos"), "not before the wait is over");
+      await W.runDue(menv, Date.now() + 61e3);
+      const sos = (await pushesTo(subA)).find(p => p.kind === "sos");
+      ok(sos && sos.title.startsWith("Rishi") && /call=(%2B)?5551234567/.test(sos.url), "app closed: the push still reaches Aadi on time, with Rishi's number");
+      ok(out.some(o => o.url.startsWith("https://ntfy.sh/" + SEED.topics.alert)), "and ntfy, the fallback, from the server");
+      const R2 = await R.ctx.newPage(); R2.on("pageerror", e => R.errors.push(String(e))); await R2.clock.setSystemTime(Date.now() + 70e3);
+      await R2.goto(APP); await R2.waitForSelector("#screen h1"); await R2.waitForTimeout(900);
+      ok((await R2.textContent("#toast")).includes("while Ten Days was closed") && (await S(R2)).lastSOS.status === "sent", "reopened: it says he was told while the app was closed");
+      // Aadi taps the notification: a Call screen
+      await A.page.goto(APP + "#call=%2B15551234567&from=Rishi");
+      await A.page.waitForSelector("#call-go");
+      ok((await A.page.getAttribute("#call-go", "href")) === "tel:+15551234567" && (await A.page.textContent("#screen h1")).includes("Rishi needs you"), "his notification opens a Call button");
+
+      // a lock-screen nudge he ignored twice goes quiet too
+      await R2.evaluate(() => { const s = JSON.parse(localStorage.getItem("tendays.v1")); const d = new Date(Date.now() - 3 * 3600e3); const dk = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); s.push.nudges = [{ key: "nudge:kc1:" + dk, at: Date.now() - 3 * 3600e3 }]; s.push.counted = []; s.nudge.items.kc1 = { ign: 1, quiet: 0 }; s.checkLog = {}; localStorage.setItem("tendays.v1", JSON.stringify(s)); });
+      await R2.reload(); await R2.waitForSelector("#screen h1"); await R2.waitForTimeout(5000);
+      s = await S(R2);
+      ok(s.nudge.items.kc1.quiet > Date.now() && !menv.DB._db.prepare("SELECT k FROM push_sched").all().some(r => r.k.startsWith("nudge:kc1:")), "ignored on the lock screen twice: quiet for a week, push too");
+
+      // moving: make a code on this phone, type it on a fresh one; books come too
+      await R2.click("#nav-you"); await R2.click("#y-lib"); await R2.setInputFiles("#pdf-in", FIX + "/book.pdf"); await R2.waitForSelector("#passages", { timeout: 20000 });
+      await R2.click("#nav-you"); await R2.click("#y-data"); await R2.click("#d-move"); await R2.click("#move-make");
+      await R2.waitForSelector("#move-code", { timeout: 20000 });
+      const mcode = await R2.textContent("#move-code");
+      ok(/^[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/.test(mcode), "a move code: " + mcode);
+      const stored = menv.PHOTOS._store.get([...menv.PHOTOS._store.keys()].find(k => k.startsWith("move/")));
+      ok(stored && !Buffer.from(stored.buf).toString("latin1").includes("Old errand"), "what's on the server is encrypted");
+      const N = await boot(browser, { seed: null, route: [MO, viaWorker] }); await N.page.waitForTimeout(400);
+      ok(await N.page.isVisible("#a2hs-move"), "first open of the new app: “Moving from the old app?”");
+      await N.page.click("#a2hs-move"); await N.page.fill("#move-in", mcode.toLowerCase()); await N.page.click("#move-go");
+      await N.page.waitForFunction(() => { const s = JSON.parse(localStorage.getItem("tendays.v1") || "{}"); return s.tasks && s.tasks.some(t => t.title === "Old errand"); }, null, { timeout: 20000 });
+      await N.page.waitForSelector("#screen h1"); await N.page.waitForTimeout(800);
+      s = await S(N.page);
+      ok(s.ob.done && s.docs.length === 1 && s.checkins.length === 2 && !s.mo.circle === false, "everything came: tasks, check-ins, the book, the circle");
+      await N.page.click("#nav-you"); await N.page.click("#y-lib"); await N.page.click(".shelf [data-doc]"); await N.page.waitForSelector("#rd-pages canvas", { timeout: 20000 });
+      ok(true, "and the PDF itself opens on the new phone");
+      ok(!(await N.page.evaluate(() => localStorage.getItem("tendays.motoken"))), "keys stayed behind: the circle key isn't moved");
+      await N.ctx.close();
+      ok(!R.errors.filter(e => !/status of 40[34]/.test(e)).length && !A.errors.filter(e => !/status of 40[34]/.test(e)).length, "final: no errors " + R.errors.concat(A.errors).join(" | "));
+      await A.ctx.close(); await R.ctx.close();
+      globalThis.fetch = realFetch;
+    }
+    {
+      // in Safari on an iPhone, not the installed app: a short note
+      const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1" });
+      const page = await ctx.newPage();
+      await page.route("https://tendays.test/**", r => { const u = new URL(r.request().url()); if (u.pathname.startsWith("/v1")) return r.fulfill({ status: 200, contentType: "application/json", body: "{}" }); const f = path.join(ROOT, u.pathname === "/" ? "index.html" : u.pathname); if (!fs.existsSync(f)) return r.fulfill({ status: 404 }); r.fulfill({ status: 200, contentType: TYPES[path.extname(f)] || "text/plain", body: fs.readFileSync(f) }); });
+      await page.route("https://ntfy.sh/**", r => r.fulfill({ status: 200, body: "" }));
+      await page.addInitScript(s => { if (!sessionStorage.getItem("seeded")) { sessionStorage.setItem("seeded", "1"); localStorage.setItem("tendays.v1", s); } }, JSON.stringify(SEED));
+      await page.goto("https://tendays.test/index.html"); await page.waitForSelector("#screen h1");
+      ok(await page.isVisible("#a2hs-note") && /notifications need it/i.test(await page.textContent("#a2hs-note")), "Safari on iPhone: “Add to Home Screen for the real app”");
+      await ctx.close();
     }
     // quizzes from a learning book (no AI: questions made from the page's sentences)
     {
