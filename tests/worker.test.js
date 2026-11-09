@@ -50,18 +50,19 @@ const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4, 5, 6, 7, 8]);
   ok(r.status === 201, "caption-only moment");
   r = await call("GET", "/v1/sync?since=0", { token: audi });
   ok(r.status === 200 && r.data.moments.length === 2 && r.data.moments[0].caption === "Leg day" && r.data.moments[0].hasPhoto, "Audi sees both moments");
+  ok(r.data.members.find(m => m.id === audiId).seen > 0, "syncing marks him as here");
   r = await call("GET", "/v1/moments/kmoment0001/photo", { token: audi });
   ok(r.status === 200 && r.data[0] === 0xff && r.h.get("content-type") === "image/jpeg", "Audi can load the photo");
   ok((await call("GET", "/v1/moments/kmoment0001/photo")).status === 401, "photo needs a token");
 
   // reactions and replies
   ok((await call("PUT", "/v1/moments/kmoment0001/reaction", { token: audi, json: { kind: "respect" } })).status === 200, "react with Respect");
-  ok((await call("PUT", "/v1/moments/kmoment0001/reaction", { token: audi, json: { kind: "fire" } })).status === 200, "change the reaction");
+  ok((await call("PUT", "/v1/moments/kmoment0001/reaction", { token: audi, json: { kind: "prove" } })).status === 200, "change the reaction");
   ok((await call("PUT", "/v1/moments/kmoment0001/reaction", { token: audi, json: { kind: "angry" } })).status === 400, "unknown reaction refused");
   ok((await call("POST", "/v1/moments/kmoment0001/replies", { token: audi, json: { id: "kreply00001", text: "beast" } })).status === 201, "optional reply");
   r = await call("GET", "/v1/sync?since=0", { token: rishi });
   const m1 = r.data.moments.find(m => m.id === "kmoment0001");
-  ok(m1.reactions.length === 1 && m1.reactions[0].kind === "fire" && m1.reactions[0].member === audiId && m1.replies[0].text === "beast", "one reaction per person, reply attached");
+  ok(m1.reactions.length === 1 && m1.reactions[0].kind === "prove" && m1.reactions[0].member === audiId && m1.replies[0].text === "beast", "one reaction per person, reply attached");
   const since = r.data.now;
   r = await call("GET", "/v1/sync?since=" + (since + 1), { token: rishi });
   ok(r.data.moments.length === 0, "nothing new since last sync");
@@ -80,7 +81,7 @@ const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4, 5, 6, 7, 8]);
   const other = r.data.token;
   ok((await call("GET", "/v1/sync?since=0", { token: other })).data.moments.length === 0, "other circle sees nothing");
   ok((await call("GET", "/v1/moments/kmoment0001/photo", { token: other })).status === 404, "other circle can't load the photo");
-  ok((await call("PUT", "/v1/moments/kmoment0001/reaction", { token: other, json: { kind: "love" } })).status === 404, "other circle can't react");
+  ok((await call("PUT", "/v1/moments/kmoment0001/reaction", { token: other, json: { kind: "brother" } })).status === 404, "other circle can't react");
 
   // history window: someone joining later doesn't see old moments
   env.DB._db.prepare("UPDATE moments SET created = created - ? WHERE id = 'kmoment0005'").run(30 * 864e5);

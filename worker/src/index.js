@@ -5,7 +5,7 @@
 // New members join with a single-use invite code that expires after 7 days.
 // Members see the moments posted from 10 days before they joined onward, never older history.
 
-const REACTIONS = ["respect", "fire", "laugh", "love"];
+const REACTIONS = ["respect", "seeyou", "prove", "brother", "saving"];
 const MAX_PHOTO = 3 * 1024 * 1024;
 const MAX_MEMBERS = 12;
 const INVITE_MS = 7 * 864e5;
@@ -55,9 +55,9 @@ async function newMember(env, circle, name, now) {
   return { id, token };
 }
 async function circleView(env, me) {
-  const { results } = await env.DB.prepare("SELECT id, name, joined, left_at FROM members WHERE circle = ? ORDER BY joined").bind(me.circle).all();
+  const { results } = await env.DB.prepare("SELECT id, name, joined, left_at, seen FROM members WHERE circle = ? ORDER BY joined").bind(me.circle).all();
   return { circle: { id: me.circle, name: me.circle_name, created: me.circle_created }, me: { id: me.id, name: me.name },
-    members: results.map(r => ({ id: r.id, name: r.name, joined: r.joined, left: !!r.left_at })) };
+    members: results.map(r => ({ id: r.id, name: r.name, joined: r.joined, left: !!r.left_at, seen: r.seen || 0 })) };
 }
 // a moment the member may see: same circle, and not older than their history window
 async function visibleMoment(env, me, id) {
@@ -131,6 +131,8 @@ export default {
       // everything that changed since a time: moments (with reactions and replies), chapters, members
       if (p === "/v1/sync" && req.method === "GET") {
         const since = Math.max(0, Math.floor(+url.searchParams.get("since") || 0));
+        // syncing means you have the app open: that's the "he's here too" glow, nothing more precise
+        await env.DB.prepare("UPDATE members SET seen = ? WHERE id = ?").bind(now, me.id).run();
         const floor = me.joined - HISTORY_MS;
         const { results: ms } = await env.DB.prepare("SELECT * FROM moments WHERE circle = ? AND updated >= ? AND created >= ? ORDER BY created LIMIT 500").bind(me.circle, since, floor).all();
         const ids = ms.map(m => m.id), rx = {}, rp = {};

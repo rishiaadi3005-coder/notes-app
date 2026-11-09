@@ -841,6 +841,82 @@ details.adv[open] { padding-bottom: .9em; }
 .toggle.sm { font-size: .9em; }
 .chbody p { line-height: 1.6; margin: 0 0 .9em; }
 #mo-invite-link { display: block; word-break: break-all; color: var(--muted); }
+/* ---- v10: glass refresh, reader, shelf, check-in bands, companion ---- */
+html { background: var(--bg); }
+body { background: transparent; }
+/* a slow aurora behind everything; only transform moves, so it stays cheap */
+body::before { content: ""; position: fixed; inset: -25%; z-index: -1; pointer-events: none;
+  background: radial-gradient(38% 32% at 22% 22%, var(--glow-a), transparent 70%), radial-gradient(34% 30% at 80% 18%, var(--glow-c), transparent 70%), radial-gradient(42% 34% at 58% 86%, var(--glow-b), transparent 70%), radial-gradient(30% 26% at 12% 78%, var(--glow-c), transparent 70%);
+  animation: aurora 48s ease-in-out infinite alternate; will-change: transform; }
+@keyframes aurora { 0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); } 50% { transform: translate3d(4%, -3%, 0) rotate(7deg) scale(1.08); } 100% { transform: translate3d(-3%, 4%, 0) rotate(-5deg) scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { body::before { animation: none; } }
+.rm body::before { animation: none; }
+/* blur only on the few surfaces that float over content: the dock, toasts, sheets, the reading bar */
+.card, .btn, .chip, code { -webkit-backdrop-filter: none; backdrop-filter: none; }
+.card { background: linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .03)); border-radius: 22px; }
+@media (prefers-color-scheme: light) { .card { background: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); } }
+.btn, .chip, .ctile, .book, button.card, .react, .ckchip, .cntbtn { transition: transform 200ms var(--ease-ios, cubic-bezier(.32, .72, 0, 1)), filter 160ms ease, border-color 200ms ease, background-color 200ms ease; }
+.btn:active, .chip:active, .ctile:active, .book:active, button.card:active, .ckchip:active { transform: scale(.97); }
+.rm .btn:active, .rm .chip:active, .rm .ctile:active, .rm .book:active, .rm button.card:active, .rm .ckchip:active { transform: none; }
+
+/* the reader: just you and the page */
+body[data-mode="read"] #screen > h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body[data-mode="read"] #screen { padding-left: 0; padding-right: 0; gap: 0; max-width: 820px; padding-top: calc(10px + env(safe-area-inset-top, 0px)); }
+body[data-mode="read"]::before { opacity: .5; }
+.reader { display: flex; flex-direction: column; }
+.rscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.rpages { display: flex; flex-direction: column; gap: 10px; padding: 0 10px; }
+.reader.zoomed .rpages { padding: 0 4px; }
+.rpage { position: relative; width: 100%; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 6px 22px rgba(0, 0, 0, .32); contain: layout paint; }
+.rpage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.rd-end { text-align: center; color: var(--muted); padding: 2.2em 0 1em; font-size: .9em; }
+.rdprog { position: fixed; z-index: 40; left: 0; right: 0; top: env(safe-area-inset-top, 0px); height: 3px; background: rgba(255, 255, 255, .06); }
+.rdprog i { display: block; height: 100%; background: linear-gradient(90deg, #6EE7C8, #7FB2FF); border-radius: 0 3px 3px 0; transition: width 420ms var(--ease-ios, ease); }
+.rdover { position: fixed; z-index: 41; left: 10px; right: 10px; margin: 0 auto; max-width: 560px; box-sizing: border-box; top: calc(env(safe-area-inset-top, 0px) + 12px); transform: translateY(-14px); opacity: 0; pointer-events: none;
+  display: flex; align-items: center; justify-content: space-between; gap: .3em; padding: .35em .45em; border-radius: 99px; background: rgba(14, 16, 24, .74); border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  transition: opacity 220ms ease, transform 300ms var(--ease-ios, ease); max-width: calc(100vw - 20px); overflow-x: auto; scrollbar-width: none; }
+.rdover::-webkit-scrollbar { display: none; }
+body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
+.rdover .rdo-t { font-size: .74em; color: var(--muted); white-space: nowrap; margin: 0 .1em; flex: 1; text-align: center; }
+.rdover .chip { min-height: 40px; white-space: nowrap; padding: .3em .75em; font-size: .85em; }
+.rdover .iconbtn { width: 40px; height: 40px; }
+.rdover .chip.primary { background: var(--prim-grad); color: var(--prim-ink); border-color: transparent; }
+@media (prefers-color-scheme: light) { .rdover { background: rgba(255, 255, 255, .82); } }
+
+/* library shelf and cards by theme */
+.shelf { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 12px; }
+.bookw { display: flex; flex-direction: column; align-items: stretch; }
+.bookw .btn.link { align-self: flex-start; min-height: 36px; font-size: .8em; padding: 0; color: var(--muted); }
+.book { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 6px; }
+.bcover { aspect-ratio: 2 / 3; border-radius: 6px 12px 12px 6px; display: flex; align-items: flex-end; padding: .7em .6em; box-shadow: inset 4px 0 0 rgba(0, 0, 0, .18), 0 8px 20px rgba(0, 0, 0, .3); overflow: hidden; }
+.btitle { color: #fff; font-weight: 750; font-size: .85em; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
+.bline { height: 3px; border-radius: 99px; background: var(--field); overflow: hidden; }
+.bline i { display: block; height: 100%; background: linear-gradient(90deg, #6EE7C8, #7FB2FF); }
+.ctheme { display: flex; flex-direction: column; gap: .55em; }
+.ctiles { display: grid; grid-template-columns: 1fr 1fr; gap: .55em; }
+.ctile { text-align: left; padding: .8em .9em; border-radius: 18px; border: 1px solid var(--line); background: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); color: var(--ink); font: inherit; cursor: pointer; display: flex; flex-direction: column; gap: .4em; min-height: 96px; }
+.ctile .clip { font-size: .9em; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.ctile .hint { font-size: .75em; color: var(--muted); margin-top: auto; }
+.btn.link.sm { font-size: .85em; min-height: 40px; }
+
+/* check-ins by time of day */
+.ckband { display: flex; flex-direction: column; gap: .4em; margin-top: .5em; }
+.ckband.open .lbl { color: var(--warn-text); }
+#ck-now { margin-top: .5em; }
+#ck-all { align-self: flex-start; margin-top: .2em; }
+.card.nudge { border-color: color-mix(in srgb, var(--corner) 45%, var(--line)); }
+.card.hay .row { margin-top: .2em; }
+.card.hay input { width: 100%; }
+.quote .block { display: block; margin-top: .4em; font-style: normal; }
+.dcard .talk { margin: .2em 0 0; font-size: .92em; color: var(--muted); line-height: 1.45; }
+.pc.quiet { color: var(--care, #E9A6C8); border-color: color-mix(in srgb, var(--care, #E9A6C8) 50%, var(--line)); align-self: flex-start; }
+.react .rl { font-size: .78em; font-weight: 650; }
+.live { display: inline-flex; align-items: center; gap: .35em; font-size: .8em; color: var(--ok-text); }
+.live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ok-text); box-shadow: 0 0 0 0 var(--ok-text); animation: livepulse 2.4s ease-out infinite; }
+.pav.live { box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok-text) 55%, transparent), 0 0 18px color-mix(in srgb, var(--ok-text) 45%, transparent); }
+@keyframes livepulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok-text) 60%, transparent); } 100% { box-shadow: 0 0 0 8px transparent; } }
+.rm .live::before { animation: none; }
 </style>
 </head>
 <body>
@@ -1027,11 +1103,13 @@ details.adv[open] { padding-bottom: .9em; }
     s.docs = (Array.isArray(s.docs) ? s.docs : []).filter(obj).map(function (d) {
       var rd = {}; Object.keys(obj(d.read) || {}).filter(function (k) { return DATE_RE.test(k) && Array.isArray(d.read[k]); }).sort().slice(-60).forEach(function (k) { rd[k] = d.read[k].map(Number).filter(function (n) { return n >= 1 && n === Math.floor(n); }).slice(0, 2000); });
       return { id: str(d.id, 40), name: str(d.name, 80) || "Untitled", pages: Math.max(0, Math.floor(+d.pages || 0)), chars: +d.chars || 0, at: +d.at || 0, status: d.status === "scanned" ? "scanned" : "ready", truncated: !!d.truncated,
-        hasFile: !!d.hasFile, kind: d.kind === "learning" || d.kind === "mindset" ? d.kind : "", lastRead: +d.lastRead || 0, pos: Math.max(1, Math.floor(+d.pos || 1)), goal: Math.max(1, Math.min(200, Math.floor(+d.goal || 5))), read: rd };
+        hasFile: !!d.hasFile, kind: d.kind === "learning" || d.kind === "mindset" ? d.kind : "", lastRead: +d.lastRead || 0, pos: Math.max(1, Math.floor(+d.pos || 1)), posFrac: Math.max(0, Math.min(1, +d.posFrac || 0)), ratio: +d.ratio > .2 && +d.ratio < 5 ? +d.ratio : 0, goal: Math.max(1, Math.min(200, Math.floor(+d.goal || 5))), read: rd };
     }).filter(function (d) { return d.id; });
     s.cards = (Array.isArray(s.cards) ? s.cards : []).filter(obj).map(function (c) {
       return { id: str(c.id, 40) || newId(), docId: str(c.docId, 40), docName: str(c.docName, 80), page: Math.max(0, Math.floor(+c.page || 0)), quote: str(c.quote, 600), typed: !!c.typed,
         link: str(c.link, 30) || "other", linkText: str(c.linkText, 60), at: +c.at || 0,
+        theme: ["urges", "discipline", "peace", "relationships", "purpose", "learning"].indexOf(c.theme) >= 0 ? c.theme : "", by: c.by === "ai" ? "ai" : "", why: str(c.why, 80),
+        seen: Math.max(0, Math.floor(+c.seen || 0)), used: Math.max(0, Math.floor(+c.used || 0)), lastSeen: +c.lastSeen || 0, archived: !!c.archived,
         items: (Array.isArray(c.items) ? c.items : []).filter(obj).map(function (i) { return { kind: ["prompt", "action", "encourage", "own"].indexOf(i.kind) >= 0 ? i.kind : "own", by: i.by === "you" ? "you" : "template", text: str(i.text, 300) }; }).filter(function (i) { return i.text; }) };
     }).filter(function (c) { return c.quote; });
     s.asst = obj(s.asst);
@@ -1080,11 +1158,22 @@ details.adv[open] { padding-bottom: .9em; }
     var SH = obj(s.share) || {}; s.share = { on: !!SH.on, topic: TOPIC_RE.test(SH.topic || "") ? SH.topic : "", names: !!SH.names, at: +SH.at || 0, sent: str(SH.sent, 4000) };
     var PT = obj(s.partner) || {}; s.partner = { name: str(PT.name, 40).trim(), topic: TOPIC_RE.test(PT.topic || "") ? PT.topic : "", inbox: TOPIC_RE.test(PT.inbox || "") ? PT.inbox : "", last: cleanStatus(PT.last), at: +PT.at || 0 };
     s.msgs = (Array.isArray(s.msgs) ? s.msgs : []).filter(function (m) { return obj(m) && typeof m.at === "number"; }).map(function (m) { return { at: m.at, text: str(m.text, 300), ok: m.ok === true }; }).slice(-40);
+    var CT = obj(s.checkTimes) || {}; s.checkTimes = {};
+    Object.keys(CT).slice(0, 60).forEach(function (k) { if (Array.isArray(CT[k])) s.checkTimes[str(k, 40)] = CT[k].map(Number).filter(function (m) { return m >= 0 && m < 1440; }).slice(-30); });
+    var NU = obj(s.nudge) || {}, NI = obj(NU.items) || {};
+    s.nudge = { day: DATE_RE.test(NU.day || "") ? NU.day : "", shown: (Array.isArray(NU.shown) ? NU.shown : []).map(String).slice(0, 10), cur: str(NU.cur, 40), items: {} };
+    Object.keys(NI).slice(0, 60).forEach(function (k) { var x = obj(NI[k]); if (x) s.nudge.items[str(k, 40)] = { ign: Math.max(0, Math.floor(+x.ign || 0)), quiet: +x.quiet || 0 }; });
+    s.moods = (Array.isArray(s.moods) ? s.moods : []).filter(function (m) { return obj(m) && typeof m.at === "number"; }).map(function (m) { return { at: m.at, v: Math.max(0, Math.min(3, Math.floor(+m.v || 0))), text: str(m.text, 300) }; }).slice(-200);
+    s.lastFeel = obj(s.lastFeel) && typeof s.lastFeel.at === "number" ? { at: s.lastFeel.at, text: str(s.lastFeel.text, 200) } : null;
+    s.quietDay = DATE_RE.test(s.quietDay || "") ? s.quietDay : ""; s.curated = DATE_RE.test(s.curated || "") ? s.curated : "";
+    var AD = obj(s.autoDone) || {}; s.autoDone = {};
+    Object.keys(AD).slice(0, 50).forEach(function (k) { if (Array.isArray(AD[k])) s.autoDone[str(k, 40)] = AD[k].map(Number).filter(function (n) { return n >= 1; }).slice(-600); });
     var MO = obj(s.mo) || {};
     s.mo = { srv: typeof MO.srv === "string" && moSrvOk(MO.srv) ? MO.srv : "", ping: MO.ping !== false, since: +MO.since || 0, synced: +MO.synced || 0, lost: !!MO.lost,
       circle: obj(MO.circle) && MO.circle.id ? { id: str(MO.circle.id, 40), name: str(MO.circle.name, 60), created: +MO.circle.created || Date.now() } : null,
       me: obj(MO.me) && MO.me.id ? { id: str(MO.me.id, 40), name: str(MO.me.name, 40) } : null,
-      members: (Array.isArray(MO.members) ? MO.members : []).filter(obj).map(function (m) { return { id: str(m.id, 40), name: str(m.name, 40), left: !!m.left }; }).slice(0, 20) };
+      members: (Array.isArray(MO.members) ? MO.members : []).filter(obj).map(function (m) { return { id: str(m.id, 40), name: str(m.name, 40), left: !!m.left, seen: +m.seen || 0 }; }).slice(0, 20),
+      rx: (Array.isArray(MO.rx) ? MO.rx : []).map(function (x) { return str(x, 100); }).slice(-500), rxInit: !!MO.rxInit };
     s.moments = (Array.isArray(s.moments) ? s.moments : []).filter(function (m) { return obj(m) && /^[a-z0-9]{8,40}$/.test(m.id || ""); }).map(function (m) {
       return { id: m.id, author: str(m.author, 40), caption: str(m.caption, 500), forStory: m.forStory !== false, hasPhoto: !!m.hasPhoto, created: +m.created || 0, updated: +m.updated || 0, pending: !!m.pending, err: str(m.err, 120),
         reactions: (Array.isArray(m.reactions) ? m.reactions : []).filter(obj).map(function (r) { return { member: str(r.member, 40), kind: str(r.kind, 12) }; }),
@@ -1320,7 +1409,7 @@ details.adv[open] { padding-bottom: .9em; }
   // ============ screens ============
   var ui = { screen: "home", arg: null, goalSel: null, prev: null, editType: null, editRepeat: null, editDays: null, qa: "", search: "", showDone: false, justDone: null, burst: 0, from: "home", focusMins: 25, focusTask: "" };
   var testState = null; // { kind, status: "sending"|"sent"|"notsent"|"confirmed"|"nothing", why }
-  function go(name, arg) { if ((name === "moments" || name === "people") && name !== ui.screen) setTimeout(function () { moSync(); }, 0); ui.prev = ui.screen; ui.screen = name; ui.arg = arg || null; ui.goalSel = null; ui.editType = null; ui.editRepeat = null; ui.editDays = null; ui.justDone = null; render(true); window.scrollTo(0, 0); }
+  function go(name, arg) { if (ui.screen === "read" && name !== "read") readerClose(); if ((name === "moments" || name === "people") && name !== ui.screen) setTimeout(function () { moSync(); }, 0); ui.prev = ui.screen; ui.screen = name; ui.arg = arg || null; ui.goalSel = null; ui.editType = null; ui.editRepeat = null; ui.editDays = null; ui.justDone = null; render(true); window.scrollTo(0, 0); }
   // Inner screens name their parent; render puts one Back button at the top, always in the same place.
   function back(to) { ui.backTo = to || "checkin"; return null; }
   function topicBox(label, value, id) {
@@ -1828,6 +1917,8 @@ details.adv[open] { padding-bottom: .9em; }
     if (d.type === "ERRAND" && (d.itemsUnknown || /^pick\b/i.test(d.title)) && d.repeat === "once" && !d.date && !d.time && !asked("when")) return "when";
     if (d.itemsUnknown && !d.items.length && !asked("items")) return "items";
     if (d.dur && d.date && !d.time && !asked("time")) return "time";
+    if (isDeadline(d) && !d.time && !d.due && !d.date && !asked("due")) return "due";
+    if (isDeadline(d) && !d.time && (d.due || d.date) && !asked("start")) return "start";
     return null;
   }
   function newDraft(text) {
@@ -1939,7 +2030,7 @@ details.adv[open] { padding-bottom: .9em; }
 
   function draftToTask(d) {
     var o = { id: newId(), created: Date.now(), doneOn: "" };
-    ["title", "type", "repeat", "days", "date", "time", "dur", "anchor", "place", "dep", "depId", "items", "contact", "priority", "private", "link", "notes", "plan", "remindBefore", "remindWant"].forEach(function (k) { if (d[k] !== undefined) o[k] = JSON.parse(JSON.stringify(d[k])); });
+    ["title", "type", "repeat", "days", "date", "time", "dur", "anchor", "place", "dep", "depId", "items", "contact", "priority", "private", "link", "notes", "plan", "remindBefore", "remindWant", "due"].forEach(function (k) { if (d[k] !== undefined) o[k] = JSON.parse(JSON.stringify(d[k])); });
     return normTask(o);
   }
   function taskToDraft(t) {
@@ -2664,7 +2755,7 @@ details.adv[open] { padding-bottom: .9em; }
   var FIELD_NAME = { remind: "reminder", date: "day", time: "time", dur: "length", anchor: "timing", repeat: "repeat", priority: "priority", private: "privacy", place: "place", dep: "order", title: "title" };
   var ANCHOR_MEM = { "after class": "Class ends around ", "after work": "Work ends around ", "after the gym": "Done at the gym around ", "after dinner": "Dinner is done around ",
     "after lunch": "Lunch is done around ", "when I get home": "Home around ", "before bed": "Bedtime around ", "when I wake up": "Wake up around " };
-  var EDIT_KEYS = ["title", "type", "repeat", "days", "date", "time", "dur", "anchor", "place", "dep", "depId", "items", "contact", "priority", "private", "link", "remindBefore", "remindWant"];
+  var EDIT_KEYS = ["title", "type", "repeat", "days", "date", "time", "dur", "anchor", "place", "dep", "depId", "items", "contact", "priority", "private", "link", "remindBefore", "remindWant", "due"];
   function cap(x) { return x ? x.charAt(0).toUpperCase() + x.slice(1) : ""; }
   function setAsst(a) { S.asst = a; ui.asstEdit = null; save(); }
   function lastTask() { var l = S.lastTask; return l && Date.now() - l.at < 30 * 60e3 ? taskById(l.id) : null; }
@@ -2688,7 +2779,7 @@ details.adv[open] { padding-bottom: .9em; }
       setAsst({ kind: "task", d: d, editing: t ? t.id : "", note: note });
       return true;
     }
-    if (intent === "support") { openSupport("text"); return "nav"; }
+    if (intent === "support") { S.lastFeel = { at: Date.now(), text: text.slice(0, 200) }; openSupport("text"); return "nav"; }
     if (intent === "plan") { setAsst({ kind: "plan", p: planFor(text), src: text }); return true; }
     if (needsAi(text, intent)) { if (intent === "task" && quickThenAi(text)) return true; aiThink(text, intent); return true; }   // saved now, sorted by AI in the background
     if (intent !== "task") { setAsst({ kind: intent, src: text, i: 0 }); return true; }
@@ -2751,6 +2842,8 @@ details.adv[open] { padding-bottom: .9em; }
     if (q === "when") return "When do you need it?";
     if (q === "items") return "What do you need to pick up?";
     if (q === "time") return "Want a time for it? This is optional.";
+    if (q === "due") return "When is it due?";
+    if (q === "start") return "When do you want to start on it?";
     if (q === "phone") return "Add " + d.contact.name + "'s number so you can call from Ten Days?";
     return "";
   }
@@ -2823,6 +2916,7 @@ details.adv[open] { padding-bottom: .9em; }
         h("label", { class: "toggle", for: "aq-keep" }, keepC, h("span", { text: "Also save " + d.contact.name + " to my contacts" })),
         h("div", { class: "row" }, qChip("aq-skip", "Skip", function () { done("phone"); }, true)));
     }
+    if (q === "due" || q === "start") kids = kids.concat(dueBlock(a, q));
     return h("div", { class: "askq", id: "ask-q", role: "group", "aria-labelledby": "aq-text" }, kids);
   }
   function fchip(key, ic, label, extra) {
@@ -2836,6 +2930,7 @@ details.adv[open] { padding-bottom: .9em; }
     var sug = d.sugg && (d.sugg.time === "remembered" ? "from what you told me" : d.sugg.time === "usual" ? "your usual time" : d.sugg.time || d.sugg.date ? "suggested" : "");
     var wl = whenLabel(d), out = [fchip("when", "clock", wl || (d.anchor ? "No time yet" : "Anytime"), { sug: sug, miss: !wl })];
     if (d.anchor) out.push(fchip("when", "flag", cap(d.anchor)));
+    if (d.due && DATE_RE.test(d.due)) out.push(fchip("when", "flag", "Due " + (d.due === dayKey() ? "today" : fmtDate(parseDay(d.due).getTime()))));
     if (d.dur || !S.asst || !S.asst.editing) out.push(fchip("dur", "timer", d.dur ? durText(d.dur) : "Length", { miss: !d.dur, sug: d.sugg && d.sugg.dur ? (d.sugg.dur === "real" ? "what it really takes" : "usual") : "" }));
     if (d.type !== "CUSTOM") out.push(fchip("details", TYPE_ICON[d.type], TYPE_NAME[d.type]));
     if (d.type === "CALL" && d.contact.name) out.push(fchip("details", "people", d.contact.name + (cleanPhone(d.contact.phone) ? "" : " · no number")));
@@ -3781,7 +3876,7 @@ details.adv[open] { padding-bottom: .9em; }
     var list = d.read[k] || (d.read[k] = []);
     if (list.indexOf(page) < 0) list.push(page);
     var ks = Object.keys(d.read).sort(); while (ks.length > 60) delete d.read[ks.shift()];
-    var goal = d.goal || 5, link = S.tasks.filter(function (t) { return t.docId === d.id && t.type === "READ" && !isDone(t); })[0];
+    var goal = goalOf(d), link = S.tasks.filter(function (t) { return t.docId === d.id && t.type === "READ" && !isDone(t); })[0];
     save();
     if (list.length === goal) { if (link && inToday(link)) markDone(link); else toast("Today's reading goal is done: " + goal + " pages."); }
   }
@@ -3789,7 +3884,7 @@ details.adv[open] { padding-bottom: .9em; }
   function readBlock(t) {
     var d = docOf(t);
     if (d) return h("div", { class: "mini", id: "read-block" }, h("p", { class: "lbl", text: "Reading: " + d.name }),
-      h("p", { class: "small", text: "Today: " + readToday(d).length + " of " + (d.goal || 5) + " pages · you're on page " + (d.pos || 1) + " of " + d.pages }),
+      h("p", { class: "small", text: "Today: " + readToday(d).length + " of " + (goalOf(d)) + " pages · you're on page " + (d.pos || 1) + " of " + d.pages }),
       h("button", { class: "btn primary", type: "button", id: "read-go", onclick: function () { openBook(d); } }, "Continue reading"));
     return h("div", { class: "mini", id: "read-block" }, h("p", { class: "lbl", text: "Read it in Ten Days" }),
       h("p", { class: "small", text: "Add the book as a PDF. Ten Days keeps your place and counts your pages each day." }), bookPicker(t, "rb"));
@@ -3970,7 +4065,8 @@ details.adv[open] { padding-bottom: .9em; }
   function saveHighlight() {
     var a = ui.arg || {}, d = S.docs.filter(function (x) { return x.id === a.id; })[0], t = hlText.replace(/\s+/g, " ").trim().slice(0, 600);
     if (!d || t.length < 12) return;
-    var made = makeCards(d, [{ text: t, page: a.page || d.pos || 1 }], S.lastLink || "urge"); save();
+    var pgEl = null; try { var sel0 = window.getSelection(), an = sel0 && sel0.anchorNode; an = an && (an.nodeType === 1 ? an : an.parentElement); pgEl = an && an.closest(".rpage"); } catch (e) {}
+    var made = makeCards(d, [{ text: t, page: pgEl ? +pgEl.getAttribute("data-page") : RD ? RD.cur : d.pos || 1 }], S.lastLink || "urge"); save();
     try { window.getSelection().removeAllRanges(); } catch (e) {}
     hlText = ""; $("hlbtn").hidden = true;
     toast(made.length ? "Saved to cards ✓ It comes up when you tap I need you." : "That's already a card.", 5000, made.length ? { label: "Undo", fn: function () { S.cards = S.cards.filter(function (x) { return made.indexOf(x.id) < 0; }); save(); } } : null);
@@ -3978,7 +4074,7 @@ details.adv[open] { padding-bottom: .9em; }
   document.addEventListener("selectionchange", function () {
     var btn = $("hlbtn"); if (!btn) return;
     if (ui.screen !== "read") { btn.hidden = true; return; }
-    var s = window.getSelection(), pg = $("pdf-page"), txt = s ? s.toString().replace(/\s+/g, " ").trim() : "";
+    var s = window.getSelection(), pg = $("rd-pages"), txt = s ? s.toString().replace(/\s+/g, " ").trim() : "";
     var inside = !!(s && s.rangeCount && pg && s.anchorNode && pg.contains(s.anchorNode));
     if (inside && txt.length >= 12) { hlText = txt; btn.hidden = false; } else if (!inside || !txt) btn.hidden = true;
   });
@@ -4340,7 +4436,7 @@ details.adv[open] { padding-bottom: .9em; }
   function checkedToday() { return S.checkLog[dayKey()] || []; }
   function toggleCheck(id) {
     var k = dayKey(), l = S.checkLog[k] || (S.checkLog[k] = []), i = l.indexOf(id);
-    if (i >= 0) l.splice(i, 1); else { l.push(id); chime("soft"); }
+    if (i >= 0) l.splice(i, 1); else { l.push(id); chime("soft"); logCheckTime(id); if (S.nudge.items[id]) S.nudge.items[id].ign = 0; }
     var ks = Object.keys(S.checkLog).sort(); while (ks.length > 120) delete S.checkLog[ks.shift()];
     save(); render(false); var f = $("ck-" + id); if (f) f.focus();
     if (S.checkins.length && l.length === S.checkins.length && i < 0) celebrate("All check-ins done", "Nice day.");
@@ -4349,17 +4445,6 @@ details.adv[open] { padding-bottom: .9em; }
     var added = 0;
     list.forEach(function (x) { x = String(x || "").trim().slice(0, 60); if (x && !S.checkins.some(function (c) { return c.text.toLowerCase() === x.toLowerCase(); })) { S.checkins.push({ id: newId(), text: cap(x) }); added++; } });
     return added;
-  }
-  function checkinsBlock() {
-    if (!S.checkins.length && !S.counters.length) return null;
-    var c = checkedToday();
-    return h("section", { class: "checkins", id: "checkins", "aria-labelledby": "ck-h" },
-      h("div", { class: "sect" }, h("h2", { id: "ck-h", text: S.checkins.length ? "Did you do these today?" : "Today's counts" }), h("button", { class: "btn link", type: "button", id: "ck-edit", onclick: function () { go("checkins"); } }, S.checkins.length ? c.length + " of " + S.checkins.length : "Edit")),
-      countsRow(),
-      h("div", { class: "ckwrap" }, S.checkins.map(function (x) {
-        var on = c.indexOf(x.id) >= 0;
-        return h("button", { class: "ckchip" + (on ? " on" : ""), type: "button", id: "ck-" + x.id, "aria-pressed": on ? "true" : "false", onclick: function () { toggleCheck(x.id); } }, icon(on ? "check" : "circle"), h("span", { text: x.text }));
-      })));
   }
   // "Tell me about you": speak (or type) freely; Ten Days learns what helps you and builds the check-ins.
   var AI_INTAKE = "A voice note is attached in which the person talks about themselves: what they like, their routines, what helps them relax, what they struggle with. Transcribe it and reply with JSON only: " +
@@ -4410,7 +4495,7 @@ details.adv[open] { padding-bottom: .9em; }
     if (!books.length) return null;
     return h("section", { class: "reading", id: "reading-tiles", "aria-labelledby": "rd-h" }, h("h2", { class: "sect-h", id: "rd-h", text: "Reading" }),
       h("div", { class: "booktiles" }, books.map(function (d) {
-        var n = readToday(d).length, g = d.goal || 5;
+        var n = readToday(d).length, g = goalOf(d);
         return h("button", { class: "booktile", type: "button", "data-book": d.id, onclick: function () { openBook(d); }, "aria-label": d.name + ", page " + (d.pos || 1) + " of " + d.pages + ", " + n + " of " + g + " pages today. Open" },
           icon("book"), h("span", { class: "bt-name", text: d.name }), h("span", { class: "bt-pos", text: "p. " + (d.pos || 1) + " / " + d.pages }),
           h("span", { class: "sbar", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, Math.round(n / g * 100)) + "%" })),
@@ -4427,13 +4512,14 @@ details.adv[open] { padding-bottom: .9em; }
     clearTimeout(rdT);
     if (ui.screen !== "read" || !ui.rd) return;
     rdT = setTimeout(function () {
-      var r = ui.rd, d = r && S.docs.filter(function (x) { return x.id === r.doc; })[0], el = $("read-count");
+      var r = ui.rd, d = r && S.docs.filter(function (x) { return x.id === r.doc; })[0];
       if (!d || ui.screen !== "read") return;
       if (document.hidden) { r.since += 500; tickRead(); return; }   // time away from the app doesn't count
-      var thr = readThreshold(d, r.page), left = thr - (Date.now() - r.since), already = readToday(d).indexOf(r.page) >= 0;
-      if (!already && left <= 0) { markRead(d, r.page); already = true; announce("Page " + r.page + " counted."); }
-      if (el) { el.textContent = already ? "✓ Page " + r.page + " counted" : "Reading… this page counts in " + Math.ceil(left / 1000) + "s"; el.classList.toggle("ok", already); }
-      var t2 = $("read-today"); if (t2) t2.textContent = "Today: " + readToday(d).length + " of " + (d.goal || 5) + " pages";
+      var already = readToday(d).indexOf(r.page) >= 0;
+      if (!already && Date.now() - r.since >= readThreshold(d, r.page)) {
+        markRead(d, r.page); already = true;   // quietly: no message, the bar just fills
+        if (RD && RD.d === d) { if (RD.session.indexOf(r.page) < 0) RD.session.push(r.page); readerUpdate(RD); }
+      }
       if (!already) tickRead();
     }, 500);
   }
@@ -4492,30 +4578,41 @@ details.adv[open] { padding-bottom: .9em; }
   }
 
   // ============ the deck: shuffled passages from your books, your words and the Gita ============
-  function deckPool() {
+  function deckPool(sup) {
     var out = [], books = S.docs.map(function (d) { return d.id; }).sort(function () { return Math.random() - .5; }).slice(0, 3);
-    S.kept.forEach(function (k) { out.push({ text: k.text, label: k.label, by: "kept" }); });
-    S.cards.filter(function (c) { return books.indexOf(c.docId) >= 0 || S.docs.length <= 3; }).forEach(function (c) { out.push({ text: c.quote, label: "Exact quote · " + c.docName + (c.page ? ", p. " + c.page : ""), by: "quote", doc: c.docId, page: c.page }); });
+    var byQuote = function (t) { return S.cards.filter(function (c) { return c.quote === t; })[0] || null; };
+    S.kept.forEach(function (k) { out.push({ text: k.text, label: k.label, by: "kept", card: byQuote(k.text) }); });
+    S.cards.filter(function (c) { return !c.archived && (books.indexOf(c.docId) >= 0 || S.docs.length <= 3); }).forEach(function (c) { out.push({ text: c.quote, label: "Exact quote · " + c.docName + (c.page ? ", p. " + c.page : ""), by: "quote", doc: c.docId, page: c.page, card: c }); });
     S.collection.forEach(function (c) { if (c.kind !== "image") out.push({ text: c.text, label: c.kind === "quote" ? (c.source ? "Saved by you · " + c.source : "Saved by you") : "Your reminder", by: "you" }); });
     if (krishna()) GITA.forEach(function (g) { out.push({ text: g[2], label: gitaLabel(g), by: "gita" }); });
     if (out.length < 4) (REFRAMES[S.profile.style] || REFRAMES.gentle).forEach(function (t) { out.push({ text: t, label: "From Ten Days", by: "app" }); });
     var seen = {}; out = out.filter(function (x) { if (seen[x.text]) return false; seen[x.text] = 1; return true; });
-    // your kept cards first, then your own passages and words shuffled, then the guide's lines
     var shuf = function (a) { return a.sort(function () { return Math.random() - .5; }); };
-    return out.filter(function (x) { return x.by === "kept"; }).concat(shuf(out.filter(function (x) { return x.by === "quote" || x.by === "you"; })), shuf(out.filter(function (x) { return x.by === "gita"; })), out.filter(function (x) { return x.by === "app"; }));
+    var rest = out.filter(function (x) { return x.by === "kept"; }).concat(shuf(out.filter(function (x) { return x.by === "quote" || x.by === "you"; })), shuf(out.filter(function (x) { return x.by === "gita"; })), out.filter(function (x) { return x.by === "app"; }));
+    // the first card is the one that fits now: the hour, how you got here, how you said you were
+    var want = momentThemes(sup), best = null, bs = -1;
+    rest.forEach(function (x) { if (x.by === "app") return; var sc = fitScore(x, want); if (sc > bs) { bs = sc; best = x; } });
+    if (best) { rest.splice(rest.indexOf(best), 1); rest.unshift(best); best.fit = true; }
+    if (sup) sup.want = want;
+    return rest;
   }
   function deckView(sup) {
-    if (!sup.deck) { sup.deck = deckPool(); sup.di = 0; }
+    if (!sup.deck) { sup.deck = deckPool(sup); sup.di = 0; }
     var deck = sup.deck; if (!deck.length) return null;
-    var cur = deck[sup.di % deck.length], next = function (dir) {
+    var cur = deck[sup.di % deck.length];
+    if (cur.card && sup.seenText !== cur.text) { sup.seenText = cur.text; cur.card.seen = (cur.card.seen || 0) + 1; cur.card.lastSeen = Date.now(); save(); }
+    var talk = cur.fit && sup.di === 0 ? talkLine(cur, sup.want || []) : "";
+    var next = function (dir) {
       var c = deck[sup.di % deck.length];
+      if (dir > 0) useCard(c.text);
       if (dir > 0 && !S.kept.some(function (k) { return k.text === c.text; })) { S.kept.unshift({ text: c.text, label: c.label }); S.kept = S.kept.slice(0, 50); save(); toast("Kept. It comes up first next time."); }
       sup.di++; S.supIdx = (S.supIdx || 0) + 1; save(); render(false); announce(deck[sup.di % deck.length].text);
     };
     var top = h("div", { class: "dcard top", id: "deck-top" },
       h("blockquote", { class: "quote", id: "sup-quote", text: cur.text }),
       h("p", { class: "src", id: "sup-src" }, icon(cur.by === "quote" ? "quote" : cur.by === "gita" ? "sparkle" : cur.by === "kept" ? "heart" : "heart"), cur.label),
-      h("div", { class: "row links" }, listenBtn(cur.text, "say-deck"), cur.doc && S.docs.some(function (d) { return d.id === cur.doc && d.status === "ready"; }) ? h("button", { class: "btn link inl", type: "button", id: "deck-read", onclick: function () { var d = S.docs.filter(function (x) { return x.id === cur.doc; })[0]; openBook(d, cur.page || 1); } }, "Read on") : null));
+      talk ? h("p", { class: "talk", id: "deck-talk", text: talk }) : null,
+      h("div", { class: "row links" }, listenBtn(cur.text + (talk ? ". " + talk : ""), "say-deck"), cur.doc && S.docs.some(function (d) { return d.id === cur.doc && d.status === "ready"; }) ? h("button", { class: "btn link inl", type: "button", id: "deck-read", onclick: function () { var d = S.docs.filter(function (x) { return x.id === cur.doc; })[0]; openBook(d, cur.page || 1); } }, "Read on") : null));
     var sx = null, dx = 0;
     top.addEventListener("touchstart", function (e) { if (e.target.closest("button")) return; sx = e.touches[0].clientX; dx = 0; top.style.transition = "none"; }, { passive: true });
     top.addEventListener("touchmove", function (e) { if (sx === null) return; dx = e.touches[0].clientX - sx; if (Math.abs(dx) > 8) e.preventDefault(); top.style.transform = "translateX(" + dx + "px) rotate(" + dx / 22 + "deg)"; top.classList.toggle("keep", dx > 90); top.classList.toggle("skip", dx < -90); }, { passive: false });
@@ -4777,7 +4874,7 @@ details.adv[open] { padding-bottom: .9em; }
   function myStatus() {
     var now = new Date(), st = todayStats(now), ck = checkedToday();
     var open = S.tasks.filter(function (t) { return inToday(t, now) && !isDone(t, now); });
-    var o = { v: 1, n: S.name || "", at: Date.now(), day: dayKey(now), t: [st.done, st.total], c: [ck.length, S.checkins.length], f: focusToday(),
+    var o = { v: 1, n: S.name || "", q: S.quietDay === dayKey() ? 1 : 0, at: Date.now(), day: dayKey(now), t: [st.done, st.total], c: [ck.length, S.checkins.length], f: focusToday(),
       k: S.counters.slice(0, 8).map(function (c) { return [c.name, countOf(c.id), c.limit || 0]; }) };
     if (S.share.names) { o.o = open.slice(0, 6).map(function (t) { return t.private ? "Private task" : t.title; }); o.ck = S.checkins.slice(0, 12).map(function (c) { return [c.text, ck.indexOf(c.id) >= 0 ? 1 : 0]; }); }
     return o;
@@ -4785,7 +4882,7 @@ details.adv[open] { padding-bottom: .9em; }
   function cleanStatus(d) {
     d = obj(d); if (!d || d.v !== 1) return null;
     var pair = function (a) { return Array.isArray(a) ? [Math.max(0, Math.floor(+a[0] || 0)), Math.max(0, Math.floor(+a[1] || 0))] : [0, 0]; };
-    return { n: str(d.n, 40), at: +d.at || 0, day: DATE_RE.test(d.day || "") ? d.day : "", t: pair(d.t), c: pair(d.c), f: Math.max(0, Math.floor(+d.f || 0)),
+    return { n: str(d.n, 40), q: d.q ? 1 : 0, at: +d.at || 0, day: DATE_RE.test(d.day || "") ? d.day : "", t: pair(d.t), c: pair(d.c), f: Math.max(0, Math.floor(+d.f || 0)),
       k: (Array.isArray(d.k) ? d.k : []).filter(Array.isArray).slice(0, 8).map(function (x) { return [str(x[0], 30), Math.max(0, Math.floor(+x[1] || 0)), Math.max(0, Math.floor(+x[2] || 0))]; }).filter(function (x) { return x[0]; }),
       o: (Array.isArray(d.o) ? d.o : []).slice(0, 6).map(function (x) { return str(x, 80); }).filter(Boolean),
       ck: (Array.isArray(d.ck) ? d.ck : []).filter(Array.isArray).slice(0, 12).map(function (x) { return [str(x[0], 60), x[1] ? 1 : 0]; }).filter(function (x) { return x[0]; }) };
@@ -4877,6 +4974,7 @@ details.adv[open] { padding-bottom: .9em; }
   function statusView(d, idp, live) {
     var today = d.day === dayKey();
     return h("div", { class: "pstat" },
+      d.q && today ? h("p", { class: "pc quiet", id: idp + "-quiet", text: "Not a great day" }) : null,
       !today ? h("p", { class: "small", text: "This is from " + (d.day ? fmtDate(parseDay(d.day).getTime()) : "earlier") + "." }) : null,
       statBar("Tasks", d.t[0], d.t[1], idp + "-tasks"),
       d.c[1] ? statBar("Check-ins", d.c[0], d.c[1], idp + "-checks") : null,
@@ -4896,7 +4994,7 @@ details.adv[open] { padding-bottom: .9em; }
   // ============ Moments: photos you share with your circle (you and Audi, later a few friends) ============
   // Stored on your own small server (a Cloudflare Worker: see worker/README.md), never on ntfy.
   // Your private reminder photos stay separate and are never shared. The access key stays out of backups.
-  var MO_KEY = "tendays.motoken", MO_REACT = [["respect", "👊", "Respect"], ["fire", "🔥", "Fire"], ["laugh", "😂", "Funny"], ["love", "❤️", "Love"]];
+  var MO_KEY = "tendays.motoken", MO_REACT = [["respect", "👊", "Respect"], ["seeyou", "👀", "I see you"], ["prove", "🔥", "Prove it"], ["brother", "🫂", "That's my brother"], ["saving", "📌", "Saving this"]];
   function moToken() { try { return localStorage.getItem(MO_KEY) || ""; } catch (e) { return ""; } }
   function setMoToken(t) { try { if (t) localStorage.setItem(MO_KEY, t); else localStorage.removeItem(MO_KEY); } catch (e) {} }
   function moOn() { return !!(S.mo.srv && S.mo.circle && moToken()); }
@@ -4919,7 +5017,7 @@ details.adv[open] { padding-bottom: .9em; }
   function moAdopt(d) {
     S.mo.circle = { id: str(d.circle.id, 40), name: str(d.circle.name, 60), created: +d.circle.created || Date.now() };
     S.mo.me = { id: str(d.me.id, 40), name: str(d.me.name, 40) };
-    S.mo.members = (Array.isArray(d.members) ? d.members : []).map(function (m) { return { id: str(m.id, 40), name: str(m.name, 40), left: !!m.left }; });
+    S.mo.members = (Array.isArray(d.members) ? d.members : []).map(function (m) { return { id: str(m.id, 40), name: str(m.name, 40), left: !!m.left, seen: +m.seen || 0 }; });
   }
   function moStart(srv, name) {
     return moFetch("/v1/circles", { method: "POST", srv: srv, token: "", json: { memberName: name, name: "Ten Days" } }).then(function (r) {
@@ -4974,6 +5072,12 @@ details.adv[open] { padding-bottom: .9em; }
       var d = r.data, before = JSON.stringify([S.moments, S.chapters]);
       moAdopt(d); S.mo.lost = false;
       moMerge(Array.isArray(d.moments) ? d.moments : []);
+      // when someone reacts to something you posted: a small notice (iPhone web apps can't buzz from the background)
+      var freshRx = [];
+      S.moments.filter(moMine).forEach(function (m) { m.reactions.forEach(function (r) { if (r.member === S.mo.me.id) return; var key = m.id + ":" + r.member + ":" + r.kind; if (S.mo.rx.indexOf(key) < 0) { S.mo.rx.push(key); freshRx.push([r, m]); } }); });
+      if (S.mo.rx.length > 500) S.mo.rx = S.mo.rx.slice(-500);
+      if (freshRx.length && S.mo.rxInit) { var fr = freshRx[freshRx.length - 1], kk = MO_REACT.filter(function (x) { return x[0] === fr[0].kind; })[0]; toast(moName(fr[0].member) + ": " + (kk ? kk[1] + " " + kk[2] : "reacted") + " on your " + (fr[1].hasPhoto ? "photo" : "moment") + ".", 5000); haptic("success"); }
+      S.mo.rxInit = true;
       (Array.isArray(d.chapters) ? d.chapters : []).forEach(function (c) {
         var x = { period: Math.floor(+c.period || 0), title: str(c.title, 120), body: str(c.body, 6000), momentIds: (Array.isArray(c.momentIds) ? c.momentIds : []).map(function (y) { return str(y, 40); }), by: str(c.by, 40), updated: +c.updated || 0 };
         S.chapters = S.chapters.filter(function (y) { return y.period !== x.period; }).concat([x]);
@@ -5030,6 +5134,7 @@ details.adv[open] { padding-bottom: .9em; }
     var list = S.moments.filter(function (m) { return m.pending; });
     return list.reduce(function (p, m) { return p.then(function () { return moUpload(m); }); }, Promise.resolve());
   }
+  function moLive() { return moOthers().filter(function (x) { return x.seen > Date.now() - 150000; }); }
   function moOthers() { return S.mo.members.filter(function (x) { return !x.left && (!S.mo.me || x.id !== S.mo.me.id); }); }
   // a nudge on his phone through the channel you already use; the moment itself is on your server
   function moPing(m) {
@@ -5068,7 +5173,7 @@ details.adv[open] { padding-bottom: .9em; }
     return moFetch("/v1/leave", { method: "POST", json: { deleteMine: !!deleteMine } }).then(function (r) {
       if (!r.ok && r.status !== 401) { toast("Couldn't leave: " + r.why + "."); return; }
       S.moments.forEach(function (m) { idbDel("blobs", "m:" + m.id).catch(function () {}); });
-      S.moments = []; S.chapters = []; S.mo = { srv: S.mo.srv, ping: S.mo.ping, since: 0, circle: null, me: null, members: [] }; setMoToken(""); save(); toast("You left the circle."); render(false);
+      S.moments = []; S.chapters = []; S.mo = { srv: S.mo.srv, ping: S.mo.ping, since: 0, circle: null, me: null, members: [], rx: [], rxInit: false }; setMoToken(""); save(); toast("You left the circle."); render(false);
     });
   }
   function reactRow(m, idp) {
@@ -5077,7 +5182,7 @@ details.adv[open] { padding-bottom: .9em; }
       var who = m.reactions.filter(function (r) { return r.kind === k[0]; }), mine = who.some(function (r) { return r.member === me; });
       var names = who.map(function (r) { return moWho(r.member); }).join(", ");
       return h("button", { class: "react" + (mine ? " on" : ""), type: "button", id: idp + "-" + k[0], "aria-pressed": mine ? "true" : "false", "aria-label": k[2] + (names ? ", from " + names : ""), onclick: function () { moReact(m, k[0]); } },
-        h("span", { "aria-hidden": "true", text: k[1] }), who.length ? h("b", { "aria-hidden": "true", text: String(who.length) }) : null);
+        h("span", { "aria-hidden": "true", text: k[1] }), h("span", { class: "rl", "aria-hidden": "true", text: k[2] }), who.length ? h("b", { "aria-hidden": "true", text: String(who.length) }) : null);
     }));
   }
   function reactSummary(m) {
@@ -5101,7 +5206,7 @@ details.adv[open] { padding-bottom: .9em; }
     if (!m) return h("section", { class: "card mocard", id: "mo-today" }, h("p", { class: "lbl" }, icon("image"), " Moments"),
       h("p", { class: "small", text: "Share a picture with " + (moOthers().map(function (x) { return x.name; }).join(", ") || "your circle") + ". A reaction is all it needs." }), addMomentBtn("mo-add-today"));
     return h("section", { class: "card mocard", id: "mo-today", "aria-labelledby": "mo-today-h" },
-      h("div", { class: "mohead" }, h("p", { class: "lbl", id: "mo-today-h" }, icon("image"), " Latest moment"), h("button", { class: "btn link", type: "button", id: "mo-all", onclick: function () { go("moments"); } }, "All")),
+      h("div", { class: "mohead" }, h("p", { class: "lbl", id: "mo-today-h" }, icon("image"), " Latest moment"), moLive().length ? h("span", { class: "live", id: "mo-live", text: moLive().map(function (x) { return x.name; }).join(", ") + " is here" }) : null, h("button", { class: "btn link", type: "button", id: "mo-all", onclick: function () { go("moments"); } }, "All")),
       m.hasPhoto ? h("button", { class: "mothumb", type: "button", "aria-label": "Open moments", onclick: function () { go("moments"); } }, moPhoto(m, "sm")) : null,
       h("p", { class: "mometa" }, h("b", { text: moWho(m.author) }), " · " + ago(m.created) + (m.pending ? " · not shared yet" : "")),
       m.caption ? h("p", { class: "mocap", id: "mo-today-cap", text: m.caption }) : null,
@@ -5123,7 +5228,7 @@ details.adv[open] { padding-bottom: .9em; }
     for (var p = cur - 1; p >= Math.max(0, cur - 3); p--) if (!chapterFor(p) && periodMoments(p).some(function (m) { return m.forStory; })) return p;
     return null;
   }
-  var RX_WORD = { respect: "Respect", fire: "a fire", laugh: "a laugh", love: "a heart" };
+  var RX_WORD = { respect: "Respect", seeyou: "“I see you”", prove: "“Prove it”", brother: "“That's my brother”", saving: "“Saving this”" };
   // only what was shared for the chapter: who posted, when, captions, reactions, replies. Never tasks, alerts, urges or notes.
   function chapterInput(list) {
     return list.map(function (m) {
@@ -5206,6 +5311,494 @@ details.adv[open] { padding-bottom: .9em; }
       h("button", { class: "btn link", type: "button", id: "mo-invite", onclick: function () {
         moInviteLink().then(function (r) { if (!r.ok) { toast("No invite: " + r.why + "."); return; } ui.moInvite = r.link; render(false); copyText(r.link, $("mo-invite-link")); });
       } }, "Invite someone"));
+  }
+
+  // ============ reading, rebuilt: one calm scroll; only the pages near you are drawn ============
+  // Your daily amount is learned from what you actually read (the median of your last reading days).
+  function goalOf(d) {
+    var today = dayKey(), from = dayKey(addDays(new Date(), -21));
+    var days = Object.keys(d.read || {}).filter(function (k) { return k !== today && k >= from && d.read[k].length; });
+    var cap0 = Math.max(1, d.pages || 40);   // a short PDF can't ask for more pages than it has
+    if (days.length < 3) return Math.min(cap0, d.goal || 5);
+    return Math.min(cap0, Math.max(2, Math.min(40, Math.round(median(days.map(function (k) { return d.read[k].length; }))))));
+  }
+  var RD = null;   // the open book: { d, root, stack, io, want, done, tasks, cur, zoom, session }
+  var RATIO = 0.7727;   // US Letter until the real page size is known
+  function readerClose() {
+    if (!RD) return;
+    var r = RD; RD = null;
+    try { r.io.disconnect(); } catch (e) {}
+    Object.keys(r.tasks).forEach(function (n) { try { r.tasks[n].cancel(); } catch (e) {} });
+    Object.keys(r.done).forEach(function (n) { releasePage(r, +n); });
+    window.removeEventListener("scroll", r.onScroll);
+    document.body.classList.remove("rd-chrome");
+    clearTimeout(r.chromeT); clearTimeout(r.saveT);
+    if (r.session.length) autoCards(r.d, r.session.slice());
+  }
+  function releasePage(r, n) {
+    var el = r.stack.querySelector("#pg-" + n);
+    delete r.done[n];
+    if (!el) return;
+    var c = el.querySelector("canvas"); if (c) { c.width = 0; c.height = 0; }   // frees the bitmap right away on iPhone
+    el.replaceChildren(); el.removeAttribute("data-ready");
+  }
+  function setRatio(r, el, ratio) {
+    var before = el.offsetHeight, above = el.getBoundingClientRect().bottom <= 0;
+    el.style.aspectRatio = String(ratio);
+    var delta = el.offsetHeight - before;
+    if (above && delta) window.scrollBy(0, delta);   // keep your place when a page above you changes size
+  }
+  function pumpPages(r) {
+    if (r.busy || RD !== r) return;
+    var wanted = Object.keys(r.want).map(Number).filter(function (n) { return !r.done[n]; });
+    if (!wanted.length) return;
+    wanted.sort(function (a, b) { return Math.abs(a - r.cur) - Math.abs(b - r.cur); });
+    var n = wanted[0], el = r.stack.querySelector("#pg-" + n);
+    if (!el) { delete r.want[n]; return pumpPages(r); }
+    r.busy = true;
+    pdfDoc(r.d).then(function (doc) { return doc.getPage(Math.min(n, doc.numPages)); }).then(function (pg) {
+      if (RD !== r || !r.want[n]) return;
+      var vp1 = pg.getViewport({ scale: 1 }), ratio = vp1.width / vp1.height;
+      if (n === 1 && Math.abs(ratio - (r.d.ratio || RATIO)) > .005) {
+        r.d.ratio = Math.round(ratio * 10000) / 10000; save();
+        Array.prototype.forEach.call(r.stack.children, function (x) { if (!x.getAttribute("data-ready")) setRatio(r, x, r.d.ratio); });
+      } else if (Math.abs(ratio - parseFloat(el.style.aspectRatio || RATIO)) > .005) setRatio(r, el, ratio);
+      var w = el.clientWidth || 340, dpr = Math.min(2, window.devicePixelRatio || 1), scale = w / vp1.width;
+      if (w * dpr * (w / ratio) * dpr > 6e6) dpr = Math.sqrt(6e6 / (w * w / ratio));   // stay well under iPhone's canvas limit
+      var vp = pg.getViewport({ scale: scale * dpr }), c = document.createElement("canvas");
+      c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+      c.setAttribute("role", "img"); c.setAttribute("aria-label", "Page " + n + " of " + r.d.name);
+      var task = pg.render({ canvasContext: c.getContext("2d"), viewport: vp }); r.tasks[n] = task;
+      return task.promise.then(function () {
+        delete r.tasks[n];
+        if (RD !== r || !r.want[n]) { c.width = 0; c.height = 0; return; }
+        var vpc = pg.getViewport({ scale: scale }), tl = h("div", { class: "textLayer" });
+        tl.style.setProperty("--scale-factor", String(scale));
+        el.replaceChildren(c, tl); el.setAttribute("data-ready", "1"); r.done[n] = true;
+        var lib = window.pdfjsLib;
+        if (lib && lib.renderTextLayer) pg.getTextContent().then(function (tc) { return lib.renderTextLayer({ textContentSource: tc, container: tl, viewport: vpc, textDivs: [] }).promise; }).then(function () { pg.cleanup(); }).catch(function () {});
+      });
+    }).catch(function (e) {
+      delete r.tasks[n];
+      if (e && e.name === "RenderingCancelledException") return;
+      if (RD !== r) return;
+      r.want = {};   // stop trying; say why once
+      var note = $("read-err");
+      if (!note) r.root.insertBefore(h("div", { class: "card", id: "read-err", role: "status" }, h("p", { class: "small", text: e && e.message === "nofile" ? "This book was added before Ten Days kept the file. Add the PDF again to see its pages." : e && e.message === "reader" ? "The PDF reader couldn't load. Check your connection." : "This book couldn't be shown." }),
+        e && e.message === "nofile" ? h("button", { class: "btn", type: "button", id: "read-attach", onclick: function () { var f = h("input", { type: "file", accept: "application/pdf,.pdf", hidden: true, onchange: function (ev) { var x = ev.target.files && ev.target.files[0]; if (x) attachFile(r.d, x); } }); document.body.appendChild(f); f.click(); } }, "Add the PDF again") : null), r.root.firstChild);
+    }).then(function () { r.busy = false; pumpPages(r); });
+  }
+  function readerFind(r) {
+    var mid = window.innerHeight * .4, kids = r.stack.children, lo = 0, hi = kids.length - 1, best = 0;
+    while (lo <= hi) { var m = (lo + hi) >> 1, top = kids[m].getBoundingClientRect().top; if (top <= mid) { best = m; lo = m + 1; } else hi = m - 1; }
+    var el = kids[best], rc = el.getBoundingClientRect();
+    return { page: best + 1, frac: Math.max(0, Math.min(1, (mid - rc.top) / Math.max(1, rc.height))) };
+  }
+  function readerScrollTo(r, page, frac) {
+    var el = r.stack.querySelector("#pg-" + page); if (!el) return;
+    var top = window.scrollY + el.getBoundingClientRect().top;
+    window.scrollTo(0, Math.max(0, frac > .02 ? top + frac * el.offsetHeight - window.innerHeight * .4 : top - 8));
+  }
+  function setChrome(on) {
+    if (!RD) return;
+    document.body.classList.toggle("rd-chrome", !!on);
+    clearTimeout(RD.chromeT);
+    RD.chromeY = window.scrollY;
+  }
+  function readerUpdate(r) {
+    var d = r.d, n = readToday(d).length, g = goalOf(d), bar = $("rd-prog-i"), lbl = $("read-page");
+    if (bar) bar.style.width = Math.min(100, Math.round(n / g * 100)) + "%";
+    var pb = $("rd-prog"); if (pb) pb.setAttribute("aria-valuenow", String(Math.min(n, g)));
+    if (lbl) lbl.textContent = "Page " + r.cur + " of " + d.pages;
+  }
+  function readerOnScroll(r) {
+    if (r.raf) return;
+    r.raf = requestAnimationFrame(function () {
+      r.raf = 0;
+      if (RD !== r) return;
+      var at = readerFind(r);
+      if (document.body.classList.contains("rd-chrome") && Math.abs(window.scrollY - (r.chromeY || 0)) > 40) setChrome(false);
+      if (at.page !== r.cur) {
+        r.cur = at.page; r.d.pos = at.page;
+        ui.rd = { doc: r.d.id, page: at.page, since: Date.now() };
+        readerUpdate(r); tickRead();
+      }
+      r.d.posFrac = Math.round(at.frac * 1000) / 1000; r.d.lastRead = Date.now();
+      clearTimeout(r.saveT); r.saveT = setTimeout(save, 800);
+    });
+  }
+  function readerRoot(d) {
+    var zoom = ui.zoom || 1;
+    if (RD && RD.d === d && RD.zoom === zoom && RD.root) return RD.root;   // the same book stays drawn across refreshes
+    if (RD) readerClose();
+    var stack = h("div", { class: "rpages", id: "rd-pages", style: zoom > 1 ? "width:" + Math.round(zoom * 100) + "%" : "" });
+    for (var i = 1; i <= Math.max(1, d.pages); i++) stack.appendChild(h("div", { class: "rpage", id: "pg-" + i, "data-page": String(i), style: "aspect-ratio:" + (d.ratio || RATIO) }));
+    var root = h("div", { class: "reader" + (zoom > 1 ? " zoomed" : ""), id: "reader" }, h("div", { class: "rscroll" }, stack),
+      h("p", { class: "rd-end", id: "rd-end", text: "The end of " + d.name + "." }));
+    var r = RD = { d: d, root: root, stack: stack, want: {}, done: {}, tasks: {}, cur: Math.max(1, Math.min(d.pages || 1, d.pos || 1)), zoom: zoom, session: [] };
+    r.io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { var n = +e.target.getAttribute("data-page"); if (e.isIntersecting) r.want[n] = true; else { delete r.want[n]; if (r.done[n]) releasePage(r, n); if (r.tasks[n]) { try { r.tasks[n].cancel(); } catch (x) {} } } });
+      pumpPages(r);
+    }, { rootMargin: "100% 0px 100% 0px" });
+    Array.prototype.forEach.call(stack.children, function (x) { r.io.observe(x); });
+    r.onScroll = function () { readerOnScroll(r); };
+    window.addEventListener("scroll", r.onScroll, { passive: true });
+    // one tap brings the controls back; scrolling hides them
+    stack.addEventListener("click", function (e) {
+      var s = window.getSelection && window.getSelection();
+      if (s && String(s).trim()) return;
+      if (e.target.closest("a,button")) return;
+      setChrome(!document.body.classList.contains("rd-chrome"));
+    });
+    ui.rd = { doc: d.id, page: r.cur, since: Date.now() };
+    var pos = r.cur, frac = d.posFrac || 0;
+    setTimeout(function () { if (RD === r) { readerScrollTo(r, pos, frac); r.cur = pos; setChrome(true); r.chromeT = setTimeout(function () { setChrome(false); }, 2500); } }, 0);
+    // pages you read in this sitting, for the AI to choose cards from afterwards
+    return root;
+  }
+  function readerFloat(d) {
+    var link = S.tasks.filter(function (t) { return t.docId === d.id && t.type === "READ"; })[0], n = readToday(d).length, g = goalOf(d), zoom = ui.zoom || 1;
+    var close = function () { go(ui.readPrev && ui.readPrev !== "read" ? ui.readPrev : "home"); };
+    var cur = RD && RD.d === d ? RD.cur : d.pos || 1;
+    return [
+      h("div", { class: "rdprog", id: "rd-prog", role: "progressbar", "aria-label": "Today's reading", "aria-valuemin": "0", "aria-valuemax": String(g), "aria-valuenow": String(Math.min(n, g)) }, h("i", { id: "rd-prog-i", style: "width:" + Math.min(100, Math.round(n / g * 100)) + "%" })),
+      h("div", { class: "rdover", id: "rd-over", role: "toolbar", "aria-label": "Reading controls", onfocusin: function () { setChrome(true); } },
+        h("button", { class: "iconbtn", type: "button", id: "read-close", "aria-label": "Close the book", onclick: close }, icon("x")),
+        h("p", { class: "rdo-t", id: "read-page", "aria-live": "polite", text: "Page " + cur + " of " + d.pages }),
+        h("button", { class: "chip sm", type: "button", id: "rd-zoom", "aria-pressed": zoom > 1 ? "true" : "false", onclick: function () { var at = RD ? readerFind(RD) : { page: cur, frac: 0 }; ui.zoom = zoom > 1 ? 1 : 1.6; d.pos = at.page; d.posFrac = at.frac; readerClose(); render(false); } }, zoom > 1 ? "Fit" : "Zoom"),
+        h("button", { class: "chip sm", type: "button", id: "rd-card", onclick: function () { go("doc", { id: d.id, page: RD ? RD.cur : cur }); } }, "Save card"),
+        d.kind === "learning" ? h("button", { class: "chip sm", type: "button", id: "rd-quiz", onclick: function () { ui.qz = null; go("quiz", { docId: d.id }); } }, "Quiz") : null,
+        h("button", { class: "chip sm primary", type: "button", id: "read-done", onclick: function () {
+          var p = RD ? RD.cur : cur, was = link && isDone(link);
+          markRead(d, p);
+          if (link && !isDone(link) && inToday(link)) markDone(link); else if (!link || was) toast("Saved your place: page " + p + ".");
+          close();
+        } }, "Done"))
+    ];
+  }
+
+  // ============ cards: themes, what you use, and the AI choosing for you after you read ============
+  var CARD_THEMES = [["urges", "Urges"], ["discipline", "Discipline"], ["peace", "Peace"], ["relationships", "Relationships"], ["purpose", "Purpose"], ["learning", "Learning"]];
+  var THEME_RE = {
+    urges: /\b(?:urge|crav\w*|tempt\w*|desire\w*|pleasure\w*|addict\w*|relaps\w*|resist\w*|impuls\w*|lust|senses|indulg\w*)\b/gi,
+    discipline: /\b(?:disciplin\w*|habit\w*|effort\w*|practi[cs]e\w*|work\w*|consisten\w*|routine\w*|train\w*|commit\w*|action\w*|lazy|procrastinat\w*|duty|persever\w*)\b/gi,
+    peace: /\b(?:peace\w*|calm\w*|still\w*|breath\w*|anxi\w*|fear\w*|worr\w*|present|mind|rest|quiet\w*|accept\w*|equanim\w*|steady|patien\w*)\b/gi,
+    relationships: /\b(?:friend\w*|love\w*|family|brother\w*|mother|father|people|kind\w*|anger|angry|forgiv\w*|relationship\w*|together|compassion\w*)\b/gi,
+    purpose: /\b(?:purpose\w*|meaning\w*|goal\w*|dream\w*|future|life|soul|path|calling|why)\b/gi,
+    learning: /\b(?:learn\w*|study\w*|knowledge|understand\w*|skill\w*|interest|rate|percent|principle\w*)\b/gi
+  };
+  function themeOf(text) {
+    var best = "purpose", bn = 0;
+    CARD_THEMES.forEach(function (t) { var m = String(text || "").match(THEME_RE[t[0]]), n = m ? m.length : 0; if (n > bn) { bn = n; best = t[0]; } });
+    return best;
+  }
+  function cardTheme(c) { return c.theme || themeOf(c.quote); }
+  function themeName(k) { return (CARD_THEMES.filter(function (t) { return t[0] === k; })[0] || [k, cap(k)])[1]; }
+  function useCard(text) { var c = S.cards.filter(function (x) { return x.quote === text; })[0]; if (c) { c.used = (c.used || 0) + 1; c.archived = false; save(); } }
+  // once a day: cards you've seen several times over three weeks and never kept, read or opened go to Archived (never deleted)
+  function curateCards() {
+    var k = dayKey(); if (S.curated === k) return; S.curated = k;
+    var cut = Date.now() - 21 * 864e5, n = 0;
+    S.cards.forEach(function (c) { if (!c.archived && c.at < cut && (c.seen || 0) >= 3 && !(c.used || 0) && !S.kept.some(function (x) { return x.text === c.quote; })) { c.archived = true; n++; } });
+    save();
+    return n;
+  }
+  var AI_AUTOCARDS = "The numbered passages below were copied word for word from a book the person is reading. Choose the 1 to 3 that would help THIS person most in a hard moment, using what you know about them. " +
+    "Prefer passages that stand on their own and that match what helps them. Never rewrite a passage. " +
+    'Reply with JSON only: {"picks":[{"n":1,"theme":"urges|discipline|peace|relationships|purpose|learning","why":"under 12 words"}]}. Use an empty list if none truly fit.';
+  function whatHelps() {
+    var lines = [], used = S.cards.filter(function (c) { return (c.used || 0) > 0; }).sort(function (a, b) { return (b.used || 0) - (a.used || 0); }).slice(0, 5);
+    var th = {}; S.cards.forEach(function (c) { if (!c.archived) th[cardTheme(c)] = (th[cardTheme(c)] || 0) + 1 + (c.used || 0); });
+    var top = Object.keys(th).sort(function (a, b) { return th[b] - th[a]; }).slice(0, 3);
+    if (aiOn("support")) {
+      var hb = S.profile.habit || (HABITS.filter(function (x) { return x[0] === S.profile.habitKey; })[0] || [])[1];
+      if (hb) lines.push("Working on: " + hb + ".");
+      if (S.profile.reasons.length) lines.push("Their reasons: " + S.profile.reasons.join("; ") + ".");
+    }
+    if (top.length) lines.push("Themes that help them most: " + top.join(", ") + ".");
+    if (used.length) lines.push("Passages they come back to:\n" + used.map(function (c) { return "- " + c.quote.slice(0, 160); }).join("\n"));
+    return lines.join("\n");
+  }
+  function autoCards(d, pages) {
+    if (!aiOn("library") || !pages.length) return;
+    var texts = docCache[d.id];
+    if (!texts) { idbGet("docs", d.id).then(function (x) { if (x && Array.isArray(x.pages)) { docCache[d.id] = x.pages; autoCards(d, pages); } }).catch(function () {}); return; }
+    var done = S.autoDone[d.id] || (S.autoDone[d.id] = []), fresh = pages.filter(function (p) { return done.indexOf(p) < 0; }).slice(0, 12);
+    if (!fresh.length) return;
+    var cand = [];
+    fresh.forEach(function (p) { passages(texts[p - 1] || "").forEach(function (t) { if (cand.length < 40 && !S.cards.some(function (c) { return c.quote === t; })) cand.push({ text: t, page: p }); }); });
+    S.autoDone[d.id] = done.concat(fresh).slice(-600); save();
+    if (!cand.length) return;
+    var who = whatHelps();
+    aiCall(AI_AUTOCARDS + (who ? "\n\nWhat you know about what helps them:\n" + who : ""), cand.map(function (c, i) { return (i + 1) + ". " + c.text; }).join("\n"), { json: true, max: 600, area: "library" }).then(function (r) {
+      var picks = r.ok && obj(r.data) && Array.isArray(r.data.picks) ? r.data.picks : [];
+      var seen = {}, chosen = [];
+      picks.forEach(function (p) { var n = Math.floor(+(p && p.n) || 0); if (n >= 1 && n <= cand.length && !seen[n] && chosen.length < 3) { seen[n] = 1; chosen.push({ c: cand[n - 1], theme: THEME_RE[p.theme] ? p.theme : themeOf(cand[n - 1].text), why: str(p.why, 80) }); } });
+      if (!chosen.length) return;
+      var made = [];
+      chosen.forEach(function (x) {
+        var ids = makeCards(d, [{ text: x.c.text, page: x.c.page }], x.theme === "urges" ? "urge" : "other:Mindset");
+        ids.forEach(function (id) { var c = S.cards.filter(function (y) { return y.id === id; })[0]; if (c) { c.theme = x.theme; c.by = "ai"; c.why = x.why; made.push(id); } });
+      });
+      save();
+      if (made.length) toast("Saved " + made.length + (made.length === 1 ? " card" : " cards") + " from today's reading.", 6000, { label: "Undo", fn: function () { S.cards = S.cards.filter(function (c) { return made.indexOf(c.id) < 0; }); save(); render(false); } });
+      if (ui.screen === "library") render(false);
+    });
+  }
+  // what kind of card fits right now: the time, how you got here, how you said you were
+  function momentThemes(sup) {
+    var hr = new Date().getHours(), out = [], m = recentMood();
+    if (m === "urge" || (sup && /^(sos|hard)$/.test(sup.via || ""))) out.push("urges");
+    if (m === "anger") out.push("peace", "relationships");
+    if (m === "anxiety" || m === "restless") out.push("peace");
+    if (m === "low") out.push("purpose", "peace");
+    if (m === "lazy") out.push("discipline");
+    if (hr >= 21 || hr < 5) out.push("urges", "peace");
+    else if (hr < 12) out.push("discipline", "purpose");
+    else out.push("discipline", "peace");
+    return out.filter(function (x, i, a) { return a.indexOf(x) === i; });
+  }
+  function recentMood() {
+    var cut = Date.now() - 3 * 3600e3, f = S.lastFeel && S.lastFeel.at > cut ? S.lastFeel.text : "";
+    var mo = S.moods.filter(function (x) { return x.at > cut; }).slice(-1)[0];
+    var t = moodOf(f) || (mo && moodOf(mo.text)) || "";
+    if (!t && mo && mo.v >= 2) t = "low";
+    if (!t) { var n = S.notes.filter(function (x) { return x.at > cut; })[0]; if (n) t = moodOf(n.text); }
+    return t;
+  }
+  function fitScore(x, want) {
+    var th = x.card ? cardTheme(x.card) : themeOf(x.text), i = want.indexOf(th), s = i < 0 ? 0 : 4 - Math.min(3, i);
+    if (x.card) { s += Math.min(3, x.card.used || 0) + 1; if (x.card.lastSeen && Date.now() - x.card.lastSeen < 12 * 3600e3) s -= 3; }
+    if (x.by === "kept") s += 1;
+    return s + Math.random() * .5;
+  }
+  // a few words about the card, the way a brother would say it
+  function talkLine(x, want) {
+    var hr = new Date().getHours(), th = x.card ? cardTheme(x.card) : themeOf(x.text);
+    if (th === "urges" || want[0] === "urges") return hr >= 21 || hr < 5 ? "It's late, and late is when this hits hardest. Read it once more, slowly. Then put the phone in another room for ten minutes." : "The wave peaks and then it drops. Read it again, breathe out longer than you breathe in, and give it ten minutes.";
+    if (th === "peace") return "You don't have to fix everything right now. Read it, take three slow breaths, and just do the next small thing.";
+    if (th === "discipline") return "You already know what to do. Do the smallest version of it, right now, before you think about it more.";
+    if (th === "relationships") return "Whatever happened with them, you can choose how you show up next. Give it a little time before you answer.";
+    return "You've come back to this for a reason. Take it with you into the next hour.";
+  }
+
+  // ============ check-ins by time of day, learned from when you actually tick them ============
+  var BANDS = [["morning", "This morning"], ["afternoon", "This afternoon"], ["night", "Tonight"]], BAND_ORDER = ["morning", "afternoon", "night"];
+  function nowBand(now) { var hr = (now || new Date()).getHours(); return hr < 4 ? "night" : hr < 12 ? "morning" : hr < 17 ? "afternoon" : "night"; }
+  function bandOfMin(m) { return m < 4 * 60 ? "night" : m < 12 * 60 ? "morning" : m < 17 * 60 ? "afternoon" : "night"; }
+  function ckTime(c) { var xs = S.checkTimes[c.id] || []; return xs.length >= 2 ? Math.round(median(xs)) : -1; }
+  function ckBand(c) {
+    var m = ckTime(c); if (m >= 0) return bandOfMin(m);
+    var t = c.text.toLowerCase();
+    if (/journal|read|gratitude|reflect|sleep|phone (?:away|out)|pray|wind ?down|night|evening|screens?\b/.test(t)) return "night";
+    if (/ground|breath|meditat|fascia|stretch|yoga|sunlight|cold shower|morning|water/.test(t)) return "morning";
+    if (/workout|gym|run\b|running|train|lift|class|study|practice|muay|boxing/.test(t)) return "afternoon";
+    return "any";
+  }
+  // physical things together, quiet things together
+  function ckGroup(c) { var t = c.text.toLowerCase(); return /ground|breath|fascia|stretch|yoga|workout|gym|run|walk|cold|lift|train|sport|swim|move|muay|boxing/.test(t) ? 0 : /read|journal|meditat|pray|gratitude|reflect|write/.test(t) ? 1 : 2; }
+  function logCheckTime(id) { var d = new Date(), a = S.checkTimes[id] || (S.checkTimes[id] = []); a.push(d.getHours() * 60 + d.getMinutes()); if (a.length > 30) a.shift(); }
+  function ckChip(x, c) {
+    var on = c.indexOf(x.id) >= 0;
+    return h("button", { class: "ckchip" + (on ? " on" : ""), type: "button", id: "ck-" + x.id, "aria-pressed": on ? "true" : "false", onclick: function () { toggleCheck(x.id); } }, icon(on ? "check" : "circle"), h("span", { text: x.text }));
+  }
+  function checkinsBlock() {
+    if (!S.checkins.length && !S.counters.length) return null;
+    var now = new Date(), c = checkedToday(), band = nowBand(now), bi = BAND_ORDER.indexOf(band), all = !!ui.ckAll;
+    var sorted = S.checkins.slice().sort(function (a, b) { return ckGroup(a) - ckGroup(b); });
+    var bandX = function (x) { var b = ckBand(x); return b === "any" ? band : b; };
+    var curr = sorted.filter(function (x) { return bandX(x) === band; });
+    var open = sorted.filter(function (x) { return BAND_ORDER.indexOf(bandX(x)) < bi && c.indexOf(x.id) < 0; });
+    var later = sorted.filter(function (x) { return BAND_ORDER.indexOf(bandX(x)) > bi; });
+    var greet = { morning: "Good morning", afternoon: "This afternoon", night: "Tonight" }[band];
+    var cls = band === "morning" ? blockSpans(now).filter(function (s) { return s[1] > now.getTime(); }) : [];
+    return h("section", { class: "checkins", id: "checkins", "aria-labelledby": "ck-h" },
+      h("div", { class: "sect" }, h("h2", { id: "ck-h", text: S.checkins.length ? greet : "Today's counts" }),
+        h("button", { class: "btn link", type: "button", id: "ck-edit", onclick: function () { go("checkins"); } }, S.checkins.length ? c.length + " of " + S.checkins.length : "Edit")),
+      cls.length ? h("p", { class: "small", id: "ck-class", text: "Class today: " + cls.map(function (s) { return s[2].title + " at " + fmtTime(s[0]); }).join(", ") + "." }) : null,
+      countsRow(),
+      all ? BANDS.map(function (b) {
+        var xs = sorted.filter(function (x) { return bandX(x) === b[0]; });
+        return xs.length ? h("div", { class: "ckband", id: "ckb-" + b[0] }, h("p", { class: "lbl", text: b[1] }), h("div", { class: "ckwrap" }, xs.map(function (x) { return ckChip(x, c); }))) : null;
+      }) : [
+        open.length ? h("div", { class: "ckband open", id: "ck-open" }, h("p", { class: "lbl", text: "Still open" }), h("div", { class: "ckwrap" }, open.map(function (x) { return ckChip(x, c); }))) : null,
+        curr.length ? h("div", { class: "ckwrap", id: "ck-now" }, curr.map(function (x) { return ckChip(x, c); })) : null],
+      S.checkins.length && (later.length || all) ? h("button", { class: "btn link sm", type: "button", id: "ck-all", "aria-expanded": all ? "true" : "false", onclick: function () { ui.ckAll = !all; render(false); } },
+        all ? "Just what's now" : later.length + " more later today") : null);
+  }
+
+  // ============ a brother who notices: nudges at your times, quieter when you wave them off ============
+  function nudgeFor(now) {
+    if (!S.checkins.length) return null;
+    var N = S.nudge, k = dayKey(now), c = checkedToday(), m = now.getHours() * 60 + now.getMinutes(), pick = null;
+    if (N.day !== k) { N.day = k; N.shown = []; N.cur = ""; }
+    // a nudge you let pass without answering counts as "not now"
+    if (N.cur) { var cx = S.checkins.filter(function (x) { return x.id === N.cur; })[0], ct = cx ? ckTime(cx) : -1; if (!cx || c.indexOf(cx.id) >= 0) N.cur = ""; else if (ct >= 0 && m > ct + 60) { ignoreNudge(cx, true); } else return cx; }
+    if (N.shown.length >= 3) return null;
+    S.checkins.forEach(function (x) {
+      if (pick || c.indexOf(x.id) >= 0 || N.shown.indexOf(x.id) >= 0) return;
+      var t = ckTime(x), st = N.items[x.id]; if (t < 0 || (st && st.quiet > Date.now())) return;
+      if (m >= t - 10 && m <= t + 60) pick = x;
+    });
+    if (pick) { N.shown.push(pick.id); N.cur = pick.id; save(); }
+    return pick;
+  }
+  function ignoreNudge(x, silent) {
+    var st = S.nudge.items[x.id] || (S.nudge.items[x.id] = { ign: 0, quiet: 0 });
+    st.ign++; S.nudge.cur = "";
+    if (st.ign >= 2) { st.quiet = Date.now() + 7 * 864e5; st.ign = 0; if (!silent) toast("Got it. I'll stay quiet about “" + x.text + "” for a week."); }
+    save();
+  }
+  function nudgeCard(now) {
+    var x = nudgeFor(now); if (!x) return null;
+    return h("div", { class: "card nudge", id: "nudge", role: "status" },
+      h("p", { class: "status", id: "nudge-t", text: "You usually do " + x.text.charAt(0).toLowerCase() + x.text.slice(1) + " around " + hmText(hmOf(ckTime(x))) + ". Now's a good time." }),
+      h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "nudge-done", onclick: function () { S.nudge.cur = ""; toggleCheck(x.id); } }, "Done it"),
+        h("button", { class: "btn link", type: "button", id: "nudge-later", onclick: function () { ignoreNudge(x); render(false); } }, "Not now")));
+  }
+
+  // ============ deadlines: ask once when it's due and when you'll start ============
+  var DEADLINE_RE = /\b(?:assignment|homework|hw|essay|paper|project|report|exam|test|quiz|midterm|final|application|deadline|due|submission|problem set|pset)s?\b/i;
+  function isDeadline(d) { return d.repeat === "once" && d.type !== "CALL" && DEADLINE_RE.test(d.title + " " + (d.src || "")); }
+  function nextDays(n) { var out = [], now = new Date(); for (var i = 2; i < 2 + n; i++) out.push(addDays(now, i)); return out; }
+  function dueBlock(a, q) {
+    var d = a.d, done = function (k) { d.asked.push(k); advance(); };
+    var dIn = h("input", { type: "date", id: q === "due" ? "aq-due" : "aq-start", min: dayKey(), "aria-labelledby": "aq-text" });
+    if (q === "due") {
+      var setDue = function (k) { d.due = k; if (!d.date) d.date = k; done("due"); };
+      return [h("div", { class: "row" },
+          qChip("aq-due-today", "Today", function () { setDue(dayKey()); }, true),
+          qChip("aq-due-tom", "Tomorrow", function () { setDue(dayKey(addDays(new Date(), 1))); }),
+          nextDays(3).map(function (x, i) { return qChip("aq-due-" + i, DOW[x.getDay()], function () { setDue(dayKey(x)); }); }),
+          qChip("aq-due-skip", "Skip", function () { d.asked.push("start"); done("due"); })),
+        h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); if (!DATE_RE.test(dIn.value)) { toast("Pick a date first."); return; } setDue(dIn.value); } }, dIn, h("button", { class: "btn", type: "submit", id: "aq-due-set" }, "Set"))];
+    }
+    var due = d.due || d.date, dueD = due ? parseDay(due) : null;
+    var setStart = function (k, tm) { d.date = k < dayKey() ? dayKey() : k; if (tm) { d.time = tm; d.remindWant = true; d.remind = true; } if (!d.due) d.due = due; done("start"); };
+    var opts = [["aq-st-now", "Today", dayKey(), ""], ["aq-st-eve", "Tonight 7 PM", dayKey(), "19:00"], ["aq-st-tom", "Tomorrow", dayKey(addDays(new Date(), 1)), ""]];
+    if (dueD && dayKey(addDays(dueD, -2)) > dayKey(addDays(new Date(), 1))) opts.push(["aq-st-2", "2 days before", dayKey(addDays(dueD, -2)), ""]);
+    var tIn = h("input", { type: "time", id: "aq-st-time", "aria-label": "Start time (optional)" });
+    return [h("div", { class: "row" }, opts.map(function (o, i) { return qChip(o[0], o[1], function () { setStart(o[2], o[3] || (TIME_RE.test(tIn.value) ? tIn.value : "")); }, i === 0); }),
+        qChip("aq-st-skip", "Skip", function () { if (due && !d.due) d.due = due; done("start"); })),
+      h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); if (!DATE_RE.test(dIn.value)) { toast("Pick a day first."); return; } setStart(dIn.value, TIME_RE.test(tIn.value) ? tIn.value : ""); } }, dIn, tIn, h("button", { class: "btn", type: "submit", id: "aq-st-set" }, "Set")),
+      h("p", { class: "small", text: "With a time, you get a reminder when it's time to start." })];
+  }
+
+  // ============ "How's today going?" once a day, and an answer like a brother's ============
+  var HAY = [["good", "Good"], ["okay", "Okay"], ["bad", "Not great"], ["rough", "Struggling"]];
+  var BROTHER = "Talk like their brother who knows them well: warm, direct, a little philosophical, plain words, short. Not corporate, not a therapist, never a lecture. ";
+  var AI_HAY = BROTHER + "They just told you how their day is going (data below). Reply in 2 or 3 short sentences: something grounded and specific to do in the next hour (like a 15-minute walk, a few minutes of breathwork, or 30 minutes off before coming back to it), and, if it fits, one short lesson drawn ONLY from the lines provided, naming its source. Never invent things they didn't say.";
+  var REL_RE = /\b(?:girlfriend|gf|boyfriend|bf|friend|friends|mom|dad|mother|father|brother|sister|family|roommate|fight|fought|argu\w*|relationship|break ?up|broke up|ex)\b/i;
+  function hayTopic(a) {
+    var t = a.text || "", m = moodOf(t);
+    if (m === "urge" || (a.v === "rough" && !t)) return "urge";
+    if (REL_RE.test(t) || m === "anger") return "people";
+    if (m === "anxiety" || m === "results" || /\bstress\w*|overwhelm\w*|deadline|behind\b/i.test(t)) return "stress";
+    if (m === "low") return "low";
+    if (m === "lazy" || m === "restless") return "stuck";
+    return a.v;
+  }
+  var HAY_SAY = {
+    urge: ["Urges pass faster when you move. Walk for 15 minutes with the phone in your pocket, then check back in.", ["walk", "breathe", "sos"]],
+    people: ["Give it 30 minutes before you reply to anyone. Walk it off first; you'll say it better after.", ["walk", "off"]],
+    stress: ["Take 30 minutes off, then come back and do only the first small piece. That's the whole plan.", ["off", "breathe"]],
+    low: ["Low days count too. Get outside for 15 minutes, eat something real, then pick one small thing.", ["walk", "breathe"]],
+    stuck: ["Do 10 minutes. Just 10. Momentum does the rest.", ["ten"]],
+    bad: ["Not every day has to be good. A 15-minute walk or a few slow breaths will reset more than you think.", ["walk", "breathe"]],
+    rough: ["I'm glad you said it. Let's take the next ten minutes, not the whole day.", ["breathe", "walk", "sos"]],
+    okay: ["Okay is fine. What's one small thing that would make tonight better? Do that one.", []],
+    good: ["Good. Keep it simple: one thing that moves you forward, then rest without guilt.", []]
+  };
+  var TOPIC_THEMES = { urge: ["urges"], people: ["relationships", "peace"], stress: ["peace", "discipline"], low: ["purpose", "peace"], stuck: ["discipline"], bad: ["peace"], rough: ["urges", "peace"] };
+  function hayLesson(topic) {
+    var want = TOPIC_THEMES[topic]; if (!want) return null;
+    var cs = S.cards.filter(function (c) { return !c.archived && want.indexOf(cardTheme(c)) >= 0; }).sort(function (a, b) { return (b.used || 0) - (a.used || 0); });
+    if (cs.length) return { text: cs[0].quote, label: "Exact quote · " + cs[0].docName + (cs[0].page ? ", p. " + cs[0].page : "") };
+    if (!krishna()) return null;
+    var g = gitaFor({ urge: "urge", people: "anger", stress: "anxiety", low: "low", stuck: "lazy", bad: "low", rough: "urge" }[topic] || "", Date.now() % 7);
+    return { text: g[2], label: gitaLabel(g) };
+  }
+  function hayAnswer(v, text) {
+    var m = { at: Date.now(), v: ["good", "okay", "bad", "rough"].indexOf(v), text: str(text, 300).trim() };
+    S.moods.push(m); if (S.moods.length > 200) S.moods.shift(); save();
+    var a = ui.hay = { v: v, text: m.text, at: m.at };
+    a.topic = hayTopic(a); a.lesson = hayLesson(a.topic);
+    if (aiOn("support") && (v === "bad" || v === "rough" || m.text)) {
+      a.busy = true;
+      var lines = [a.lesson ? "- " + a.lesson.text + " (" + a.lesson.label + ")" : ""].filter(Boolean);
+      aiCall(AI_HAY, "How it's going: " + HAY.filter(function (x) { return x[0] === v; })[0][1] + "." + (m.text ? "\nWhat they said: " + m.text : "") + (lines.length ? "\nLines you may draw on:\n" + lines.join("\n") : ""), { temp: .7, max: 300, area: "support" })
+        .then(function (r) { a.busy = false; if (r.ok) a.ai = r.text; else a.err = aiWhy(r); if (ui.hay === a && ui.screen === "home") render(false); });
+    }
+    render(false);
+  }
+  function hayActions(list) {
+    var B = {
+      walk: ["hay-walk", "15-minute walk", function () { ui.hay = null; startFocus(null, 15); toast("15 minutes. Phone in your pocket."); }],
+      breathe: ["hay-breathe", "Breathe 3 min", function () { ui.hay = null; go("breathe"); }],
+      off: ["hay-off", "30 minutes off", function () {
+        ui.hay = null;
+        if (S.topics.reminders) ntfy(S.topics.reminders, { title: "Back to it?", priority: "3", tags: "hourglass", delay: "1800" }, "30 minutes are up. Just the first small piece.").then(function (r) { toast(r.ok ? "Take 30. I'll nudge your phone after." : "Take 30. Come back after (the reminder didn't go out)."); });
+        else toast("Take 30. Come back after.");
+        render(false);
+      }],
+      ten: ["hay-ten", "10 minutes on it", function () { ui.hay = null; var t = topOpen()[0]; startFocus(t || null, 10); }],
+      sos: ["hay-sos", "I need you", function () { ui.hay = null; onSOS(); }]
+    };
+    return list.map(function (k, i) { var b = B[k]; return h("button", { class: "btn" + (i === 0 ? " primary" : ""), type: "button", id: b[0], onclick: b[2] }, b[1]); });
+  }
+  function hayCard(now) {
+    var a = ui.hay;
+    if (a) {
+      var say = HAY_SAY[a.topic] || HAY_SAY[a.v];
+      return h("div", { class: "card hay", id: "hay-reply", role: "status" },
+        a.busy ? aiSpin("Thinking about what you said…", "hay-busy") : a.ai ? [aiLabel(), h("p", { class: "status", id: "hay-say", text: a.ai })] : h("p", { class: "status", id: "hay-say", text: say[0] }),
+        !a.ai && a.lesson ? h("blockquote", { class: "quote sm", id: "hay-lesson" }, a.lesson.text, h("span", { class: "small block", text: a.lesson.label })) : null,
+        a.err ? h("p", { class: "small", text: "AI not available: " + a.err }) : null,
+        say[1].length ? h("div", { class: "row" }, hayActions(say[1])) : null,
+        (a.v === "bad" || a.v === "rough") && (S.partner.inbox || S.topics.alert) && S.quietDay !== dayKey() ? h("button", { class: "btn link", type: "button", id: "hay-quiet", onclick: function () { sendNotGreat(); } }, "Let " + hisName() + " know quietly") : null,
+        h("button", { class: "btn link", type: "button", id: "hay-close", onclick: function () { ui.hay = null; render(false); } }, "Thanks"));
+    }
+    var k = dayKey(now), hr = now.getHours();
+    if (S.moods.some(function (x) { return dayKey(new Date(x.at)) === k; }) || hr < 12 || hr >= 22 || skipped("hay")) return null;
+    var txt = h("input", { type: "text", id: "hay-text", maxlength: "300", autocomplete: "off", autocapitalize: "sentences", placeholder: "Anything going on? (optional)", "aria-label": "Anything going on? (optional)" });
+    return h("div", { class: "card hay", id: "hay", role: "group", "aria-labelledby": "hay-q" },
+      h("p", { class: "status", id: "hay-q", text: "How's today going?" }),
+      h("div", { class: "row" }, HAY.map(function (x) { return h("button", { class: "chip", type: "button", id: "hay-" + x[0], onclick: function () { hayAnswer(x[0], txt.value); } }, x[1]); })),
+      txt,
+      h("button", { class: "btn link", type: "button", id: "hay-later", onclick: function () { notNow("hay"); } }, "Not now"));
+  }
+  // the opposite of "I need you": a quiet heads-up, no call expected
+  var notGreatT = null;
+  function sendNotGreat() {
+    var topic = S.partner.inbox || S.topics.alert, who = hisName();
+    if (!topic) { toast("Set up his phone first."); go("people"); return; }
+    clearTimeout(notGreatT); var undone = false;
+    toast("Letting " + who + " know quietly…", 4000, { label: "Undo", fn: function () { undone = true; clearTimeout(notGreatT); toast("Not sent."); } });
+    notGreatT = setTimeout(function () {
+      if (undone) return;
+      ntfy(topic, { title: S.name || "Ten Days", priority: "2", tags: "cloud" }, "Not a great day. No need to call, just letting you know.").then(function (r) {
+        if (r.ok) { S.quietDay = dayKey(); save(); sendStatus(true); }
+        toast(r.ok ? who + " knows. No call expected." : "Not sent. " + whyText(r.why), 5000); render(false);
+      });
+    }, 4000);
+  }
+
+  // ============ the library: a shelf of books, cards by theme ============
+  function coverOf(name) { var hsh = 0; for (var i = 0; i < name.length; i++) hsh = (hsh * 31 + name.charCodeAt(i)) % 360; return "linear-gradient(150deg, hsl(" + hsh + " 55% 42%), hsl(" + ((hsh + 50) % 360) + " 60% 28%))"; }
+  function shelf() {
+    var docs = S.docs.slice().sort(function (a, b) { return (b.lastRead || b.at || 0) - (a.lastRead || a.at || 0); });
+    return h("div", { class: "shelf", id: "doc-list" }, docs.map(function (d) {
+      var pct = d.pages ? Math.round(Math.min(1, (d.pos || 1) / d.pages) * 100) : 0, ready = d.status === "ready";
+      return h("div", { class: "bookw" },
+        h("button", { class: "book", type: "button", "data-doc": d.id, "aria-label": d.name + (ready ? ", " + pct + "% through. Open" : ", scanned. Details"), onclick: function () { if (ready && d.hasFile) openBook(d); else go("doc", { id: d.id }); } },
+          h("span", { class: "bcover", "aria-hidden": "true", style: "background:" + coverOf(d.name) }, h("span", { class: "btitle", text: d.name })),
+          h("span", { class: "bline", "aria-hidden": "true" }, h("i", { style: "width:" + pct + "%" }))),
+        h("button", { class: "btn link sm", type: "button", "data-doc-more": d.id, "aria-label": "Details for " + d.name, onclick: function () { go("doc", { id: d.id }); } }, "Details"));
+    }));
+  }
+  function cardTile(c) {
+    return h("button", { class: "ctile", type: "button", "data-card": c.id, onclick: function () { go("card", { id: c.id }); } },
+      h("span", { class: "clip", text: "“" + c.quote + "”" }), h("span", { class: "hint", text: c.docName + (c.by === "ai" ? " · picked by AI" : "") }));
   }
 
   var SCREENS = {
@@ -5322,8 +5915,10 @@ details.adv[open] { padding-bottom: .9em; }
         asstView(),
         alertCard,
         hardCard(now),
+        nudgeCard(now),
         intakePrompt(),
         doFirstCard(now),
+        hayCard(now),
         orgLine(),
         noticedCard(),
         checkinsBlock(),
@@ -5624,16 +6219,16 @@ details.adv[open] { padding-bottom: .9em; }
       ] };
     },
     library: function () {
+      back("you");
       var job = pdfJob;
       var file = h("input", { type: "file", id: "pdf-in", accept: "application/pdf,.pdf", hidden: true, onchange: function (e) {
         var f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
         if (!/pdf$/i.test(f.type) && !/\.pdf$/i.test(f.name)) { toast("That isn't a PDF."); return; }
         readPdf(f);
       } });
-      var busy = job && !job.error;
+      var busy = job && !job.error, live = S.cards.filter(function (c) { return !c.archived; }), arch = S.cards.filter(function (c) { return c.archived; });
+      var groups = CARD_THEMES.map(function (t) { return [t, live.filter(function (c) { return cardTheme(c) === t[0]; }).sort(function (a, b) { return (b.used || 0) - (a.used || 0) || b.at - a.at; })]; }).filter(function (g) { return g[1].length; });
       return { title: "Library", body: [
-        h("p", { text: "Add a book or notes as a PDF, pick passages that speak to you, and Ten Days turns them into support cards." }),
-        h("p", { class: "small", id: "lib-privacy", text: "PDFs are read on this phone and their text isn't sent anywhere. The PDF reader (pdf.js) downloads once from cdn.jsdelivr.net the first time." }),
         job ? h("div", { class: "card" + (job.error ? " bad" : ""), id: "pdf-job", role: job.error ? "alert" : "status" },
           h("p", { class: "lbl", text: job.name }),
           h("p", { class: "status" + (job.error ? " bad" : ""), id: "pdf-step", text: job.error || job.step }),
@@ -5641,60 +6236,27 @@ details.adv[open] { padding-bottom: .9em; }
           job.error ? h("div", { class: "row" }, h("button", { class: "btn", type: "button", id: "pdf-retry", onclick: function () { pdfJob = null; file.click(); } }, "Try another file"),
             h("button", { class: "btn link", type: "button", id: "pdf-dismiss", onclick: function () { pdfJob = null; render(false); } }, "Dismiss")) : null) : null,
         file,
+        S.docs.length ? shelf() : (job ? null : h("p", { class: "empty", id: "lib-empty", text: "No books yet." })),
         h("button", { class: "btn primary", type: "button", id: "add-pdf", disabled: busy, onclick: function () { file.click(); } }, busy ? "Reading…" : "Add a PDF"),
-        S.docs.length ? h("div", { class: "group", id: "doc-list" }, h("h2", { class: "sect-h", text: "Documents" }), S.docs.slice().reverse().map(function (d) {
-          var n = S.cards.filter(function (c) { return c.docId === d.id; }).length;
-          return h("button", { class: "btn doc", type: "button", "data-doc": d.id, onclick: function () { go("doc", { id: d.id }); } }, h("span", { class: "ihead" }, icon("file"), h("span", { text: d.name })),
-            h("span", { class: "hint", text: d.pages + (d.pages === 1 ? " page" : " pages") + " · " + (d.status === "scanned" ? "Scanned, no readable text" : n + (n === 1 ? " card" : " cards")) }));
-        })) : (job ? null : h("p", { class: "empty", id: "lib-empty", text: "No documents yet. Nothing here is made up: cards only come from passages you pick." })),
-        S.cards.length ? h("div", { class: "group", id: "card-list" }, h("h2", { class: "sect-h", text: "Your cards" }), S.cards.slice().reverse().map(function (c) {
-          return h("button", { class: "btn doc", type: "button", "data-card": c.id, onclick: function () { go("card", { id: c.id }); } }, h("span", { class: "clip", text: "“" + c.quote + "”" }), h("span", { class: "hint", text: c.docName + (c.page ? ", p. " + c.page : "") + " · " + linkLabel(c) }));
+        groups.length ? h("div", { class: "group", id: "card-list" }, groups.map(function (g) {
+          var open = ui.libTheme === g[0][0], xs = open ? g[1] : g[1].slice(0, 4);
+          return h("section", { class: "ctheme", id: "th-" + g[0][0], "aria-labelledby": "th-h-" + g[0][0] },
+            h("div", { class: "sect" }, h("h2", { class: "sect-h", id: "th-h-" + g[0][0], text: g[0][1] }),
+              g[1].length > 4 ? h("button", { class: "btn link sm", type: "button", id: "th-more-" + g[0][0], onclick: function () { ui.libTheme = open ? null : g[0][0]; render(false); } }, open ? "Less" : "All " + g[1].length) : null),
+            h("div", { class: "ctiles" }, xs.map(cardTile)));
         })) : null,
-        h("div", { class: "group push" }, back("you"))
+        arch.length ? h("details", { class: "adv", id: "lib-arch" }, h("summary", null, "Archived (" + arch.length + ")"),
+          h("p", { class: "small", text: "Cards you haven't used in a while. Open one to bring it back." }), h("div", { class: "ctiles" }, arch.map(cardTile))) : null,
+        h("p", { class: "small", id: "lib-privacy", text: "Book text stays on this phone" + (aiOn("library") ? ", except passages the AI reads to pick cards for you." : ".") })
       ] };
     },
     read: function (arg) {
       var d = S.docs.filter(function (x) { return x.id === (arg && arg.id); })[0];
       if (!d) { back("library"); return { title: "Book", body: [h("p", { text: "This book isn't here anymore." })] }; }
-      var n = Math.max(1, Math.min(d.pages || 1, (arg && arg.page) || d.pos || 1));
-      if (d.pos !== n) { d.pos = n; save(); }
-      var link = S.tasks.filter(function (t) { return t.docId === d.id && t.type === "READ"; })[0], goal = d.goal || 5, readN = readToday(d).length;
-      var close = function () { go(ui.readPrev && ui.readPrev !== "read" ? ui.readPrev : "home"); };
-      var goPage = function (m) { ui.arg = { id: d.id, page: m }; render(false); window.scrollTo(0, 0); };
-      if (!ui.rd || ui.rd.doc !== d.id || ui.rd.page !== n) ui.rd = { doc: d.id, page: n, since: Date.now() };
+      if (arg && arg.page && arg.page !== d.pos && !(RD && RD.d === d)) { d.pos = Math.max(1, Math.min(d.pages || 1, arg.page)); d.posFrac = 0; }
+      if (!docCache[d.id]) idbGet("docs", d.id).then(function (x) { if (x && Array.isArray(x.pages)) docCache[d.id] = x.pages; }).catch(function () {});
       d.lastRead = Date.now();
-      var wrap = h("div", { class: "pdfwrap" + ((ui.zoom || 1) > 1 ? " zoomed" : ""), id: "pdf-page" }, aiSpin("Opening page " + n + "…", "pdf-loading"));
-      var sx = null;
-      wrap.addEventListener("touchstart", function (e) { sx = e.touches.length === 1 ? e.touches[0].clientX : null; }, { passive: true });
-      wrap.addEventListener("touchend", function (e) { if (sx === null || (ui.zoom || 1) > 1) return; var dx = e.changedTouches[0].clientX - sx; sx = null; if (dx < -60 && n < d.pages) goPage(n + 1, true); else if (dx > 60 && n > 1) goPage(n - 1); }, { passive: true });
-      setTimeout(function () { drawPage(d, n, wrap); }, 0);
-      var file = h("input", { type: "file", accept: "application/pdf,.pdf", hidden: true, id: "read-file", onchange: function (e) { var f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) attachFile(d, f); } });
-      return { title: d.name, body: [
-        h("div", { class: "readbar", id: "readbar" },
-          h("button", { class: "iconbtn", type: "button", id: "read-close", "aria-label": "Close the book", onclick: close }, icon("x")),
-          h("p", { class: "lbl", id: "read-page", "aria-live": "polite", text: "Page " + n + " of " + d.pages }),
-          h("button", { class: "btn primary", type: "button", id: "read-done", onclick: function () {
-            var was = link && isDone(link);
-            markRead(d, n);
-            if (link && !isDone(link) && inToday(link)) markDone(link); else if (!link || was) toast("Saved your place: page " + n + ".");
-            close();
-          } }, "Completed")),
-        h("div", { class: "prog", role: "progressbar", "aria-label": "Pages read today", "aria-valuemin": "0", "aria-valuemax": String(goal), "aria-valuenow": String(Math.min(readN, goal)) }, h("i", { style: "width:" + Math.min(100, Math.round(readN / goal * 100)) + "%" })),
-        h("p", { class: "small", id: "read-today", text: "Today: " + readN + " of " + goal + " pages" + (link ? " · " + link.title : "") + ". Swipe or use the buttons to turn pages." }),
-        h("p", { class: "small rcount" + (readToday(d).indexOf(n) >= 0 ? " ok" : ""), id: "read-count", text: readToday(d).indexOf(n) >= 0 ? "✓ Page " + n + " counted" : "Reading… this page counts once you've had time to read it" }),
-        wrap,
-        h("div", { class: "pager", role: "group", "aria-label": "Pages" },
-          h("button", { class: "btn", type: "button", id: "rd-prev", disabled: n <= 1, onclick: function () { goPage(n - 1); } }, "Previous"),
-          h("p", { class: "lbl", text: n + " / " + d.pages }),
-          n < d.pages ? h("button", { class: "btn primary", type: "button", id: "rd-next", onclick: function () { goPage(n + 1, true); } }, "Next") : h("button", { class: "btn", type: "button", id: "rd-end", onclick: function () { markRead(d, n); toast("That's the last page."); render(false); } }, "Last page")),
-        h("div", { id: "read-ps-slot" }, readPassages(d, n)),
-        h("div", { class: "row" },
-          h("button", { class: "btn", type: "button", id: "rd-zoom", "aria-pressed": (ui.zoom || 1) > 1 ? "true" : "false", onclick: function () { ui.zoom = (ui.zoom || 1) > 1 ? 1 : 1.7; render(false); } }, (ui.zoom || 1) > 1 ? "Fit width" : "Zoom in"),
-          h("button", { class: "btn", type: "button", id: "rd-passages", onclick: function () { go("doc", { id: d.id, page: n }); } }, "All passages"),
-          d.kind === "learning" ? h("button", { class: "btn", type: "button", id: "rd-quiz", onclick: function () { ui.qz = null; go("quiz", { docId: d.id }); } }, "Quiz me") : null),
-        h("p", { class: "small", text: "Tip: press and hold words on the page to highlight them, then tap Save highlight." }),
-        h("div", { class: "small", id: "read-note", hidden: true }, file, h("button", { class: "btn", type: "button", id: "read-attach", onclick: function () { file.click(); } }, "Add the PDF again"))
-      ] };
+      return { title: d.name, body: [readerRoot(d)], float: readerFloat(d) };
     },
     doc: function (arg) {
       var d = S.docs.filter(function (x) { return x.id === (arg && arg.id); })[0];
@@ -5723,7 +6285,7 @@ details.adv[open] { padding-bottom: .9em; }
       if (pages[0] === "__missing__" || pages[0] === "__error__") return { title: d.name, body: [h("p", { class: "status bad", role: "alert", text: pages[0] === "__error__" ? "This phone couldn't open the stored text." : "The text for this document is missing from this phone (it isn't part of backups). Delete it and add the PDF again." }), h("div", { class: "group push" }, del)] };
       var pg = Math.max(1, Math.min(pages.length, (arg && arg.page) || d.pos || 1)), q = (ui.docQ || "").trim().toLowerCase();
       if (d.pos !== pg) { d.pos = pg; save(); }   // keeps your place
-      var goal = d.goal || 5, readN = readToday(d).length, link = S.tasks.filter(function (t) { return t.docId === d.id; })[0];
+      var goal = goalOf(d), readN = readToday(d).length, link = S.tasks.filter(function (t) { return t.docId === d.id; })[0];
       var selS = ui.sel && ui.sel.doc === d.id ? ui.sel : (ui.sel = { doc: d.id, items: [] });
       var saved = function (text) { return S.cards.some(function (c) { return c.docId === d.id && c.quote === text; }); };
       var chosen = function (text) { return selS.items.some(function (x) { return x.text === text; }); };
@@ -5758,8 +6320,6 @@ details.adv[open] { padding-bottom: .9em; }
           pg < pages.length ? h("button", { class: "btn primary", type: "button", id: "pg-next" + sfx, onclick: function () { goPage(pg + 1, true); } }, "Next")
             : h("button", { class: "btn", type: "button", id: "pg-done" + sfx, disabled: readToday(d).indexOf(pg) >= 0, onclick: function () { markRead(d, pg); render(false); } }, readToday(d).indexOf(pg) >= 0 ? "Read ✓" : "Finished"));
       };
-      var goalSel = sel("doc-goal", [[2, "2 pages a day"], [3, "3 pages a day"], [5, "5 pages a day"], [10, "10 pages a day"], [20, "20 pages a day"], [40, "40 pages a day"]].map(function (o) { return [String(o[0]), o[1]]; }), String(goal));
-      goalSel.addEventListener("change", function () { d.goal = +goalSel.value; save(); render(false); });
       var n = selS.items.length;
       var forSel = sel("sel-for", linkOptions(), S.lastLink && linkOptions().some(function (o) { return o[0] === S.lastLink; }) ? S.lastLink : linkOptions()[0][0]);
       var bar = n ? h("div", { class: "selbar", id: "selbar", role: "region", "aria-label": "Selected passages" },
@@ -5775,7 +6335,7 @@ details.adv[open] { padding-bottom: .9em; }
           h("p", { class: "lbl", text: "Page " + pg + " of " + pages.length + (d.truncated ? " (first 1,500 read)" : "") }),
           h("div", { class: "prog", role: "progressbar", "aria-label": "Pages read today", "aria-valuemin": "0", "aria-valuemax": String(goal), "aria-valuenow": String(Math.min(readN, goal)) }, h("i", { style: "width:" + Math.min(100, Math.round(readN / goal * 100)) + "%" })),
           h("p", { class: "small", id: "read-today", text: "Today: " + readN + " of " + goal + " pages" + (readN >= goal ? " · goal done" : "") + (link ? " · counts for “" + link.title + "”" : "") }),
-          h("div", { class: "row" }, h("label", { class: "sr-only", for: "doc-goal", text: "Daily reading goal" }), goalSel,
+          h("div", { class: "row" },
             link ? null : h("button", { class: "btn", type: "button", id: "doc-daily", onclick: function () {
               var t = normTask({ id: newId(), created: Date.now(), title: "Read " + d.name, type: "READ", repeat: "daily", docId: d.id, doneOn: "" });
               S.tasks.push(t); save(); toast("Added a daily reading task. It's done when you hit your page goal.", 6000, { label: "Undo", fn: function () { S.tasks = S.tasks.filter(function (x) { return x !== t; }); save(); render(false); } }); render(false);
@@ -5785,7 +6345,6 @@ details.adv[open] { padding-bottom: .9em; }
         h("div", { class: "row", role: "group", "aria-label": "What kind of book" }, h("span", { class: "lbl", text: "This book is for" }),
           [["mindset", "Mindset · quotes"], ["learning", "Learning · quizzes"]].map(function (o) { return h("button", { class: "chip sm", type: "button", id: "kind-" + o[0], "aria-pressed": (d.kind || "mindset") === o[0] ? "true" : "false", onclick: function () { d.kind = o[0]; save(); render(false); } }, o[1]); })),
         d.kind === "learning" ? h("button", { class: "btn", type: "button", id: "doc-quiz", onclick: function () { ui.qz = null; go("quiz", { docId: d.id }); } }, "Quiz me on what I've read" + (quizDue(d.id).length ? " · " + quizDue(d.id).length + " due" : "")) : null,
-        h("p", { class: "small", id: "doc-hint", text: "Tap passages to select them, on this page or others, then save them all as cards. Saved cards come up when you tap I need you." }),
         search,
         q.length >= 3 ? h("p", { class: "lbl", "aria-live": "polite", text: "Search results" }) : pager(""),
         aiOn("library") && ps && ps.length ? h("button", { class: "btn", type: "button", id: "doc-ai", disabled: !!(ui.aiPicks && ui.aiPicks.busy), onclick: function () { ui.autoSel = true; aiPicks(d.id, pg, ps); } },
@@ -5828,6 +6387,7 @@ details.adv[open] { padding-bottom: .9em; }
     },
     card: function (arg) {
       var c = S.cards.filter(function (x) { return x.id === (arg && arg.id); })[0];
+      if (c && ui.cardSeen !== c.id) { ui.cardSeen = c.id; c.used = (c.used || 0) + 1; if (c.archived) { c.archived = false; toast("Back from the archive."); } save(); }
       if (!c) return { title: "Card", body: [h("p", { text: "This card isn't here anymore." }), h("div", { class: "group push" }, back("library"))] };
       var KIND = { prompt: "Reflection prompt", action: "Action", encourage: "Encouragement", own: "Your words" };
       var own = h("textarea", { id: "card-own", rows: "2", maxlength: "300", placeholder: "Say it in your own words" });
@@ -5836,6 +6396,8 @@ details.adv[open] { padding-bottom: .9em; }
       return { title: "Card", body: [
         h("div", { class: "card" }, h("p", { class: "src", id: "card-src" }, icon("quote"), (c.typed ? "Typed by you from " : "Exact quote · ") + c.docName + (c.page ? ", p. " + c.page : "")),
           h("blockquote", { class: "quote sm", id: "card-quote", text: c.quote }), h("p", { class: "small", text: "Helps with: " + linkLabel(c) })),
+        c.by === "ai" ? h("p", { class: "state ai", id: "card-ai" }, icon("sparkle"), "Picked by AI" + (c.why ? ": " + c.why : "")) : null,
+        h("div", { class: "row", id: "card-themes", role: "group", "aria-label": "Theme" }, CARD_THEMES.map(function (t) { return h("button", { class: "chip sm", type: "button", id: "card-th-" + t[0], "aria-pressed": cardTheme(c) === t[0] ? "true" : "false", onclick: function () { c.theme = t[0]; save(); render(false); } }, t[1]); })),
         c.items.length ? h("div", { class: "group", id: "card-items" }, c.items.map(function (it, i) {
           return h("div", { class: "card derived" + (it.by === "you" ? " mine" : "") }, h("p", { class: "lbl", text: KIND[it.kind] || "Note" }), h("p", { text: it.text }),
             h("p", { class: "small", text: it.by === "you" ? "Your words" : "Made by Ten Days from a template, not the author's words" }),
@@ -6038,7 +6600,8 @@ details.adv[open] { padding-bottom: .9em; }
           h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "pair-yes", onclick: function () { follow(offer); ui.pairOffer = null; toast("Following " + (offer.n || "them") + "."); render(false); } }, "Follow"),
             h("button", { class: "btn link", type: "button", id: "pair-no", onclick: function () { ui.pairOffer = null; render(false); } }, "No"))) : null,
         h("section", { class: "card pcard", id: "pp-his", "aria-labelledby": "pp-his-h" },
-          h("div", { class: "phead" }, h("span", { class: "pav", "aria-hidden": "true", text: (P.name || "B").charAt(0).toUpperCase() }), h("h2", { id: "pp-his-h", text: HisName() }),
+          h("div", { class: "phead" }, h("span", { class: "pav" + (moOn() && moLive().length ? " live" : ""), "aria-hidden": "true", text: (P.name || "B").charAt(0).toUpperCase() }), h("h2", { id: "pp-his-h", text: HisName() }),
+            moOn() && moLive().length ? h("span", { class: "live", id: "pp-live", text: "In Ten Days now" }) : null,
             P.at ? h("span", { class: "small", id: "pp-ago", text: "Updated " + ago(P.at) }) : null),
           P.topic ? (P.last ? statusView(P.last, "pp-h") : h("p", { class: "small", id: "pp-wait", text: "Connected. His day shows up here once he opens Ten Days and shares it." }))
             : h("div", { class: "group" }, h("p", { class: "small", text: "To see his day: he opens your link (below) on his phone in Ten Days, turns on sharing, and sends you his link. Paste it here." }),
@@ -6049,6 +6612,7 @@ details.adv[open] { padding-bottom: .9em; }
           ui.msgPending ? h("p", { class: "small", id: "pp-pending", text: "Sending “" + ui.msgPending.text + "”…" }) : null,
           h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); var v = msg.value.trim(); if (!v) { toast("Type a message first."); return; } msg.value = ""; sendMsg(v); render(false); } },
             msg, h("button", { class: "btn", type: "submit", id: "pp-send", "aria-label": "Send to " + hisName() }, icon("send"))),
+          S.quietDay !== dayKey() ? h("button", { class: "chip sm", type: "button", id: "quiet-send", onclick: sendNotGreat }, "Not great today (quiet heads-up)") : h("p", { class: "small", id: "quiet-sent", text: "You let " + hisName() + " know today's not great." }),
           h("div", { class: "row" }, callLink(false), P.topic ? h("button", { class: "btn link", type: "button", id: "pp-refresh", onclick: function () { pollPartner().then(function () { toast(P.last ? "Up to date." : "No update from him in the last 12 hours."); render(false); }); } }, "Refresh") : null,
             P.topic ? (function () { var sb = confirmBtn("Stop following", "Tap again to stop", function () { S.partner.topic = ""; S.partner.inbox = ""; S.partner.last = null; S.partner.at = 0; save(); render(false); }); sb.classList.add("link"); sb.id = "pp-stop"; return sb; })() : null)),
         momentsSection(),
@@ -6744,7 +7308,7 @@ details.adv[open] { padding-bottom: .9em; }
   SCREENS["m-free"] = SCREENS.progress;
   SCREENS.more = SCREENS.you;
   var TAB_OF = { moments: "you", "moment-new": "you", chapter: "you", people: "you", routine: "you", home: "home", breathe: "home", notes: "home", checkins: "home", quiz: "home", "m-tasks": "home", task: "home", "task-edit": "home", focus: "home", progress: "progress", "m-log": "progress" };
-  var MODE_OF = { focus: "focus", breathe: "support", support: "support", line: "support", progress: "grow" };
+  var MODE_OF = { read: "read", focus: "focus", breathe: "support", support: "support", line: "support", progress: "grow" };
   function updateChrome() {
     document.body.setAttribute("data-mode", MODE_OF[ui.screen] || "plan");
     var tab = TAB_OF[ui.screen] || (ui.screen === "support" || ui.screen === "line" ? "" : "you"), tabs = $("tabs");
@@ -6867,14 +7431,14 @@ details.adv[open] { padding-bottom: .9em; }
     S.tasks.forEach(function (t) { t.pending = false; });   // a sort that was cut off by closing the app
     if (!S.milesInit) { afterProgress(true); S.milesInit = true; save(); }   // what you'd already done counts, without a burst of banners
     if (S.breathEnd > Date.now()) { ui.sup = { mode: "stay", since: Date.now(), g: -1 }; return go("support"); }
-    pingHard();
+    pingHard(); curateCards();
     if (ui.pairOffer || ui.moOffer) return go("people");
     go("home");
   }
   if (/(?:^#|&)pair=1/.test(location.hash)) ui.pairOffer = readPair(location.hash);
   if (/(?:^#|&)moments=1/.test(location.hash)) ui.moOffer = readMoLink(location.hash);
   if (location.hash) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
-  if (location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__td = { moSync: function () { return moSync(); }, readScale: function (v) { READ_SCALE = v; }, block: parseBlock, learned: learned, hard: hardHours, parse: parseQuick, intent: intentOf, plan: planFor, fix: fixFields, next: nextQuestion, draft: newDraft, passages: passages, xp: xpTotal };   // local testing only
+  if (location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__td = { goal: function (id) { return goalOf(S.docs.filter(function (d) { return d.id === id; })[0]); }, curate: function () { S.curated = ""; return curateCards(); }, rd: function () { return RD ? { cur: RD.cur, drawn: Object.keys(RD.done).map(Number), session: RD.session.slice() } : null; }, moSync: function () { return moSync(); }, readScale: function (v) { READ_SCALE = v; }, block: parseBlock, learned: learned, hard: hardHours, parse: parseQuick, intent: intentOf, plan: planFor, fix: fixFields, next: nextQuestion, draft: newDraft, passages: passages, xp: xpTotal };   // local testing only
   measureBar();
   start();
   pollReplies();

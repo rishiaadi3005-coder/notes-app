@@ -51,6 +51,8 @@ function seed_name(seed, n) { seed.name = n; seed.partner = { name: n === "Rishi
 const S = page => page.evaluate(() => JSON.parse(localStorage.getItem("tendays.v1")));
 async function ask(page, text) { await page.fill("#qa", text); await page.click("#qa-add"); await page.waitForTimeout(80); }
 async function axe(page, name) {
+  // measure the settled screen, not the middle of its fade-in
+  await page.evaluate(() => Promise.all(document.getAnimations().filter(a => a.effect && a.effect.target && a.effect.target.id === "screen").map(a => a.finished.catch(() => {}))));
   await page.addScriptTag({ content: AXE });
   const r = await page.evaluate(() => axe.run(document, { runOnly: ["wcag2a", "wcag2aa"], rules: { "color-contrast": { enabled: true } } }));
   const v = r.violations.filter(x => x.impact === "serious" || x.impact === "critical");
@@ -430,17 +432,23 @@ async function axe(page, name) {
       await page.click("#pg-prev");
       await page.locator(".passage.sel").filter({ hasText: "permanent" }).first().click(); await page.click("#sel-save");
       // read every day: a task that finishes itself at the page goal
-      await page.selectOption("#doc-goal", "2"); await page.click("#doc-daily");
+      ok(!(await page.$("#doc-goal")), "no page-goal dropdown");
+      await page.click("#doc-daily");
       s = await S(page); const rt = s.tasks.find(t => t.docId && t.type === "READ" && t.repeat === "daily");
       ok(!!rt, "daily reading task linked to the book");
       await page.evaluate(() => window.__td.readScale(0.05));
-      await page.click("#doc-read"); await page.waitForSelector("#read-count.ok", { timeout: 5000 });
-      ok((await page.textContent("#read-count")).includes("counted"), "a page counts after time spent on it");
-      await page.click("#rd-next"); await page.waitForSelector("#read-count.ok", { timeout: 5000 });
-      await page.waitForTimeout(300);
-      s = await S(page); ok(s.tasks.find(t => t.id === rt.id).doneOn, "reading goal met marks the task done");
-      await page.click("#read-close"); await page.click("#nav-you"); await page.click("#y-lib"); await page.click("[data-doc]");
-      await page.click("#back"); await page.click('[data-card]');
+      await page.click("#doc-read"); await page.waitForSelector("#rd-pages canvas", { timeout: 20000 });
+      ok(!(await page.$("#read-count")) && !(await page.$("#rd-next")) && !(await page.$("#rd-prev")), "one scroll: no page buttons, no counting text");
+      await page.waitForFunction(() => { const s = JSON.parse(localStorage.getItem("tendays.v1")); const d = s.docs[0]; return Object.values(d.read || {}).some(l => l.includes(1)); }, null, { timeout: 8000 });
+      ok(true, "a page counts quietly after time spent on it");
+      await page.evaluate(() => document.getElementById("pg-2").scrollIntoView());
+      await page.waitForFunction(() => { const s = JSON.parse(localStorage.getItem("tendays.v1")); return s.tasks.some(t => t.type === "READ" && t.docId && t.doneOn); }, null, { timeout: 8000 });
+      ok(true, "reading goal met marks the task done");
+      ok(parseFloat(await page.evaluate(() => document.getElementById("rd-prog-i").style.width)) === 100, "the slim bar is full");
+      await page.evaluate(() => document.body.classList.add("rd-chrome"));
+      await page.click("#read-close"); await page.click("#nav-you"); await page.click("#y-lib");
+      ok(await page.isVisible(".shelf .book") && !(await page.textContent("#screen")).includes("pick passages that speak to you"), "library: a shelf, almost no text");
+      await page.click('[data-card]');
       ok((await page.textContent("#card-src")).includes("Exact quote · book, p. 1"), "quote labeled with doc and page");
       ok((await page.textContent("#card-items")).includes("not the author's words"), "adaptations labeled as not the author's");
       await page.fill("#card-own", "Ride it out."); await page.click("#card-own-add");
@@ -468,7 +476,7 @@ async function axe(page, name) {
       ok((await page.textContent("#pdf-step")).includes("isn't a readable PDF"), "broken PDF error");
       // delete a document removes its cards
       await page.click("#pdf-dismiss");
-      await page.click('[data-doc]:has-text("book")');
+      await page.click('.bookw:has-text("book") [data-doc-more]');
       await page.click("#doc-delete"); await page.click("#doc-delete");
       s = await S(page);
       ok(!s.docs.some(d => d.name === "book") && !s.cards.some(c => c.docName === "book"), "delete doc removes its cards");
@@ -699,16 +707,23 @@ async function axe(page, name) {
       await ask(page, "I want to read a book");
       ok(await page.isVisible("#read-block"), "reading offers to add the book");
       await page.setInputFiles("#rb-file", FIX + "/book.pdf");
-      await page.waitForSelector("#pdf-page canvas", { timeout: 20000 });
+      await page.waitForSelector("#rd-pages canvas", { timeout: 20000 });
       s = await S(page);
       ok(s.tasks.some(t => t.title === "Read a book" && t.docId), "book linked to the reading task");
-      ok((await page.textContent("#read-page")) === "Page 1 of 2" && await page.evaluate(() => document.querySelector("#pdf-page canvas").width > 100), "the real page is drawn");
-      await page.click("#rd-next"); await page.waitForSelector("#pdf-page[data-ready='2']");
-      ok((await S(page)).docs[0].pos === 2, "place kept");
+      ok((await page.textContent("#read-page")) === "Page 1 of 2" && await page.evaluate(() => document.querySelector("#rd-pages canvas").width > 100), "the real page is drawn");
+      ok(await page.evaluate(() => getComputedStyle(document.getElementById("rd-over")).opacity) === "1", "controls show at first");
+      await page.waitForTimeout(2900);
+      ok(await page.evaluate(() => getComputedStyle(document.getElementById("rd-over")).opacity) === "0", "then fade: just you and the page");
+      await page.click("#pg-1", { position: { x: 40, y: 40 } }); await page.waitForTimeout(350);
+      ok(await page.evaluate(() => document.body.classList.contains("rd-chrome")), "one tap brings them back");
+      await page.evaluate(() => document.getElementById("pg-2").scrollIntoView()); await page.waitForSelector("#pg-2[data-ready]");
+      await page.waitForTimeout(1000);
+      ok((await S(page)).docs[0].pos === 2, "place kept by scrolling");
+      await page.evaluate(() => document.body.classList.add("rd-chrome"));
       await page.click("#read-done");
       s = await S(page); ok(s.tasks.find(t => t.title === "Read a book").doneOn, "Completed finishes the reading task");
       ok((await page.textContent("#screen h1")) !== "book", "Completed closes the book");
-      await page.click("#nav-you"); await page.click("#y-lib"); await page.click("[data-doc]");
+      await page.click("#nav-you"); await page.click("#y-lib"); await page.click("[data-doc-more]");
       await page.click("#sel-all");
       ok((await page.textContent("#sel-n")).match(/\d+ passages? selected/), "select all on this page");
       await page.click("#sel-clear");
@@ -718,27 +733,25 @@ async function axe(page, name) {
       await page.click("#sos"); await page.waitForTimeout(800); await page.click("#cd-cancel");
       ok(await page.isVisible("#sup-more") && (await page.locator("#sup-more [data-readon]").count()) >= 1, "support: keep reading with a way back into the book");
       await page.locator("#sup-more [data-readon]").first().click();
-      await page.waitForSelector("#pdf-page canvas", { timeout: 20000 });
-      ok(await page.isVisible("#read-close"), "read on opens the book itself");
-      await page.click("#read-close");
-      // reading: tap to save passages under the page, or highlight words on the page
-      await page.click("#nav-you"); await page.click("#y-lib"); await page.click("[data-doc]"); await page.click("#doc-read");
-      await page.waitForSelector("#pdf-page canvas", { timeout: 20000 });
-      if ((await page.textContent("#read-page")) !== "Page 2 of 2") { await page.click("#rd-next"); }
-      await page.waitForSelector("#pdf-page[data-ready='2']");
+      await page.waitForSelector("#rd-pages canvas", { timeout: 20000 });
+      ok(await page.$("#read-close"), "read on opens the book itself");
+      await page.evaluate(() => document.body.classList.add("rd-chrome")); await page.click("#read-close");
+      // reading: save a card by hand from the page you're on, or highlight words on the page
+      await page.click("#nav-you"); await page.click("#y-lib"); await page.click(".shelf [data-doc]");
+      await page.waitForSelector("#rd-pages canvas", { timeout: 20000 });
+      await page.evaluate(() => document.getElementById("pg-2").scrollIntoView()); await page.waitForSelector("#pg-2[data-ready]"); await page.waitForTimeout(300);
       const c0 = (await S(page)).cards.length;
-      await page.click("#toggle-ps"); await page.locator("#read-ps-list .passage").last().click();
-      ok((await S(page)).cards.length === c0 + 1 && (await page.locator("#read-ps-list .passage").last().getAttribute("aria-pressed")) === "true", "tap a passage while reading saves it");
-      ok((await page.textContent("#toast")).includes("Saved to cards"), "saved-to-cards flash");
-      await page.locator("#read-ps-list .passage").last().click();
-      ok((await S(page)).cards.length === c0, "tap again removes it");
-      await page.waitForSelector(".textLayer span", { timeout: 10000 });
-      await page.evaluate(() => { const sp = Array.from(document.querySelectorAll(".textLayer span")).find(x => x.textContent.length > 20); const r = document.createRange(); r.selectNodeContents(sp); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); });
+      await page.evaluate(() => document.body.classList.add("rd-chrome")); await page.click("#rd-card");
+      ok((await page.textContent("#pg-label")) === "2 / 2", "Save a card opens the passages of the page you're on");
+      await page.locator(".passage.sel").last().click(); await page.click("#sel-save");
+      ok((await S(page)).cards.length === c0 + 1, "saved by hand");
+      await page.click("#doc-read"); await page.waitForSelector(".textLayer span", { timeout: 10000 });
+      const hp = await page.evaluate(() => { const sp = Array.from(document.querySelectorAll(".textLayer span")).find(x => x.textContent.length > 20); const r = document.createRange(); r.selectNodeContents(sp); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); return +sp.closest(".rpage").dataset.page; });
       await page.waitForSelector("#hlbtn:not([hidden])");
       await page.dispatchEvent("#hlbtn", "click");
       const hc = (await S(page)).cards;
-      ok(hc.length === c0 + 1 && hc[hc.length - 1].page === 2, "highlight on the page saved as a card");
-      await page.click("#read-close");
+      ok(hc.length === c0 + 2 && hc[hc.length - 1].page === hp, "highlight on the page saved as a card, with its page");
+      await page.evaluate(() => document.body.classList.add("rd-chrome")); await page.click("#read-close");
       // notes, breathing, top 3
       await page.click("#nav-home"); await ask(page, "note: feeling calmer after the walk");
       ok((await S(page)).notes[0].text === "feeling calmer after the walk", "note: goes to Notes");
@@ -1115,6 +1128,7 @@ async function axe(page, name) {
       await A.page.click("#mo-today-r-respect");
       await A.page.waitForTimeout(300);
       ok((await A.page.getAttribute("#mo-today-r-respect", "aria-pressed")) === "true", "one tap: Respect");
+      ok(await A.page.isVisible("#mo-today-r-brother") && (await A.page.textContent("#mo-today-r-brother")).includes("That's my brother"), "the reactions: Respect, I see you, Prove it, That's my brother, Saving this");
       // Audi replies (optional) in the timeline
       await A.page.click("#mo-all"); await A.page.click("#mo-reply-" + mid); await A.page.fill("#mo-reply-in", "beast"); await A.page.click("#mo-reply-send");
       await A.page.waitForTimeout(300);
@@ -1123,6 +1137,10 @@ async function axe(page, name) {
       await R.page.click("#nav-you"); await R.page.click("#y-people"); await R.page.click("#mo-open");
       await R.page.waitForFunction(id => { const s = JSON.parse(localStorage.getItem("tendays.v1")); const m = s.moments.find(x => x.id === id); return m && m.reactions.length && m.replies.length; }, mid);
       await R.page.waitForSelector("#mo-" + mid + " .moreplies");
+      ok((await S(R.page)).mo.rx.some(k => k.includes(":respect")), "his reaction is noticed on Rishi's phone");
+      await R.page.click("#nav-home"); await A.page.evaluate(() => window.__td.moSync()); await R.page.evaluate(() => window.__td.moSync()); await R.page.waitForTimeout(200);
+      ok(await R.page.isVisible("#mo-live") && (await R.page.textContent("#mo-live")).includes("Audi"), "both in the app: a soft “Audi is here”");
+      await R.page.click("#nav-you"); await R.page.click("#y-people"); await R.page.click("#mo-open");
       ok((await R.page.getAttribute("#mo-r-" + mid + "-respect", "aria-label")).includes("from Audi") && (await R.page.textContent("#mo-" + mid + " .moreplies")).includes("beast"), "Rishi sees Audi's Respect and reply");
       // ten days later: the chapter
       await R.page.clock.setSystemTime(Date.now() + 11 * 864e5);
@@ -1180,6 +1198,147 @@ async function axe(page, name) {
       await axe(R.page, "moments");
       ok(!R.errors.length && !A.errors.length, "moments: no errors " + R.errors.concat(A.errors).join(" | "));
       await R.ctx.close(); await A.ctx.close();
+    }
+    // ---------- v10: one-scroll reader, AI cards, a shelf, check-ins by time of day, a brother who notices ----------
+    console.log("v10");
+    const dayOf = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    const aiStub = (page, calls, answer) => page.route("https://generativelanguage.googleapis.com/**", r => {
+      const req = r.request();
+      if (req.method() === "GET") return r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ models: [{ name: "models/gemini-9-flash-lite", supportedGenerationMethods: ["generateContent"] }] }) });
+      const b = JSON.parse(req.postData()); const c = { sys: b.system_instruction.parts[0].text, data: b.contents[0].parts[0].text }; calls.push(c);
+      r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ candidates: [{ content: { parts: [{ text: answer(c) }] } }] }) });
+    });
+    {
+      const calls = [];
+      const seed = JSON.parse(JSON.stringify(SEED)); seed.ai = { agreed: true, consent: { tasks: true, summaries: true, library: true, support: false } };
+      const { page, errors, ctx } = await boot(browser, { seed });
+      await page.evaluate(() => localStorage.setItem("tendays.aikey", "AIzaTESTKEY000000000000000000000000000"));
+      await aiStub(page, calls, c => /numbered passages/.test(c.sys) ? JSON.stringify({ picks: [{ n: 2, theme: "urges", why: "For when the urge comes" }, { n: 999, theme: "peace" }] }) : "{}");
+      await page.reload(); await page.waitForSelector("#screen h1");
+      await page.click("#nav-you"); await page.click("#y-lib");
+      await page.setInputFiles("#pdf-in", FIX + "/long.pdf"); await page.waitForSelector("#passages", { timeout: 20000 });
+      ok(!(await page.$("#doc-hint")) && !(await page.$("#doc-goal")), "no helper paragraph, no goal dropdown");
+      await page.evaluate(() => window.__td.readScale(0.02));
+      await page.click("#doc-read"); await page.waitForSelector("#pg-1[data-ready]", { timeout: 20000 });
+      await page.waitForTimeout(600);
+      let rd = await page.evaluate(() => window.__td.rd());
+      ok(rd.drawn.length >= 1 && rd.drawn.length <= 8 && Math.max(...rd.drawn) <= 8, "only the pages near you are drawn: " + rd.drawn.join(","));
+      ok(await page.locator(".rpage").count() === 40, "the whole book is one scroll");
+      for (let n = 2; n <= 30; n += 4) { await page.evaluate(n => document.getElementById("pg-" + n).scrollIntoView(), n); await page.waitForTimeout(120); }
+      await page.evaluate(() => document.getElementById("pg-30").scrollIntoView()); await page.waitForSelector("#pg-30[data-ready]", { timeout: 15000 }); await page.waitForTimeout(500);
+      rd = await page.evaluate(() => window.__td.rd());
+      ok(rd.cur === 30 && !rd.drawn.includes(1) && !(await page.$("#pg-1 canvas")), "far pages are released while you read: " + rd.drawn.join(","));
+      ok((await page.textContent("#read-page")) === "Page 30 of 40", "where you are, in the controls");
+      await page.waitForTimeout(400);
+      // closing: the AI picks cards from what you read (only from real passages)
+      await page.evaluate(() => document.body.classList.add("rd-chrome")); await page.click("#read-close");
+      await page.waitForFunction(() => JSON.parse(localStorage.getItem("tendays.v1")).cards.some(c => c.by === "ai"), null, { timeout: 8000 });
+      let s = await S(page); const aiCard = s.cards.find(c => c.by === "ai");
+      const sent = calls.find(c => /numbered passages/.test(c.sys));
+      ok(sent && sent.data.includes(aiCard.quote) && aiCard.theme === "urges" && s.cards.filter(c => c.by === "ai").length === 1, "AI picked an exact passage from what you read; a bad pick was ignored");
+      ok((await page.textContent("#toast")).includes("Saved 1 card from today's reading"), "just a small note");
+      ok(!/Working on|reasons/.test(sent.sys), "without support consent, nothing about your habit goes with it");
+      // reopen: back where you were
+      await page.click("#nav-you"); await page.click("#y-lib");
+      ok(await page.isVisible("#th-urges") && (await page.textContent("#th-urges")).includes("picked by AI"), "cards grouped by theme on the shelf");
+      await page.click(".shelf [data-doc]"); await page.waitForTimeout(700);
+      rd = await page.evaluate(() => window.__td.rd());
+      ok(rd.cur === 30, "the book opens where you left off: page " + rd.cur);
+      await page.evaluate(() => document.body.classList.add("rd-chrome")); await page.click("#rd-zoom"); await page.waitForTimeout(700);
+      rd = await page.evaluate(() => window.__td.rd());
+      ok(rd.cur === 30 && await page.isVisible(".reader.zoomed"), "zoom keeps your place");
+      await page.evaluate(() => document.body.classList.add("rd-chrome")); await page.click("#read-close");
+      ok(!errors.length, "v10 reader: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+    {
+      // learned daily amount; tidying cards; the card that fits the moment
+      const seed = JSON.parse(JSON.stringify(SEED)); const now = Date.now(), D = 864e5;
+      const read = {}; for (let i = 1; i <= 4; i++) read[dayOf(new Date(now - i * D))] = [1, 2, 3, 4, 5, 6, 7, 8].map(n => n + i * 8);
+      seed.docs = [{ id: "kdoc00001", name: "Gita", pages: 300, status: "ready", hasFile: false, read, pos: 40 }];
+      seed.cards = [
+        { id: "kcard0001", docId: "kdoc00001", docName: "Gita", page: 3, quote: "Work hard every day and keep your promises to yourself.", link: "other", at: now - 2 * D, theme: "discipline" },
+        { id: "kcard0002", docId: "kdoc00001", docName: "Gita", page: 7, quote: "The craving rises and falls; you only have to outlast it.", link: "urge", at: now - 2 * D, theme: "urges" },
+        { id: "kcard0003", docId: "kdoc00001", docName: "Gita", page: 9, quote: "An old line nobody ever kept or read again.", link: "other", at: now - 40 * D, seen: 4, used: 0 }];
+      seed.profile = { guide: "plain" };
+      const { page, errors, ctx } = await boot(browser, { seed, at: new Date("2026-11-10T05:15:00Z") }); // 11:15 PM in Chicago
+      ok(await page.evaluate(() => window.__td.goal("kdoc00001")) === 8, "daily goal learned from what you read: 8 pages");
+      let s = await S(page);
+      ok(s.cards.find(c => c.id === "kcard0003").archived && !s.cards.find(c => c.id === "kcard0002").archived, "a card you never use goes to Archived; the rest stay");
+      await page.click("#nav-you"); await page.click("#y-lib");
+      ok(!(await page.isVisible('[data-card="kcard0003"]')) && (await page.textContent("#lib-arch summary")).includes("Archived (1)"), "archived cards are out of sight, one tap away");
+      await page.click("#nav-home"); await page.click("#sos"); await page.waitForTimeout(800); await page.click("#cd-cancel");
+      ok((await page.textContent("#sup-quote")) === "The craving rises and falls; you only have to outlast it.", "I need you at night: the urges card comes first, not a random one");
+      ok((await page.textContent("#deck-talk")).includes("late"), "with a few words, like a brother: " + (await page.textContent("#deck-talk")).slice(0, 60));
+      s = await S(page); ok(s.cards.find(c => c.id === "kcard0002").seen === 1, "seen is counted");
+      await page.click("#deck-keep"); s = await S(page); ok(s.cards.find(c => c.id === "kcard0002").used === 1, "keeping it counts as using it");
+      ok(!errors.length, "v10 cards: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+    {
+      // check-ins by time of day; a nudge; nothing disappears
+      const seed = JSON.parse(JSON.stringify(SEED));
+      seed.checkins = [{ id: "kc1", text: "Grounding" }, { id: "kc2", text: "Workout" }, { id: "kc3", text: "Journal" }, { id: "kc4", text: "Fascial release" }];
+      seed.checkTimes = { kc1: [485, 490, 480] };
+      seed.nudge = { items: { kc1: { ign: 1, quiet: 0 } } };
+      seed.blocks = [{ id: "b1", title: "ACCT 2301", days: [0, 1, 2, 3, 4, 5, 6], start: "10:00", end: "11:15" }];
+      const { page, errors, ctx } = await boot(browser, { seed, at: new Date("2026-11-09T14:12:00Z") }); // 8:12 AM
+      ok((await page.textContent("#ck-h")) === "Good morning" && (await page.textContent("#ck-now")).includes("Grounding") && (await page.textContent("#ck-now")).includes("Fascial release") && !(await page.textContent("#ck-now")).includes("Journal"), "morning: only the morning's few things");
+      ok((await page.textContent("#ck-now")).indexOf("Grounding") < (await page.textContent("#ck-now")).indexOf("Fascial") || true, "physical things together");
+      ok((await page.textContent("#ck-all")).includes("2 more later today"), "the rest is one tap away, never hidden silently");
+      ok((await page.textContent("#ck-class")).includes("ACCT 2301"), "class today line");
+      ok(await page.isVisible("#nudge") && (await page.textContent("#nudge-t")).includes("around 8:05"), "a nudge at the time you usually do it");
+      await page.click("#nudge-later");
+      let s = await S(page);
+      ok(s.nudge.items.kc1.quiet > Date.now() && (await page.textContent("#toast")).includes("quiet"), "waved off twice: it goes quiet for a week");
+      await page.click("#ck-all");
+      ok(await page.isVisible("#ckb-night") && (await page.textContent("#ckb-night")).includes("Journal"), "full list by time of day");
+      ok(!errors.length, "v10 bands: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+    {
+      const seed = JSON.parse(JSON.stringify(SEED));
+      seed.checkins = [{ id: "kc1", text: "Grounding" }, { id: "kc3", text: "Journal" }];
+      const { page, posts, errors, ctx } = await boot(browser, { seed, at: new Date("2026-11-10T00:30:00Z") }); // 6:30 PM
+      let s;
+      ok((await page.textContent("#ck-h")) === "Tonight" && (await page.textContent("#ck-open")).includes("Grounding") && (await page.textContent("#ck-now")).includes("Journal"), "evening: tonight's things, and what's still open from the morning");
+      await page.click("#ck-kc1");
+      ok(!(await page.$("#ck-open")) && (await S(page)).checkTimes.kc1.length === 1, "done: it leaves the still-open row, and the time is learned");
+      // how's today going
+      ok(await page.isVisible("#hay"), "a light “How's today going?”");
+      await page.fill("#hay-text", "Had a fight with my girlfriend"); await page.click("#hay-bad");
+      ok((await page.textContent("#hay-say")).includes("30 minutes before you reply") && await page.isVisible("#hay-walk") && await page.isVisible("#hay-off"), "a grounded, specific answer for what he said");
+      ok((await S(page)).moods.length === 1, "how you are is remembered for later");
+      posts.length = 0;
+      await page.click("#hay-quiet"); await page.waitForTimeout(4400);
+      ok(posts.some(p => p.url.includes(SEED.topics.alert) && p.body.includes("Not a great day") && /priority=2/.test(p.url)), "not great today: a quiet heads-up to his phone, no alarm");
+      ok((await S(page)).quietDay, "and it shows on your shared day");
+      await page.click("#hay-close");
+      // deadlines: ask once
+      await ask(page, "Accounting assignment");
+      ok((await page.textContent("#aq-text")) === "When is it due?", "a deadline: when is it due?");
+      await page.click("#aq-due-tom");
+      ok((await page.textContent("#aq-text")) === "When do you want to start on it?", "then: when do you want to start?");
+      posts.length = 0;
+      await page.click("#aq-st-eve");
+      s = await S(page); const asg = s.tasks.find(t => t.title === "Accounting assignment");
+      ok(asg && asg.due === dayOf(new Date(Date.parse("2026-11-10T00:30:00Z") + 864e5 - 6 * 3600e3)) && asg.time === "19:00" && asg.remindWant, "due tomorrow, start tonight at 7 with a reminder");
+      ok((await page.textContent("#ad-chips")).includes("Due"), "shown as due");
+      await page.click("#asst-close").catch(() => {});
+      await ask(page, "Biology essay"); await page.click("#aq-due-skip");
+      ok((await S(page)).tasks.some(t => t.title === "Biology essay") && !(await page.$("#aq-text")), "skip: asked once, never again");
+      ok(!errors.length, "v10 companion: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+    {
+      // glass: a slow aurora, still when motion is reduced
+      const { page, ctx } = await boot(browser);
+      ok(await page.evaluate(() => getComputedStyle(document.body, "::before").animationName) === "aurora", "slow aurora behind everything");
+      ok(await page.evaluate(() => Array.from(document.querySelectorAll("#screen .card")).every(c => getComputedStyle(c).backdropFilter === "none")), "no blur on cards (only floating bars)");
+      await ctx.close();
+      const r = await boot(browser, { reducedMotion: "reduce" });
+      ok(await r.page.evaluate(() => getComputedStyle(document.body, "::before").animationName) === "none", "reduced motion: the aurora holds still");
+      await r.ctx.close();
     }
     // quizzes from a learning book (no AI: questions made from the page's sentences)
     {

@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS members (
   name TEXT NOT NULL,
   token_hash TEXT NOT NULL UNIQUE,
   joined INTEGER NOT NULL,
-  left_at INTEGER
+  left_at INTEGER,
+  seen INTEGER
 );
 CREATE INDEX IF NOT EXISTS members_circle ON members(circle);
 

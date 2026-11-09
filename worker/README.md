@@ -71,7 +71,7 @@ Every call except creating and joining a circle needs `Authorization: Bearer <me
 | GET | `/v1/moments/:id/photo` | the photo |
 | PATCH | `/v1/moments/:id` | `{caption, forStory}` (author only) |
 | DELETE | `/v1/moments/:id` | delete for everyone (author only) |
-| PUT / DELETE | `/v1/moments/:id/reaction` | `{kind}`: `respect`, `fire`, `laugh` or `love`; one per person |
+| PUT / DELETE | `/v1/moments/:id/reaction` | `{kind}`: `respect`, `seeyou`, `prove`, `brother` or `saving`; one per person |
 | POST | `/v1/moments/:id/replies` | `{id, text}` |
 | DELETE | `/v1/replies/:id` | your own reply |
 | PUT | `/v1/chapters/:period` | `{title, body, momentIds}` |
