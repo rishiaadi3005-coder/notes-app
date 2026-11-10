@@ -1,0 +1,35 @@
+# Ten Days: the app and its server, one Worker. See README.md for the deploy steps.
+name = "ten-days"
+main = "src/main.js"
+compatibility_date = "2025-01-01"
+workers_dev = true
+preview_urls = false
+
+# The app's files (index.html, sw.js, icons, qrcode.js) are bundled into the Worker by src/main.js.
+[[rules]]
+type = "Text"
+globs = ["**/*.html", "**/sw.js", "**/qrcode.js", "**/*.webmanifest"]
+
+[[rules]]
+type = "Data"
+globs = ["**/*.png"]
+
+# Every minute: fire "I need you" alerts whose wait ran out, and send due reminders.
+[triggers]
+crons = ["* * * * *"]
+
+[vars]
+# The app is served from this same Worker, so "*" only matters for old copies (like GitHub Pages).
+ALLOWED_ORIGINS = "*"
+VAPID_SUBJECT = "mailto:rishiaadi3005@gmail.com"
+# VAPID_PUBLIC goes here after running: node vapid.mjs  (the private key is a secret, never in this file)
+VAPID_PUBLIC = "BPYdUCoH-i838UFsJ1nZ3DiJIaLk9xdb_P0tfCMxfOcil8Md1QObDDVQpS9XGK79Wxypsy1Bbp8OgIK_1FrrlB4"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ten-days"
+database_id = "59749ac7-9791-45e8-8a75-962cb78631fe"
+
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "ten-days-photos"

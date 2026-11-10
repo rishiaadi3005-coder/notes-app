@@ -1,0 +1,6 @@
+{
+  "name": "ten-days-moments",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js"
+}

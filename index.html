@@ -6,7 +6,7 @@
 <title>Ten Days</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Ten Days">
@@ -917,6 +917,76 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
 .pav.live { box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok-text) 55%, transparent), 0 0 18px color-mix(in srgb, var(--ok-text) 45%, transparent); }
 @keyframes livepulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok-text) 60%, transparent); } 100% { box-shadow: 0 0 0 8px transparent; } }
 .rm .live::before { animation: none; }
+/* ---- v11: codes, QR, slideshow, together, challenge, word ---- */
+.codepanel { display: flex; flex-direction: column; align-items: center; gap: .6em; padding: 1em .5em; border-radius: 20px; border: 1px solid var(--line); background: var(--field); text-align: center; }
+.bigcode { font-size: 2.6em; font-weight: 800; letter-spacing: .12em; font-variant-numeric: tabular-nums; font-family: ui-monospace, "SF Mono", Menlo, monospace; margin: 0; }
+.qrbox { width: 168px; height: 168px; background: #fff; border-radius: 14px; padding: 8px; }
+.qrbox svg { width: 100%; height: 100%; display: block; }
+.codein { text-transform: uppercase; letter-spacing: .18em; font-weight: 750; font-variant-numeric: tabular-nums; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.slide { position: relative; border-radius: 22px; overflow: hidden; background: #000; min-height: 52vh; display: flex; align-items: stretch; }
+.slide .mophoto.slide { flex: 1; border: 0; border-radius: 0; min-height: 52vh; }
+.slide .mophoto.slide img { width: 100%; height: 100%; max-height: 70vh; object-fit: cover; animation: slidein 600ms ease both; }
+.slide .mophoto.empty { background: radial-gradient(70% 60% at 30% 30%, var(--glow-a), transparent), radial-gradient(60% 50% at 80% 70%, var(--glow-c), transparent), #0b0d14; }
+@keyframes slidein { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: none; } }
+.rm .slide .mophoto.slide img { animation: none; }
+.slcap { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 2.4em 1.1em 1.1em; color: #fff; font-size: 1.1em; line-height: 1.45; background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .78)); }
+.slcap.t { font-size: 1.55em; font-weight: 800; }
+.scrub { width: 100%; accent-color: var(--corner); }
+.slctl { justify-content: center; }
+.slctl .btn { flex: 0 1 160px; }
+.iconbtn.flip svg { transform: scaleX(-1); }
+.center { text-align: center; }
+.chal { display: flex; flex-direction: column; gap: .9em; }
+.chalone { display: flex; flex-direction: column; gap: .45em; }
+.wordrow form.inline input { flex: 1; }
+.pword { font-size: .8em; padding: .2em .65em; border-radius: 99px; border: 1px solid var(--line); background: var(--field); color: var(--ink); }
+/* ---- v12: liquid glass, the Omni-Mic, the manager ---- */
+:root { --gx: 0; --gy: 0; --spec: rgba(255, 255, 255, .25); }
+@media (prefers-color-scheme: light) { :root { --spec: rgba(255, 255, 255, .7); } }
+/* every card: a razor-thin light edge and a highlight that moves with the phone (cheap: no blur) */
+.card { border-color: rgba(255, 255, 255, .14); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), 0 10px 30px rgba(0, 0, 0, .18);
+  background-image: radial-gradient(120% 90% at calc(50% + var(--gx) * 45%) calc(-10% + var(--gy) * 35%), rgba(255, 255, 255, .11), transparent 62%), linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .03)); }
+@media (prefers-color-scheme: light) { .card { border-color: rgba(20, 28, 60, .12); background-image: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 8px 24px rgba(20, 28, 60, .08); } }
+/* real frosted glass, kept to the one or two focal surfaces on a screen */
+.glass-card { position: relative; border-radius: 24px; padding: 1.1em 1.15em; border: 1px solid var(--spec); display: flex; flex-direction: column; gap: .7em;
+  background: radial-gradient(130% 90% at calc(50% + var(--gx) * 50%) calc(-15% + var(--gy) * 40%), rgba(255, 255, 255, .20), transparent 60%), linear-gradient(160deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03));
+  -webkit-backdrop-filter: blur(24px) saturate(200%); backdrop-filter: blur(24px) saturate(200%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), inset 0 -1px 0 rgba(255, 255, 255, .06), 0 18px 44px rgba(0, 0, 0, .28); }
+@media (prefers-color-scheme: light) { .glass-card { background: linear-gradient(160deg, rgba(255, 255, 255, .78), rgba(255, 255, 255, .5)); box-shadow: inset 0 1px 0 #fff, 0 14px 34px rgba(20, 28, 60, .12); } }
+.mgr-h { margin: 0; font-size: 1.3em; font-weight: 800; letter-spacing: -.015em; }
+.tgrid.one { grid-template-columns: 1fr; }
+.tgrid.one .tile2 { min-height: 64px; }
+#mgr-more { align-self: flex-start; }
+.card.learn { display: flex; flex-direction: column; align-items: flex-start; gap: .25em; text-align: left; width: 100%; color: var(--ink); font: inherit; cursor: pointer; }
+.card.learn .lbl svg { width: 1.05em; height: 1.05em; color: var(--corner); }
+.seg.who { align-self: center; min-width: 220px; }
+.seg.who .live { margin-left: .4em; }
+.seg.who .live::before { margin: 0; }
+/* the mic: a glowing glass bead above the dock */
+.omni { position: fixed; z-index: 36; left: 50%; bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 14px); width: 68px; height: 68px; margin-left: -34px; border-radius: 50%; border: 1px solid var(--spec); color: #fff; padding: 0; display: grid; place-items: center;
+  background: radial-gradient(90% 90% at calc(35% + var(--gx) * 20%) calc(25% + var(--gy) * 20%), rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 55%), linear-gradient(150deg, #6EE7C8, #7FB2FF 55%, #C29BFF);
+  -webkit-backdrop-filter: blur(24px) saturate(200%); backdrop-filter: blur(24px) saturate(200%);
+  box-shadow: 0 0 0 6px rgba(127, 178, 255, .12), 0 0 34px rgba(127, 178, 255, .55), inset 0 1px 0 rgba(255, 255, 255, .7); transition: transform 240ms var(--ease-ios, cubic-bezier(.32, .72, 0, 1)), box-shadow 240ms ease; }
+.omni svg { width: 28px; height: 28px; color: #06121f; }
+.omni:active { transform: scale(.93); }
+.omni.on { box-shadow: 0 0 0 10px rgba(110, 231, 200, .18), 0 0 54px rgba(110, 231, 200, .8), inset 0 1px 0 rgba(255, 255, 255, .7); animation: omnipulse 1.6s ease-in-out infinite; }
+@keyframes omnipulse { 50% { transform: scale(1.07); } }
+.rm .omni.on { animation: none; }
+.omnilive { position: fixed; z-index: 36; left: 12px; right: 12px; margin: 0 auto; max-width: 516px; bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 96px); border-radius: 22px; padding: .9em 1em; border: 1px solid var(--spec); color: var(--ink);
+  background: rgba(14, 16, 24, .72); -webkit-backdrop-filter: blur(24px) saturate(200%); backdrop-filter: blur(24px) saturate(200%); box-shadow: 0 18px 44px rgba(0, 0, 0, .4); display: flex; flex-direction: column; gap: .4em; }
+@media (prefers-color-scheme: light) { .omnilive { background: rgba(255, 255, 255, .86); } }
+.omnilive p { margin: 0; }
+.ol-h { font-weight: 700; display: flex; align-items: center; gap: .5em; }
+.ol-i { font-size: 1.1em; line-height: 1.35; }
+.ol-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .25em; font-size: .92em; color: var(--muted); }
+.ol-log li { display: flex; gap: .45em; align-items: flex-start; }
+.ol-log svg { width: 1em; height: 1em; flex: none; margin-top: .2em; color: var(--ok-text); }
+body.has-omni #screen { padding-bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 100px); }
+body.has-omni .minifocus { bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 96px); }
+details.adv.more > summary { font-weight: 700; }
+body.has-omni #qa-mic { display: none; }
+body.has-omni .toast { bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 96px); }
+.nownext b { color: var(--ok-text); }
 </style>
 </head>
 <body>
@@ -937,6 +1007,8 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
 <div class="sr-only" id="announce" aria-live="polite"></div>
 <div id="float"></div>
 <button id="hlbtn" class="hlbtn" type="button" hidden>Save highlight</button>
+<div id="omni-live" class="omnilive" hidden role="status" aria-live="polite"></div>
+<button id="omni" class="omni" type="button" hidden aria-pressed="false" aria-label="Speak: say tasks or commands"></button>
 <button id="minifocus" class="minifocus" type="button" hidden><span class="mf-ring" aria-hidden="true"></span><span class="mf-text" aria-hidden="true"><b id="mf-time"></b><span id="mf-task"></span></span></button>
 
 <script>
@@ -1090,7 +1162,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     s.memory = (Array.isArray(s.memory) ? s.memory : []).filter(obj).map(function (m) { return { id: str(m.id, 40) || newId(), key: str(m.key, 40), value: TIME_RE.test(m.value || "") ? m.value : "", text: str(m.text, 120), at: +m.at || Date.now() }; })
       .filter(function (m) { return m.key && m.value; }).slice(0, 50);
     var F = obj(s.fx) || {};
-    s.fx = { motion: ["system", "on", "off"].indexOf(F.motion) >= 0 ? F.motion : "system", sound: F.sound === true, timerSound: F.timerSound !== false, celebrate: F.celebrate !== false, rpg: F.rpg !== false };
+    s.fx = { motion: ["system", "on", "off"].indexOf(F.motion) >= 0 ? F.motion : "system", sound: F.sound === true, timerSound: F.timerSound !== false, celebrate: F.celebrate !== false, rpg: F.rpg !== false, tilt: F.tilt === true ? true : F.tilt === false ? false : null };
     var B = obj(s.bank) || {};
     s.bank = { xp: Math.max(0, +B.xp || 0), done: Math.max(0, +B.done || 0), focus: Math.max(0, +B.focus || 0) };
     s.miles = obj(s.miles) || {}; s.milesInit = !!s.milesInit;
@@ -1172,14 +1244,25 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     s.mo = { srv: typeof MO.srv === "string" && moSrvOk(MO.srv) ? MO.srv : "", ping: MO.ping !== false, since: +MO.since || 0, synced: +MO.synced || 0, lost: !!MO.lost,
       circle: obj(MO.circle) && MO.circle.id ? { id: str(MO.circle.id, 40), name: str(MO.circle.name, 60), created: +MO.circle.created || Date.now() } : null,
       me: obj(MO.me) && MO.me.id ? { id: str(MO.me.id, 40), name: str(MO.me.name, 40) } : null,
-      members: (Array.isArray(MO.members) ? MO.members : []).filter(obj).map(function (m) { return { id: str(m.id, 40), name: str(m.name, 40), left: !!m.left, seen: +m.seen || 0 }; }).slice(0, 20),
-      rx: (Array.isArray(MO.rx) ? MO.rx : []).map(function (x) { return str(x, 100); }).slice(-500), rxInit: !!MO.rxInit };
+      members: (Array.isArray(MO.members) ? MO.members : []).filter(obj).map(function (m) { return { id: str(m.id, 40), name: str(m.name, 40), left: !!m.left, seen: +m.seen || 0, word: str(m.word, 24), wordDay: str(m.wordDay, 10) }; }).slice(0, 20),
+      rx: (Array.isArray(MO.rx) ? MO.rx : []).map(function (x) { return str(x, 100); }).slice(-500), rxInit: !!MO.rxInit,
+      auto: typeof MO.auto === "string" && /^https?:\/\/[^/]+$/.test(MO.auto) ? MO.auto : "", push: !!MO.push, skew: Math.max(-864e5, Math.min(864e5, +MO.skew || 0)) };
     s.moments = (Array.isArray(s.moments) ? s.moments : []).filter(function (m) { return obj(m) && /^[a-z0-9]{8,40}$/.test(m.id || ""); }).map(function (m) {
       return { id: m.id, author: str(m.author, 40), caption: str(m.caption, 500), forStory: m.forStory !== false, hasPhoto: !!m.hasPhoto, created: +m.created || 0, updated: +m.updated || 0, pending: !!m.pending, err: str(m.err, 120),
         reactions: (Array.isArray(m.reactions) ? m.reactions : []).filter(obj).map(function (r) { return { member: str(r.member, 40), kind: str(r.kind, 12) }; }),
         replies: (Array.isArray(m.replies) ? m.replies : []).filter(obj).map(function (r) { return { id: str(r.id, 40), member: str(r.member, 40), text: str(r.text, 300), at: +r.at || 0 }; }) };
     }).slice(-400);
-    s.chapters = (Array.isArray(s.chapters) ? s.chapters : []).filter(obj).map(function (c) { return { period: Math.max(0, Math.floor(+c.period || 0)), title: str(c.title, 120), body: str(c.body, 6000), momentIds: (Array.isArray(c.momentIds) ? c.momentIds : []).map(function (x) { return str(x, 40); }).slice(0, 60), by: str(c.by, 40), updated: +c.updated || 0 }; }).slice(-100);
+    s.chapters = (Array.isArray(s.chapters) ? s.chapters : []).filter(obj).map(function (c) { return { period: Math.max(0, Math.floor(+c.period || 0)), title: str(c.title, 120), body: str(c.body, 6000), momentIds: (Array.isArray(c.momentIds) ? c.momentIds : []).map(function (x) { return str(x, 40); }).slice(0, 60), by: str(c.by, 40), updated: +c.updated || 0, byAi: !!c.byAi }; }).slice(-100);
+    s.calm = s.calm !== false; s.interests = (Array.isArray(s.interests) ? s.interests : []).map(function (x) { return str(x, 40).trim(); }).filter(Boolean).slice(-12);
+    var PU = obj(s.push) || {};
+    s.push = { on: !!PU.on, at: +PU.at || 0, endpoint: str(PU.endpoint, 1000), sent: str(PU.sent, 20000),
+      nudges: (Array.isArray(PU.nudges) ? PU.nudges : []).filter(function (x) { return obj(x) && typeof x.key === "string" && +x.at; }).map(function (x) { return { key: str(x.key, 100), at: +x.at }; }).slice(-80),
+      opened: (Array.isArray(PU.opened) ? PU.opened : []).map(function (x) { return str(x, 100); }).slice(-60), counted: (Array.isArray(PU.counted) ? PU.counted : []).map(function (x) { return str(x, 100); }).slice(-120) };
+    s.sosAlert = obj(s.sosAlert) && +s.sosAlert.end ? { id: str(s.sosAlert.id, 20), end: +s.sosAlert.end, at: +s.sosAlert.at || 0 } : null;
+    s.word = obj(s.word) && DATE_RE.test(s.word.day || "") ? { day: s.word.day, text: str(s.word.text, 24) } : null;
+    s.capsules = (Array.isArray(s.capsules) ? s.capsules : []).filter(obj).map(function (c) { return { period: Math.max(0, Math.floor(+c.period || 0)), member: str(c.member, 40), text: str(c.text, 600), at: +c.at || 0 }; }).slice(-60);
+    s.breathe = obj(s.breathe) && +s.breathe.until ? { start: +s.breathe.start || 0, until: +s.breathe.until, by: str(s.breathe.by, 40) } : null;
+    s.challenges = (Array.isArray(s.challenges) ? s.challenges : []).filter(obj).map(function (c) { return { id: str(c.id, 40), title: str(c.title, 60), target: Math.max(1, Math.floor(+c.target || 1)), starts: +c.starts || 0, ends: +c.ends || 0, by: str(c.by, 40), progress: obj(c.progress) || {} }; }).slice(0, 5);
     s.sosWait = typeof s.sosWait === "number" && [0, 3, 60, 120, 300].indexOf(s.sosWait) >= 0 ? s.sosWait : 60;
     s.week = obj(s.week) && typeof s.week.text === "string" ? { day: str(s.week.day, 10), text: str(s.week.text, 3000), by: s.week.by === "ai" ? "ai" : "local" } : null;
     s.learn = s.learn !== false; s.patNo = obj(s.patNo) || {}; s.sugNo = obj(s.sugNo) || {}; s.lastLink = str(s.lastLink, 40);
@@ -1229,7 +1312,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   var S = load();
   function save() {
     try { recordToday(); } catch (e) {}
-    try { localStorage.setItem(KEY, JSON.stringify(S)); try { queueStatus(); } catch (e2) {} return true; }
+    try { localStorage.setItem(KEY, JSON.stringify(S)); try { queueStatus(); queuePushSched(); } catch (e2) {} return true; }
     catch (e) { toast(isQuota(e) ? "This phone is out of storage for Ten Days, so that wasn't saved." : "That wasn't saved on this phone.", 6000); return false; }
   }
   save();
@@ -1367,7 +1450,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     holdAwake();
     cdStart = Date.now(); cdEnd = cdStart + wait * 1000; cdShort = wait <= CANCEL_S;
     $("dock").hidden = true; $("cancelbar").hidden = false; $("cd-now").hidden = cdShort; $("cancelbar").classList.toggle("long", !cdShort); $("cd-cancel").textContent = cdShort ? "Cancel" : "Don't tell him";
-    cdT = setInterval(cdTick, 1000); cdTick();
+    cdT = setInterval(cdTick, 1000); cdTick(); srvAlertStart(wait);
     if (ui.screen !== "support") openSupport("sos"); else { if (ui.sup) { ui.sup.mode = "stay"; ui.sup.since = Date.now(); } render(false); }
     $("cd-cancel").focus();
   }
@@ -1379,7 +1462,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     $("cd-text").textContent = cdShort ? "Telling him in " + left + "…" : "Telling " + hisName() + " in " + (left >= 60 ? Math.floor(left / 60) + ":" + pad(left % 60) : left + " s");
   }
   function stopCountdown() { clearInterval(cdT); cdT = null; cdEnd = 0; $("cancelbar").hidden = true; $("dock").hidden = false; }
-  function cancelSOS() { if (Date.now() - cdStart < 700) return; haptic("warn"); var short = cdShort; stopCountdown(); releaseAwake(); toast(short ? "Cancelled. Nothing was sent to him." : "Okay, I won't tell him. I'm staying right here with you."); render(false); }
+  function cancelSOS() { if (Date.now() - cdStart < 700) return; haptic("warn"); var short = cdShort; stopCountdown(); srvAlertCancel(); releaseAwake(); toast(short ? "Cancelled. Nothing was sent to him." : "Okay, I won't tell him. I'm staying right here with you."); render(false); }
   function sendSOS() {
     var now = Date.now();
     var again = S.log.some(function (e) { return e.at > now - NIGHT_MS && !e.untested && (e.sent === true || e.sent === null); });
@@ -1399,7 +1482,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     holdAwake();
     var tx = sosText(entry.again);
     ntfy(S.topics.alert, alertParams(tx.title, 5), tx.body).then(function (r) {
-      entry.sent = r.ok;
+      entry.sent = r.ok; srvAlertFire(r.ok);
       if (S.lastSOS && S.lastSOS.at === at) { S.lastSOS.status = r.ok ? "sent" : "notsent"; S.lastSOS.why = r.why; }
       save(); releaseAwake(); render(false); startFast(); schedulePoll();
     });
@@ -1409,7 +1492,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   // ============ screens ============
   var ui = { screen: "home", arg: null, goalSel: null, prev: null, editType: null, editRepeat: null, editDays: null, qa: "", search: "", showDone: false, justDone: null, burst: 0, from: "home", focusMins: 25, focusTask: "" };
   var testState = null; // { kind, status: "sending"|"sent"|"notsent"|"confirmed"|"nothing", why }
-  function go(name, arg) { if (ui.screen === "read" && name !== "read") readerClose(); if ((name === "moments" || name === "people") && name !== ui.screen) setTimeout(function () { moSync(); }, 0); ui.prev = ui.screen; ui.screen = name; ui.arg = arg || null; ui.goalSel = null; ui.editType = null; ui.editRepeat = null; ui.editDays = null; ui.justDone = null; render(true); window.scrollTo(0, 0); }
+  function go(name, arg) { if (ui.screen === "slideshow" && name !== "slideshow") { slideStop(); if (ui.sl) ui.sl.playing = false; } if (ui.screen === "read" && name !== "read") readerClose(); if ((name === "moments" || name === "people") && name !== ui.screen) setTimeout(function () { moSync(); }, 0); ui.prev = ui.screen; ui.screen = name; ui.arg = arg || null; ui.goalSel = null; ui.editType = null; ui.editRepeat = null; ui.editDays = null; ui.justDone = null; render(true); window.scrollTo(0, 0); }
   // Inner screens name their parent; render puts one Back button at the top, always in the same place.
   function back(to) { ui.backTo = to || "checkin"; return null; }
   function topicBox(label, value, id) {
@@ -2320,7 +2403,8 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
 
   // --- reminders: lead times, and an alert while the app is open ---
   function remindTime(t) { var d = dueAt(t); return d === null ? null : d - (t.remindBefore || 0) * 60000; }
-  function autoRemind(t) { if (S.topics.reminders && canRemind(t) && !(t.remindAt > Date.now())) scheduleReminder(t); }
+  function autoRemind(t) {
+    if (pushOn()) { var rt = remindTime(t); if (rt !== null) { t.remindAt = rt; t.remindWant = true; save(); pushSchedule(); toast("Reminder set for " + whenText(rt) + "."); } return; } if (S.topics.reminders && canRemind(t) && !(t.remindAt > Date.now())) scheduleReminder(t); }
   setInterval(function () {
     if (document.hidden) return;
     var now = Date.now();
@@ -2431,7 +2515,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   var mqReduce = null;
   try { mqReduce = window.matchMedia("(prefers-reduced-motion: reduce)"); } catch (e) {}
   function reduced() { return S.fx.motion === "off" || (S.fx.motion !== "on" && !!(mqReduce && mqReduce.matches)); }
-  function applyMotion() { document.documentElement.classList.toggle("rm", reduced()); }
+  function applyMotion() { document.documentElement.classList.toggle("rm", reduced()); try { applyTilt(); } catch (e) {} }
   try { if (mqReduce && mqReduce.addEventListener) mqReduce.addEventListener("change", applyMotion); } catch (e) {}
   function announce(msg) { var a = $("announce"); if (!a) return; a.textContent = ""; setTimeout(function () { a.textContent = msg; }, 60); }
   var actx = null;
@@ -2927,7 +3011,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
       ic ? icon(ic) : null, h("span", { text: label }), extra.sug ? h("span", { class: "s", text: extra.sug }) : null);
   }
   function chipsFor(d) {
-    var sug = d.sugg && (d.sugg.time === "remembered" ? "from what you told me" : d.sugg.time === "usual" ? "your usual time" : d.sugg.time || d.sugg.date ? "suggested" : "");
+    var sug = d.sugg && (d.sugg.time === "remembered" ? "from what you told me" : d.sugg.time === "usual" ? "your usual time" : d.sugg.time === "slotted" ? "slotted for you" : d.sugg.time || d.sugg.date ? "suggested" : "");
     var wl = whenLabel(d), out = [fchip("when", "clock", wl || (d.anchor ? "No time yet" : "Anytime"), { sug: sug, miss: !wl })];
     if (d.anchor) out.push(fchip("when", "flag", cap(d.anchor)));
     if (d.due && DATE_RE.test(d.due)) out.push(fchip("when", "flag", "Due " + (d.due === dayKey() ? "today" : fmtDate(parseDay(d.due).getTime()))));
@@ -3328,11 +3412,16 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }).then(function (stream) {
       if (!rec) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
       var src = ctx.createMediaStreamSource(stream), proc = ctx.createScriptProcessor(4096, 1, 1);
-      proc.onaudioprocess = function (e) { if (rec) rec.chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); };
+      proc.onaudioprocess = function (e) {
+        if (!rec) return;
+        var ch = e.inputBuffer.getChannelData(0); rec.chunks.push(new Float32Array(ch));
+        if (rec.purpose === "omni") { var sum = 0; for (var i = 0; i < ch.length; i += 8) sum += ch[i] * ch[i]; if (Math.sqrt(sum / (ch.length / 8)) > .025) { rec.spoke = true; rec.loud = Date.now(); } }
+      };
       src.connect(proc); proc.connect(ctx.destination);
       if (ctx.state === "suspended") ctx.resume();
       rec.stream = stream; rec.src = src; rec.proc = proc; rec.pending = false; rec.start = Date.now(); rec.rate = ctx.sampleRate;
-      rec.timer = setInterval(function () { var t = $("rec-time"); if (t && rec) t.textContent = mmss(Date.now() - rec.start); if (rec && Date.now() - rec.start > (rec.purpose === "intake" ? 300e3 : 120e3)) stopRec(true); }, 250);
+      rec.timer = setInterval(function () { var t = $("rec-time"); if (t && rec) t.textContent = mmss(Date.now() - rec.start); if (rec && Date.now() - rec.start > (rec.purpose === "intake" ? 300e3 : 120e3)) stopRec(true);
+        else if (rec && rec.purpose === "omni" && ((rec.spoke && Date.now() - rec.loud > 2200) || (!rec.spoke && Date.now() - rec.start > 9000) || Date.now() - rec.start > 45000)) { stopRec(!!rec.spoke); omniPaint(); } }, 250);
       render(false); announce("Recording. Tap stop when you're done.");
     }, function (err) {
       try { ctx.close(); } catch (e) {} rec = null; render(false);
@@ -3350,7 +3439,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     var n = r.chunks.reduce(function (a, c) { return a + c.length; }, 0);
     if (n < r.rate * .6) { toast("That was too short. Hold on a moment longer next time."); return; }
     var b64 = wavB64(r.chunks, n, r.rate);
-    if (r.purpose === "intake") aiIntake(b64); else aiVoice(b64);
+    if (r.purpose === "intake") aiIntake(b64); else if (r.purpose === "omni") aiOmni(b64); else aiVoice(b64);
   }
   // 16 kHz mono WAV: small, and a format Gemini reads.
   function wavB64(chunks, n, rate) {
@@ -3395,7 +3484,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     } catch (e) { sr = null; toast("Speech isn't available here. Tap the mic on your keyboard to dictate."); }
   }
   function recCard() {
-    if (!rec && !sr) return null;
+    if ((!rec && !sr) || (rec && rec.purpose === "omni")) return null;
     return h("div", { class: "card rec", id: "rec", role: "status" },
       h("p", { class: "status" }, h("span", { class: "recdot", "aria-hidden": "true" }), rec && rec.pending ? "Starting the microphone…" : sr ? "Listening…" : "Recording ", rec && !rec.pending ? h("span", { id: "rec-time", text: mmss(Date.now() - rec.start) }) : null),
       h("p", { class: "small", text: rec && rec.purpose === "intake" ? "Talk freely: what you like, what calms you, your routines, what's hard. Up to 5 minutes." : rec ? "Say everything on your mind. Ten Days turns it into tasks, most urgent first." : "Speak, and the words go in the box." }),
@@ -4857,7 +4946,9 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
         h("span", { text: "Heads-up on my phone 15 minutes before, on days I open Ten Days" })) : null);
   }
   // A scheduled ntfy message to your own reminders channel. It only gets scheduled on days you open the app.
+  function viaCircle(kind, text) { if (!moOn() || !moOthers().length) return Promise.resolve(0); return moFetch("/v1/signal", { method: "POST", json: { kind: kind, text: text } }).then(function (r) { return r.ok ? r.data.sent || 0 : 0; }); }
   function pingHard() {
+    if (pushOn()) { queuePushSched(); return; }   // the server sends it every day now
     var w = hardHours(); if (!S.hardPing || !w || !S.topics.reminders || S.hardPinged === dayKey()) return;
     var now = new Date(), at = new Date(now.getFullYear(), now.getMonth(), now.getDate(), w.start, 0).getTime() - 15 * 60000, wait = at - Date.now();
     if (wait < 120e3) return;
@@ -4874,7 +4965,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   function myStatus() {
     var now = new Date(), st = todayStats(now), ck = checkedToday();
     var open = S.tasks.filter(function (t) { return inToday(t, now) && !isDone(t, now); });
-    var o = { v: 1, n: S.name || "", q: S.quietDay === dayKey() ? 1 : 0, at: Date.now(), day: dayKey(now), t: [st.done, st.total], c: [ck.length, S.checkins.length], f: focusToday(),
+    var o = { v: 1, n: S.name || "", w: S.word && S.word.day === dayKey() ? S.word.text : "", q: S.quietDay === dayKey() ? 1 : 0, at: Date.now(), day: dayKey(now), t: [st.done, st.total], c: [ck.length, S.checkins.length], f: focusToday(),
       k: S.counters.slice(0, 8).map(function (c) { return [c.name, countOf(c.id), c.limit || 0]; }) };
     if (S.share.names) { o.o = open.slice(0, 6).map(function (t) { return t.private ? "Private task" : t.title; }); o.ck = S.checkins.slice(0, 12).map(function (c) { return [c.text, ck.indexOf(c.id) >= 0 ? 1 : 0]; }); }
     return o;
@@ -4882,7 +4973,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   function cleanStatus(d) {
     d = obj(d); if (!d || d.v !== 1) return null;
     var pair = function (a) { return Array.isArray(a) ? [Math.max(0, Math.floor(+a[0] || 0)), Math.max(0, Math.floor(+a[1] || 0))] : [0, 0]; };
-    return { n: str(d.n, 40), q: d.q ? 1 : 0, at: +d.at || 0, day: DATE_RE.test(d.day || "") ? d.day : "", t: pair(d.t), c: pair(d.c), f: Math.max(0, Math.floor(+d.f || 0)),
+    return { n: str(d.n, 40), w: str(d.w, 24), q: d.q ? 1 : 0, at: +d.at || 0, day: DATE_RE.test(d.day || "") ? d.day : "", t: pair(d.t), c: pair(d.c), f: Math.max(0, Math.floor(+d.f || 0)),
       k: (Array.isArray(d.k) ? d.k : []).filter(Array.isArray).slice(0, 8).map(function (x) { return [str(x[0], 30), Math.max(0, Math.floor(+x[1] || 0)), Math.max(0, Math.floor(+x[2] || 0))]; }).filter(function (x) { return x[0]; }),
       o: (Array.isArray(d.o) ? d.o : []).slice(0, 6).map(function (x) { return str(x, 80); }).filter(Boolean),
       ck: (Array.isArray(d.ck) ? d.ck : []).filter(Array.isArray).slice(0, 12).map(function (x) { return [str(x[0], 60), x[1] ? 1 : 0]; }).filter(function (x) { return x[0]; }) };
@@ -4946,7 +5037,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     toast("To " + who + ": “" + m.text + "”", 4000, { label: "Undo", fn: function () { clearTimeout(msgT); ui.msgPending = null; toast("Not sent."); render(false); } });
     msgT = setTimeout(function () {
       ui.msgPending = null;
-      ntfy(topic, { title: S.name || "Ten Days", priority: "3", tags: "speech_balloon" }, m.text).then(function (r) {
+      viaCircle("message", m.text).then(function (n) { return n ? { ok: true } : ntfy(topic, { title: S.name || "Ten Days", priority: "3", tags: "speech_balloon" }, m.text); }).then(function (r) {
         m.ok = r.ok; S.msgs.push(m); if (S.msgs.length > 40) S.msgs.shift(); save();
         toast(r.ok ? "Sent to " + who + "." : "Not sent to " + who + ". " + whyText(r.why), 5000);
         render(false);
@@ -5017,7 +5108,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   function moAdopt(d) {
     S.mo.circle = { id: str(d.circle.id, 40), name: str(d.circle.name, 60), created: +d.circle.created || Date.now() };
     S.mo.me = { id: str(d.me.id, 40), name: str(d.me.name, 40) };
-    S.mo.members = (Array.isArray(d.members) ? d.members : []).map(function (m) { return { id: str(m.id, 40), name: str(m.name, 40), left: !!m.left, seen: +m.seen || 0 }; });
+    S.mo.members = (Array.isArray(d.members) ? d.members : []).map(function (m) { return { id: str(m.id, 40), name: str(m.name, 40), left: !!m.left, seen: +m.seen || 0, word: str(m.word, 24), wordDay: str(m.wordDay, 10) }; });
   }
   function moStart(srv, name) {
     return moFetch("/v1/circles", { method: "POST", srv: srv, token: "", json: { memberName: name, name: "Ten Days" } }).then(function (r) {
@@ -5042,7 +5133,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   function readMoLink(text) {
     var s = String(text || "").trim(), i = s.indexOf("#"); if (i >= 0) s = s.slice(i + 1);
     var p = {}; s.split("&").forEach(function (kv) { var j = kv.indexOf("="); if (j > 0) { try { p[kv.slice(0, j)] = decodeURIComponent(kv.slice(j + 1)); } catch (e) {} } });
-    return moSrvOk(p.srv || "") && /^[a-z0-9]{8,64}$/.test(p.code || "") ? { srv: p.srv, code: p.code, from: str(p.from || "", 40) } : null;
+    return moSrvOk(p.srv || "") && /^[A-Za-z0-9]{6,64}$/.test(p.code || "") ? { srv: p.srv, code: p.code, from: str(p.from || "", 40) } : null;
   }
   function moName(id) { if (S.mo.me && id === S.mo.me.id) return S.mo.me.name || "You"; var m = S.mo.members.filter(function (x) { return x.id === id; })[0]; return m ? m.name : "Someone"; }
   function moWho(id) { return S.mo.me && id === S.mo.me.id ? "You" : moName(id); }
@@ -5069,7 +5160,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
       moSyncP = null;
       if (r.status === 401) { S.mo.lost = true; save(); render(false); return false; }
       if (!r.ok || !obj(r.data)) return false;
-      var d = r.data, before = JSON.stringify([S.moments, S.chapters]);
+      var d = r.data, before = JSON.stringify([S.moments, S.chapters, S.capsules, S.breathe, S.challenges]);
       moAdopt(d); S.mo.lost = false;
       moMerge(Array.isArray(d.moments) ? d.moments : []);
       // when someone reacts to something you posted: a small notice (iPhone web apps can't buzz from the background)
@@ -5079,16 +5170,21 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
       if (freshRx.length && S.mo.rxInit) { var fr = freshRx[freshRx.length - 1], kk = MO_REACT.filter(function (x) { return x[0] === fr[0].kind; })[0]; toast(moName(fr[0].member) + ": " + (kk ? kk[1] + " " + kk[2] : "reacted") + " on your " + (fr[1].hasPhoto ? "photo" : "moment") + ".", 5000); haptic("success"); }
       S.mo.rxInit = true;
       (Array.isArray(d.chapters) ? d.chapters : []).forEach(function (c) {
-        var x = { period: Math.floor(+c.period || 0), title: str(c.title, 120), body: str(c.body, 6000), momentIds: (Array.isArray(c.momentIds) ? c.momentIds : []).map(function (y) { return str(y, 40); }), by: str(c.by, 40), updated: +c.updated || 0 };
+        var x = { byAi: !!c.byAi, period: Math.floor(+c.period || 0), title: str(c.title, 120), body: str(c.body, 6000), momentIds: (Array.isArray(c.momentIds) ? c.momentIds : []).map(function (y) { return str(y, 40); }), by: str(c.by, 40), updated: +c.updated || 0 };
         S.chapters = S.chapters.filter(function (y) { return y.period !== x.period; }).concat([x]);
       });
+      (Array.isArray(d.capsules) ? d.capsules : []).forEach(function (c) { var x = { period: Math.floor(+c.period || 0), member: str(c.member, 40), text: str(c.text, 600), at: +c.at || 0 }; S.capsules = S.capsules.filter(function (y) { return !(y.period === x.period && y.member === x.member); }).concat([x]); });
+      S.breathe = obj(d.breathe) ? { start: +d.breathe.start || 0, until: +d.breathe.until || 0, by: str(d.breathe.by, 40) } : null;
+      if (Array.isArray(d.challenges)) S.challenges = d.challenges.slice(0, 5).map(function (c) { return { id: str(c.id, 40), title: str(c.title, 60), target: Math.max(1, +c.target || 1), starts: +c.starts || 0, ends: +c.ends || 0, by: str(c.by, 40), progress: obj(c.progress) || {} }; });
+      if (+d.now) S.mo.skew = +d.now - Date.now();
       S.mo.since = +d.now || Date.now(); S.mo.synced = Date.now(); save();
-      if (before !== JSON.stringify([S.moments, S.chapters]) && ["home", "people", "moments", "chapter"].indexOf(ui.screen) >= 0) render(false);
+      try { if (navigator.clearAppBadge && !document.hidden) navigator.clearAppBadge(); } catch (e) {}
+      if (before !== JSON.stringify([S.moments, S.chapters, S.capsules, S.breathe, S.challenges]) && ["home", "people", "moments", "chapter"].indexOf(ui.screen) >= 0) render(false);
       return true;
     });
     return moSyncP;
   }
-  function moSchedule() { clearTimeout(moT); if (document.hidden || !moOn()) return; moT = setTimeout(function () { moSync().then(moSchedule); }, ["moments", "people"].indexOf(ui.screen) >= 0 ? 20000 : 60000); }
+  function moSchedule() { clearTimeout(moT); if (document.hidden || !moOn()) return; moT = setTimeout(function () { moSync().then(moSchedule); }, ["moments", "people", "together", "support"].indexOf(ui.screen) >= 0 ? 20000 : 60000); }
   var moPhotoP = {};
   function moFetchPhoto(id) {
     if (moPhotoP[id]) return moPhotoP[id];
@@ -5257,7 +5353,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     "Light, warm humor is welcome only when a caption or reply sets it up; quote their words exactly when you use them. Plain sentences, past tense, third person, 2 to 4 short paragraphs, under 220 words. " +
     'Reply with JSON only: {"title":"short title, under 8 words","story":"the chapter, paragraphs separated by a blank line"}.';
   function moShareChapter(c) {
-    return moFetch("/v1/chapters/" + c.period, { method: "PUT", json: { title: c.title, body: c.body, momentIds: c.momentIds } }).then(function (r) {
+    return moFetch("/v1/chapters/" + c.period, { method: "PUT", json: { title: c.title, body: c.body, momentIds: c.momentIds, byAi: !!c.byAi } }).then(function (r) {
       if (r.ok) { c.by = S.mo.me.id; c.updated = Date.now(); save(); toast("Chapter saved for everyone in your circle."); }
       else toast("Saved on this phone, not shared: " + r.why + ".", 6000);
       render(false); return r.ok;
@@ -5265,54 +5361,6 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   }
 
   // the Moments part of "You and Audi": set it up once, then a small summary
-  function momentsSection() {
-    var offer = ui.moOffer;
-    if (offer) {
-      var nm = h("input", { type: "text", id: "mo-join-name", value: S.name || "", maxlength: "40", autocomplete: "off", placeholder: "Your first name" });
-      return h("section", { class: "card", id: "mo-offer", "aria-labelledby": "mo-offer-q" },
-        h("p", { class: "status", id: "mo-offer-q", text: "Join " + (offer.from || "this") + "'s moments?" }),
-        h("p", { class: "small", text: "You'll see the photos they share and can react with one tap. Kept on " + offer.srv.replace(/^https?:\/\//, "") + ", their Moments server." }),
-        h("div", { class: "field" }, h("label", { class: "lbl", for: "mo-join-name", text: "Your name in the circle" }), nm),
-        h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "mo-join-yes", onclick: function () {
-          var n = nm.value.trim().slice(0, 40); if (!n) { toast("Add your name first."); nm.focus(); return; }
-          if (!S.name) S.name = n;
-          ui.moBusy = true; render(false);
-          moJoin(offer.srv, offer.code, n).then(function (r) { ui.moBusy = false; if (r.ok) { ui.moOffer = null; toast("You're in. " + (offer.from ? offer.from + "'s" : "Their") + " moments are here."); moSchedule(); } else toast("Couldn't join: " + r.why + "."); render(false); });
-        } }, ui.moBusy ? "Joining…" : "Join"), h("button", { class: "btn link", type: "button", id: "mo-join-no", onclick: function () { ui.moOffer = null; render(false); } }, "Not now")));
-    }
-    if (!moOn()) {
-      var srv = h("input", { type: "url", id: "mo-srv", value: S.mo.srv || "", autocomplete: "off", autocapitalize: "off", spellcheck: "false", placeholder: "https://ten-days-moments.you.workers.dev", "aria-label": "Your Moments server address" });
-      var me = h("input", { type: "text", id: "mo-myname", value: S.name || "", maxlength: "40", autocomplete: "off", placeholder: "Your first name", "aria-label": "Your name" });
-      var link = h("input", { type: "text", id: "mo-link", autocomplete: "off", autocapitalize: "off", spellcheck: "false", placeholder: "Got an invite? Paste the link", "aria-label": "Invite link" });
-      return h("section", { class: "card", id: "mo-setup", "aria-labelledby": "mo-setup-h" },
-        h("h2", { class: "sect-h", id: "mo-setup-h", text: "Moments" }),
-        S.mo.lost ? h("p", { class: "status bad", text: "This phone is no longer in your circle (you left, or the key was removed). Join again with a new invite." }) : null,
-        h("p", { class: "small", text: "Share photos with " + hisName() + "; a reaction is all it needs. Moments are kept on a small server you set up once (a free Cloudflare Worker; the steps are in worker/README.md in the app's GitHub repo). Only people you invite can see them. Your private reminder photos are never shared." }),
-        h("div", { class: "field" }, h("label", { class: "lbl", for: "mo-srv", text: "Server address" }), srv),
-        S.name ? null : h("div", { class: "field" }, h("label", { class: "lbl", for: "mo-myname", text: "Your name" }), me),
-        h("button", { class: "btn primary", type: "button", id: "mo-start", disabled: !!ui.moBusy, onclick: function () {
-          var u = srv.value.trim().replace(/\/+$/, ""), n = (S.name || me.value).trim().slice(0, 40);
-          if (!moSrvOk(u)) { toast("Use the https:// address of your Moments server."); srv.focus(); return; }
-          if (!n) { toast("Add your name first."); me.focus(); return; }
-          S.name = S.name || n; ui.moBusy = true; render(false);
-          moStart(u, n).then(function (r) { ui.moBusy = false; toast(r.ok ? "Your circle is ready. Invite " + hisName() + " next." : "Couldn't start it: " + r.why + "."); if (r.ok) moSchedule(); render(false); });
-        } }, ui.moBusy ? "Starting…" : "Start our circle"),
-        h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); var o = readMoLink(link.value); if (!o) { toast("That isn't a Moments invite link."); return; } ui.moOffer = o; render(false); } },
-          link, h("button", { class: "btn", type: "submit", id: "mo-link-go" }, "Join")));
-    }
-    var live = S.moments.filter(function (m) { return !m.deleted; }), last3 = live.filter(function (m) { return m.hasPhoto; }).slice(-3).reverse(), due = chapterDue();
-    return h("section", { class: "card", id: "mo-sum", "aria-labelledby": "mo-sum-h" },
-      h("div", { class: "mohead" }, h("h2", { class: "sect-h", id: "mo-sum-h", text: "Moments" }), h("span", { class: "small", text: S.mo.members.filter(function (x) { return !x.left; }).map(function (x) { return x.name; }).join(", ") })),
-      last3.length ? h("button", { class: "mostrip", type: "button", id: "mo-open-strip", "aria-label": "Open moments", onclick: function () { go("moments"); } }, last3.map(function (m) { return moPhoto(m, "xs"); })) : h("p", { class: "small", text: "No moments yet." }),
-      due !== null ? h("button", { class: "btn", type: "button", id: "mo-chapter", onclick: function () { go("chapter", due); } }, icon("book"), " Your chapter for " + periodLabel(due) + " is ready") : null,
-      h("div", { class: "row" }, addMomentBtn("mo-add"), h("button", { class: "btn", type: "button", id: "mo-open", onclick: function () { go("moments"); } }, "See all")),
-      moOthers().length ? null : h("p", { class: "small", text: "Next: invite " + hisName() + ". He opens the link in Ten Days on his phone." }),
-      ui.moInvite ? h("div", { class: "field" }, h("span", { class: "lbl", text: "Copied. Send him this link (works once, for 7 days)" }), h("p", { class: "small", text: "On iPhone, links open in Safari, not in the Ten Days icon. So he copies it, opens Ten Days from his Home Screen, and pastes it in You → Moments." }), h("code", { id: "mo-invite-link", class: "small", text: ui.moInvite })) : null,
-      h("button", { class: "btn link", type: "button", id: "mo-invite", onclick: function () {
-        moInviteLink().then(function (r) { if (!r.ok) { toast("No invite: " + r.why + "."); return; } ui.moInvite = r.link; render(false); copyText(r.link, $("mo-invite-link")); });
-      } }, "Invite someone"));
-  }
-
   // ============ reading, rebuilt: one calm scroll; only the pages near you are drawn ============
   // Your daily amount is learned from what you actually read (the median of your last reading days).
   function goalOf(d) {
@@ -5776,7 +5824,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     toast("Letting " + who + " know quietly…", 4000, { label: "Undo", fn: function () { undone = true; clearTimeout(notGreatT); toast("Not sent."); } });
     notGreatT = setTimeout(function () {
       if (undone) return;
-      ntfy(topic, { title: S.name || "Ten Days", priority: "2", tags: "cloud" }, "Not a great day. No need to call, just letting you know.").then(function (r) {
+      viaCircle("notgreat", "").then(function (n) { return n ? { ok: true } : ntfy(topic, { title: S.name || "Ten Days", priority: "2", tags: "cloud" }, "Not a great day. No need to call, just letting you know."); }).then(function (r) {
         if (r.ok) { S.quietDay = dayKey(); save(); sendStatus(true); }
         toast(r.ok ? who + " knows. No call expected." : "Not sent. " + whyText(r.why), 5000); render(false);
       });
@@ -5801,12 +5849,734 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
       h("span", { class: "clip", text: "“" + c.quote + "”" }), h("span", { class: "hint", text: c.docName + (c.by === "ai" ? " · picked by AI" : "") }));
   }
 
+  // ============ the hosted app: one address for the app and its server ============
+  // Served by the Ten Days Worker, the server is this same address. An old copy (like GitHub Pages) uses TD_HOME.
+  var TD_HOME = "https://ten-days.rishiaadi3005.workers.dev";   // where Ten Days lives; old copies (like GitHub Pages) point here
+  function hostedHere() { return !!(S.mo.auto && S.mo.auto === location.origin); }
+  function moSrvDefault() { return S.mo.srv || (hostedHere() ? location.origin : "") || (localDev() ? "" : TD_HOME); }
+  function probeHost() {
+    if (!/^https?:$/.test(location.protocol)) return Promise.resolve(false);
+    return fetch(location.origin + "/v1", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      var mine = !!(d && d.service === "ten-days-moments");
+      if (mine && S.mo.auto !== location.origin) { S.mo.auto = location.origin; S.mo.push = !!d.push; save(); render(false); }
+      if (mine) S.mo.push = !!d.push;
+      return mine;
+    }).catch(function () { return false; });
+  }
+  function isIOS() { return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
+  function localDev() { return location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname); }
+  // In Safari instead of the installed app: a short, friendly note
+  function a2hsNote() {
+    if (isStandalone() || localDev() || !isIOS() || skipped("a2hs-note")) return null;
+    return h("div", { class: "card", id: "a2hs-note", role: "note" },
+      h("p", { class: "status", text: "Add to Home Screen for the real app. Notifications need it." }),
+      h("p", { class: "small", text: "Share → Add to Home Screen → Add. Then open Ten Days from its icon." }),
+      h("button", { class: "btn link", type: "button", id: "a2hs-later", onclick: function () { notNow("a2hs-note"); } }, "Not now"));
+  }
+  // An old copy points people to the new home
+  function movedNote() {
+    if (!TD_HOME || localDev() || hostedHere() || location.origin === TD_HOME.replace(/\/+$/, "") || skipped("moved")) return null;
+    return h("div", { class: "card", id: "moved-note", role: "note" },
+      h("p", { class: "status", text: "Ten Days has a new home, with notifications." }),
+      h("p", { class: "small", text: "Make a move code here, open " + TD_HOME.replace(/^https:\/\//, "") + ", add it to your Home Screen, and type the code. Everything comes with you." }),
+      h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "moved-go", onclick: function () { go("move"); } }, "Make a move code"),
+        h("button", { class: "btn link", type: "button", id: "moved-later", onclick: function () { notNow("moved"); } }, "Later")));
+  }
+  function swInit() {
+    if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+    navigator.serviceWorker.addEventListener("message", function (e) { var d = e.data || {}; if (d.type === "open" && d.url) openFromPush(d.url); });
+  }
+  // a tapped notification opens the right place
+  function openFromPush(url) {
+    var hsh = String(url || "").split("#")[1] || "", p = {};
+    hsh.split("&").forEach(function (kv) { var i = kv.indexOf("="); try { p[i > 0 ? kv.slice(0, i) : kv] = i > 0 ? decodeURIComponent(kv.slice(i + 1)) : "1"; } catch (e) {} });
+    try { if (navigator.clearAppBadge) navigator.clearAppBadge(); } catch (e) {}
+    if (p.n) { S.push.opened.push(p.n); S.push.opened = S.push.opened.slice(-60); save(); }
+    if (p.call !== undefined) { ui.callFrom = { num: p.call, who: p.from || "" }; go("call"); return true; }
+    if (p.moments) { go("moments"); return true; }
+    if (p.breathe) { go("together"); return true; }
+    if (p.calm) { go("breathe"); return true; }
+    if (p.people) { go("people"); return true; }
+    return !!p.n;
+  }
+
+  // ============ moving your data: from the old app (or another phone) to this one ============
+  var MOVE_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  function moveCode() { var b = new Uint8Array(8); crypto.getRandomValues(b); var s = ""; for (var i = 0; i < 8; i++) s += MOVE_ABC[b[i] % 32]; return s; }
+  function idbAll(store) {
+    return idb().then(function (d) {
+      return new Promise(function (res, rej) {
+        var out = [], tx = d.transaction(store, "readonly"), rq = tx.objectStore(store).openCursor();
+        rq.onsuccess = function () { var c = rq.result; if (c) { out.push([c.key, c.value]); c.continue(); } };
+        tx.oncomplete = function () { res(out); }; tx.onerror = function () { rej(tx.error); };
+      });
+    }).catch(function () { return []; });
+  }
+  function moveKey(code) {
+    return crypto.subtle.importKey("raw", new TextEncoder().encode(code), "PBKDF2", false, ["deriveKey"]).then(function (k) {
+      return crypto.subtle.deriveKey({ name: "PBKDF2", salt: new TextEncoder().encode("ten-days-move-v1"), iterations: 150000, hash: "SHA-256" }, k, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+    });
+  }
+  function zip(bytes, back) {
+    var CS = back ? window.DecompressionStream : window.CompressionStream;
+    if (!CS) return Promise.resolve(bytes);
+    return new Response(new Blob([bytes]).stream().pipeThrough(new CS("gzip"))).arrayBuffer().then(function (b) { return new Uint8Array(b); });
+  }
+  // Everything on this phone, in one encrypted bundle: your data, book text, PDFs and photos. Keys and secrets stay behind.
+  function packAll(skipFiles) {
+    return Promise.all([idbAll("docs"), idbAll("blobs")]).then(function (x) {
+      var blobs = x[1].filter(function (kv) { return kv[1] instanceof Blob && !(skipFiles && /^pdf:/.test(kv[0])); });
+      return Promise.all(blobs.map(function (kv) { return kv[1].arrayBuffer(); })).then(function (bufs) {
+        var head = JSON.stringify({ v: 1, s: S, docs: x[0], blobs: blobs.map(function (kv, i) { return [kv[0], kv[1].type || "", bufs[i].byteLength]; }) });
+        var hb = new TextEncoder().encode(head), total = 4 + hb.length + bufs.reduce(function (a, b) { return a + b.byteLength; }, 0);
+        var out = new Uint8Array(total), o = 4; new DataView(out.buffer).setUint32(0, hb.length); out.set(hb, o); o += hb.length;
+        bufs.forEach(function (b) { out.set(new Uint8Array(b), o); o += b.byteLength; });
+        return out;
+      });
+    });
+  }
+  function unpackAll(bytes) {
+    var n = new DataView(bytes.buffer, bytes.byteOffset).getUint32(0), head = JSON.parse(new TextDecoder().decode(bytes.subarray(4, 4 + n))), o = 4 + n;
+    if (!head || head.v !== 1 || !head.s) throw new Error("format");
+    var puts = [];
+    (head.docs || []).forEach(function (kv) { puts.push(idbPut("docs", kv[0], kv[1])); });
+    (head.blobs || []).forEach(function (b) { puts.push(idbPut("blobs", b[0], new Blob([bytes.slice(o, o + b[2])], { type: b[1] }))); o += b[2]; });
+    return Promise.all(puts).then(function () { return head.s; });
+  }
+  function moveOut() {
+    var srv = moSrvDefault(); if (!srv) { toast("Moving needs the Ten Days server, which isn't set up for this copy yet."); return Promise.resolve(null); }
+    var code = moveCode(); ui.move = { busy: true }; render(false);
+    var send = function (skip) {
+      return packAll(skip).then(function (raw) { return zip(raw); }).then(function (z) {
+        if (z.length > 48e6 && !skip) return send(true);
+        var iv = crypto.getRandomValues(new Uint8Array(12));
+        return moveKey(code).then(function (k) { return crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, k, z); }).then(function (ct) {
+          var body = new Uint8Array(12 + ct.byteLength); body.set(iv, 0); body.set(new Uint8Array(ct), 12);
+          return moFetch("/v1/transfer", { method: "POST", srv: srv, token: "", body: body, headers: { "x-move-id": code.slice(0, 4), "content-type": "application/octet-stream" }, wait: 120000 }).then(function (r) { r.skipped = !!skip; return r; });
+        });
+      });
+    };
+    return send(false).then(function (r) {
+      ui.move = r.ok ? { code: code, skipped: r.skipped } : { err: r.why }; render(false); return r.ok ? code : null;
+    }, function () { ui.move = { err: "this phone couldn't pack your data" }; render(false); return null; });
+  }
+  function moveIn(raw) {
+    var code = String(raw || "").toUpperCase().replace(/[\s-]+/g, "");
+    if (!/^[A-HJ-NP-Z2-9]{8}$/.test(code)) { toast("A move code has 8 letters and numbers."); return Promise.resolve(false); }
+    var srv = moSrvDefault(); if (!srv) { toast("Moving needs the Ten Days server."); return Promise.resolve(false); }
+    ui.moveIn = { busy: true }; render(false);
+    return moFetch("/v1/transfer/" + code.slice(0, 4), { srv: srv, token: "", blob: true, wait: 120000 }).then(function (r) {
+      if (!r.ok || !(r.data instanceof Blob)) { ui.moveIn = { err: r.status === 404 ? "No move with that code. Codes work once, for 24 hours." : r.why }; render(false); return false; }
+      return r.data.arrayBuffer().then(function (buf) {
+        var b = new Uint8Array(buf);
+        return moveKey(code).then(function (k) { return crypto.subtle.decrypt({ name: "AES-GCM", iv: b.slice(0, 12) }, k, b.slice(12)); });
+      }).then(function (pt) { return zip(new Uint8Array(pt), true); }).then(unpackAll).then(function (s) {
+        var keep = { mo: S.mo }; S = migrate(s); if (keep.mo.auto) S.mo.auto = keep.mo.auto; S.ob.done = true; save();
+        toast("Everything's here."); setTimeout(function () { location.reload(); }, 600); return true;
+      }).catch(function () { ui.moveIn = { err: "That code didn't open the data. Check it and try once more." }; render(false); return false; });
+    });
+  }
+
+  // ============ push notifications ============
+  function pushSupported() { return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window; }
+  function b64ToBytes(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; var b = atob(s), o = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) o[i] = b.charCodeAt(i); return o; }
+  function swReady() { return Promise.race([navigator.serviceWorker.ready, new Promise(function (res, rej) { setTimeout(function () { rej(new Error("sw")); }, 8000); })]); }
+  // Must start from a tap: iPhone only asks for permission from a user gesture
+  function turnOnPush() {
+    if (!pushSupported()) { toast(isIOS() && !isStandalone() ? "Add Ten Days to your Home Screen first. Notifications only work from the icon." : "This browser can't do notifications."); return Promise.resolve(false); }
+    var srv = moSrvDefault(); if (!srv) { toast("Notifications need the Ten Days server."); return Promise.resolve(false); }
+    ui.pushBusy = true; render(false);
+    var fail = function (msg) { ui.pushBusy = false; toast(msg, 6000); render(false); return false; };
+    return Notification.requestPermission().then(function (perm) {
+      if (perm !== "granted") return fail("Notifications are off for Ten Days. Turn them on in Settings → Notifications → Ten Days.");
+      var ready = moOn() ? Promise.resolve({ ok: true }) : moStart(srv, S.name || "Me");
+      return ready.then(function (r) {
+        if (!r.ok) return fail("Couldn't reach the server: " + r.why + ".");
+        return moFetch("/v1/push/key").then(function (k) {
+          if (!k.ok) return fail("Push isn't set up on the server yet (VAPID keys).");
+          return swReady().then(function (reg) { return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(k.data.key) }); }).then(function (sub) {
+            var j = sub.toJSON ? sub.toJSON() : sub;
+            return moFetch("/v1/push/subscribe", { method: "POST", json: { endpoint: j.endpoint, keys: j.keys } }).then(function (s) {
+              if (!s.ok) return fail("Couldn't register this phone: " + s.why + ".");
+              S.push.on = true; S.push.at = Date.now(); S.push.endpoint = j.endpoint; S.push.sent = ""; save(); ui.pushBusy = false;
+              pushSchedule(); toast("Notifications are on."); render(false); return true;
+            });
+          });
+        });
+      });
+    }).catch(function () { return fail("Couldn't turn on notifications on this phone."); });
+  }
+  function pushOff() {
+    S.push.on = false; S.push.sent = ""; save(); render(false);
+    moFetch("/v1/push/subscribe", { method: "DELETE", json: { endpoint: S.push.endpoint } });
+    if (pushSupported()) swReady().then(function (reg) { return reg.pushManager.getSubscription(); }).then(function (s) { if (s) s.unsubscribe(); }).catch(function () {});
+  }
+  function pushOn() { return !!(S.push.on && moOn()); }
+  // What should reach the lock screen over the next week. The server's cron sends each at its time.
+  function pushItems() {
+    var items = [], now = new Date(), w = hardHours(), c = checkedToday();
+    for (var d = 0; d < 7; d++) {
+      var day = addDays(now, d), base = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime(), dk = dayKey(day), n = 0;
+      if (S.hardPing && w) items.push({ key: "hard:" + dk, at: base + w.start * 3600e3 - 15 * 60e3, title: "Heads-up", body: "The next couple of hours are usually hard. Your plan: " + (S.profile.step || defaultStep()), kind: "hard", url: "./#calm" });
+      S.checkins.forEach(function (x) {
+        var t = ckTime(x), st = S.nudge.items[x.id], at = base + t * 60e3;
+        if (t < 0 || n >= 3 || (st && st.quiet > at) || (d === 0 && c.indexOf(x.id) >= 0)) return;
+        n++; items.push({ key: "nudge:" + x.id + ":" + dk, at: at, title: x.text, body: "You usually do this around " + hmText(hmOf(t)) + ". Now's a good time.", kind: "nudge", url: "./#n=nudge:" + x.id + ":" + dk });
+      });
+    }
+    S.tasks.forEach(function (t) {
+      if (!t.remindWant || isDone(t)) return;
+      var r = remindTime(t); if (r === null) return;
+      items.push({ key: "task:" + t.id, at: r, title: t.private ? "Ten Days" : t.title, body: t.private ? "You have a reminder." : t.due ? "Time to start. It's due " + (t.due === dayKey() ? "today" : fmtDate(parseDay(t.due).getTime())) + "." : "Reminder" + (t.remindBefore ? " (in " + durText(t.remindBefore) + ")" : ""), kind: "task", url: "./" });
+    });
+    var soon = Date.now() + 30e3;
+    return items.filter(function (x) { return x.at > soon; }).sort(function (a, b) { return a.at - b.at; }).slice(0, 120);
+  }
+  var psT = null;
+  function queuePushSched() { if (!pushOn()) return; clearTimeout(psT); psT = setTimeout(pushSchedule, 4000); }
+  function pushSchedule() {
+    if (!pushOn()) return Promise.resolve(false);
+    var items = pushItems(), key = JSON.stringify(items.map(function (x) { return [x.key, Math.round(x.at / 60e3)]; }));
+    S.push.nudges = items.filter(function (x) { return x.kind === "nudge"; }).map(function (x) { return { key: x.key, at: x.at }; }).concat((S.push.nudges || []).filter(function (x) { return x.at < Date.now(); })).slice(-80);
+    if (key === S.push.sent) return Promise.resolve(true);
+    return moFetch("/v1/push/schedule", { method: "PUT", json: { items: items } }).then(function (r) { if (r.ok) { S.push.sent = key; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} } return r.ok; });
+  }
+  // A lock-screen nudge you didn't open and didn't act on counts as "not now" too, so the quiet rule covers pushes.
+  function pushNudgeQuiet() {
+    var now = Date.now(), done = S.push.counted || [];
+    (S.push.nudges || []).forEach(function (x) {
+      if (x.at > now - 60 * 60e3 || x.at < now - 3 * 864e5 || done.indexOf(x.key) >= 0) return;
+      var parts = x.key.split(":"), id = parts[1], dk = parts[2], ck = S.checkins.filter(function (c) { return c.id === id; })[0];
+      done.push(x.key);
+      if (!ck || (S.checkLog[dk] || []).indexOf(id) >= 0 || S.push.opened.indexOf(x.key) >= 0) return;
+      ignoreNudge(ck, true);
+    });
+    S.push.counted = done.slice(-120); save();
+  }
+  function pushCard() {
+    if (!pushSupported() || pushOn() || skipped("push") || !moSrvDefault() || !S.mo.push) return null;
+    if (isIOS() && !isStandalone()) return null;   // the Safari note covers it
+    return h("div", { class: "card", id: "push-card" },
+      h("p", { class: "status", text: "Turn on notifications" }),
+      h("p", { class: "small", text: "So “I need you” reaches him even with the app closed, and nudges, reactions and reminders reach your lock screen." }),
+      h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "push-on", disabled: !!ui.pushBusy, onclick: function () { turnOnPush(); } }, ui.pushBusy ? "Turning on…" : "Turn on notifications"),
+        h("button", { class: "btn link", type: "button", id: "push-later", onclick: function () { notNow("push"); } }, "Not now")));
+  }
+
+  // ============ "I need you" on the server: it still reaches him if you close the app ============
+  function srvAlertStart(wait) {
+    if (!moOn() || !wait) return;
+    var tx = sosText(false), p = alertParams(tx.title, 5);
+    S.sosAlert = { id: "", end: Date.now() + wait * 1000, at: Date.now() }; save();
+    moFetch("/v1/alerts", { method: "POST", json: { wait: wait, title: (S.name || S.mo.me.name || "Your brother") + ": check in", body: tx.body, call: cleanPhone(S.self), ntfy: S.topics.alert ? { topic: S.topics.alert, params: p, body: tx.body } : null } })
+      .then(function (r) { if (r.ok && S.sosAlert) { S.sosAlert.id = r.data.id; save(); } });
+  }
+  function srvAlertCancel() { var a = S.sosAlert; S.sosAlert = null; save(); if (a && a.id) moFetch("/v1/alerts/" + a.id, { method: "DELETE" }); }
+  function srvAlertFire(ntfyDone) { var a = S.sosAlert; S.sosAlert = null; save(); if (a && a.id) moFetch("/v1/alerts/" + a.id + "/fire", { method: "POST", json: { ntfyDone: !!ntfyDone } }); }
+  // back in the app after it fired while closed: say so honestly
+  function srvAlertCheck() {
+    var a = S.sosAlert; if (!a || !a.id || Date.now() < a.end || cdT) return;
+    moFetch("/v1/alerts/" + a.id).then(function (r) {
+      if (!r.ok || !obj(r.data) || (r.data.state !== "sent" && r.data.state !== "cancelled")) return;   // unclear: keep it and ask again later
+      S.sosAlert = null;
+      if (r.data.state === "sent") {
+        var at = r.data.sentAt || a.end;
+        S.log.push({ at: at, sent: true, again: false, line: "" }); S.lastSOS = { at: at, status: "sent", why: "", again: false }; save();
+        toast("He was told at " + fmtTime(at) + ", while Ten Days was closed.", 7000); render(false);
+      } else save();
+    });
+  }
+
+  // ============ join codes, shown big with a QR code ============
+  var qrP = null;
+  function loadQr() {
+    if (window.qrcode) return Promise.resolve(window.qrcode);
+    if (qrP) return qrP;
+    qrP = new Promise(function (res, rej) { var s = document.createElement("script"); s.src = "qrcode.js"; s.onload = function () { res(window.qrcode); }; s.onerror = function () { qrP = null; rej(new Error("qr")); }; document.head.appendChild(s); });
+    return qrP;
+  }
+  function qrBox(text) {
+    var box = h("div", { class: "qrbox", id: "mo-qr", role: "img", "aria-label": "QR code for " + text.split("").join(" ") });
+    loadQr().then(function (q) { var qr = q(0, "M"); qr.addData(text); qr.make(); box.innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); }).catch(function () { box.remove(); });
+    return box;
+  }
+  function newCode() {
+    return moFetch("/v1/invites", { method: "POST" }).then(function (r) {
+      if (!r.ok) { toast("No code: " + r.why + "."); return r; }
+      ui.moCode = { code: r.data.code, expires: r.data.expires };
+      ui.moInvite = location.origin + location.pathname + "#moments=1&srv=" + encodeURIComponent(S.mo.srv || moSrvDefault()) + "&code=" + encodeURIComponent(r.data.code) + "&from=" + encodeURIComponent(S.mo.me.name || "");
+      render(false); return r;
+    });
+  }
+  function codePanel() {
+    var c = ui.moCode; if (!c) return null;
+    var left = Math.max(0, c.expires - Date.now()), mins = Math.ceil(left / 60e3);
+    return h("div", { class: "codepanel", id: "mo-code-panel" },
+      h("p", { class: "lbl", text: "Your join code" }),
+      h("p", { class: "bigcode", id: "mo-code-show", "aria-label": "Code " + c.code.split("").join(" "), text: c.code.slice(0, 3) + " " + c.code.slice(3) }),
+      qrBox(c.code),
+      h("p", { class: "small", id: "mo-code-left", text: left ? "Works once, for " + mins + (mins === 1 ? " more minute" : " more minutes") + ". He opens Ten Days → You → Join a circle and types it." : "This code expired." }),
+      h("button", { class: "btn", type: "button", id: "mo-newcode", onclick: newCode }, "New code"),
+      ui.moInvite ? h("details", { class: "adv", id: "mo-link-fallback" }, h("summary", null, "Can't read the code?"),
+        h("p", { class: "small", text: "Send this link instead; he pastes it in Ten Days." }), h("code", { id: "mo-invite-link", class: "small", text: ui.moInvite }),
+        h("button", { class: "btn", type: "button", id: "mo-copy-link", onclick: function () { copyText(ui.moInvite, $("mo-invite-link")); } }, "Copy link")) : null);
+  }
+
+  // the Moments part of "You and Audi": start or join with a code, then a small summary
+  function momentsSection() {
+    var offer = ui.moOffer, srv = moSrvDefault();
+    var nameField = function (id) { return S.name ? null : h("div", { class: "field" }, h("label", { class: "lbl", for: id, text: "Your first name" }), h("input", { type: "text", id: id, maxlength: "40", autocomplete: "off", autocapitalize: "words" })); };
+    var nameOf = function (id) { var el = $(id); return (S.name || (el ? el.value : "")).trim().slice(0, 40); };
+    if (offer) {
+      return h("section", { class: "card", id: "mo-offer", "aria-labelledby": "mo-offer-q" },
+        h("p", { class: "status", id: "mo-offer-q", text: "Join " + (offer.from || "this") + "'s circle?" }),
+        h("p", { class: "small", text: "You'll see the photos they share and can react with one tap." }),
+        h("div", { class: "field" }, h("label", { class: "lbl", for: "mo-join-name", text: "Your name in the circle" }), h("input", { type: "text", id: "mo-join-name", value: S.name || "", maxlength: "40", autocomplete: "off" })),
+        h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "mo-join-yes", onclick: function () {
+          var n = $("mo-join-name").value.trim().slice(0, 40); if (!n) { toast("Add your name first."); return; }
+          if (!S.name) S.name = n; ui.moBusy = true; render(false);
+          moJoin(offer.srv, offer.code, n).then(function (r) { ui.moBusy = false; if (r.ok) { ui.moOffer = null; toast("You're in."); moSchedule(); } else toast("Couldn't join: " + r.why + "."); render(false); });
+        } }, ui.moBusy ? "Joining…" : "Join"), h("button", { class: "btn link", type: "button", id: "mo-join-no", onclick: function () { ui.moOffer = null; render(false); } }, "Not now")));
+    }
+    if (!moOn()) {
+      var codeIn = h("input", { type: "text", id: "mo-code", maxlength: "8", autocomplete: "off", autocapitalize: "characters", spellcheck: "false", inputmode: "text", placeholder: "ABC 234", "aria-label": "Join code", class: "codein" });
+      var srvIn = h("input", { type: "url", id: "mo-srv", value: S.mo.srv || "", autocomplete: "off", autocapitalize: "off", spellcheck: "false", placeholder: "https://…", "aria-label": "Server address" });
+      var link = h("input", { type: "text", id: "mo-link", autocomplete: "off", autocapitalize: "off", spellcheck: "false", placeholder: "Paste an invite link", "aria-label": "Invite link" });
+      var useSrv = function () { var u = srvIn.value.trim().replace(/\/+$/, ""); return u && moSrvOk(u) ? u : srv; };
+      return h("section", { class: "card", id: "mo-setup", "aria-labelledby": "mo-setup-h" },
+        h("h2", { class: "sect-h", id: "mo-setup-h", text: "Your circle" }),
+        S.mo.lost ? h("p", { class: "status bad", text: "This phone is no longer in your circle. Join again with a new code." }) : null,
+        h("p", { class: "small", text: "Share moments, breathe together, and get “I need you” even when the app is closed. Only people with your code can join." }),
+        nameField("mo-myname"),
+        h("button", { class: "btn primary", type: "button", id: "mo-start", disabled: !!ui.moBusy, onclick: function () {
+          var u = useSrv(), n = nameOf("mo-myname");
+          if (!u) { toast("Ten Days' server isn't set up for this copy yet."); var d = $("mo-adv-srv"); if (d) d.open = true; return; }
+          if (!n) { toast("Add your name first."); return; }
+          S.name = S.name || n; ui.moBusy = true; render(false);
+          moStart(u, n).then(function (r) { ui.moBusy = false; if (!r.ok) { toast("Couldn't start it: " + r.why + "."); render(false); return; } moSchedule(); newCode(); });
+        } }, ui.moBusy ? "Starting…" : "Start our circle"),
+        h("p", { class: "lbl", text: "Or join one" }),
+        h("form", { class: "inline", onsubmit: function (e) {
+          e.preventDefault();
+          var u = useSrv(), n = nameOf("mo-myname"), code = codeIn.value.toUpperCase().replace(/[\s-]+/g, "");
+          if (!/^[A-HJ-NP-Z2-9]{6}$/.test(code)) { toast("A join code is 6 letters and numbers (no O, 0, I or 1)."); return; }
+          if (!u) { toast("Ten Days' server isn't set up for this copy yet."); return; }
+          if (!n) { toast("Add your name first."); return; }
+          S.name = S.name || n; ui.moBusy = true; render(false);
+          moJoin(u, code, n).then(function (r) { ui.moBusy = false; if (r.ok) { toast("You're in."); moSchedule(); } else toast(r.status === 429 ? "Too many tries. Wait 15 minutes." : "That code didn't work. It may be mistyped, used, or older than 15 minutes."); render(false); });
+        } }, codeIn, h("button", { class: "btn", type: "submit", id: "mo-code-go" }, "Join")),
+        h("details", { class: "adv", id: "mo-adv-srv", open: !srv }, h("summary", null, "Advanced"),
+          h("p", { class: "small", text: srv ? "Server: " + srv.replace(/^https:\/\//, "") + ". Change it only if you run your own." : "This copy of Ten Days doesn't know its server yet. Enter the address of your Ten Days server." }),
+          srvIn,
+          h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); var o = readMoLink(link.value); if (!o) { toast("That isn't an invite link."); return; } ui.moOffer = o; render(false); } }, link, h("button", { class: "btn", type: "submit", id: "mo-link-go" }, "Use link"))));
+    }
+    var live = S.moments.filter(function (m) { return !m.deleted; }), last3 = live.filter(function (m) { return m.hasPhoto; }).slice(-3).reverse(), due = chapterDue();
+    return h("section", { class: "card", id: "mo-sum", "aria-labelledby": "mo-sum-h" },
+      h("div", { class: "mohead" }, h("h2", { class: "sect-h", id: "mo-sum-h", text: "Moments" }), h("span", { class: "small", text: S.mo.members.filter(function (x) { return !x.left; }).map(function (x) { return x.name; }).join(", ") })),
+      last3.length ? h("button", { class: "mostrip", type: "button", id: "mo-open-strip", "aria-label": "Open moments", onclick: function () { go("moments"); } }, last3.map(function (m) { return moPhoto(m, "xs"); })) : h("p", { class: "small", text: "No moments yet." }),
+      due !== null ? h("button", { class: "btn", type: "button", id: "mo-chapter", onclick: function () { go("chapter", due); } }, icon("book"), " Your chapter for " + periodLabel(due) + " is ready") : null,
+      h("div", { class: "row" }, addMomentBtn("mo-add"), h("button", { class: "btn", type: "button", id: "mo-open", onclick: function () { go("moments"); } }, "See all")),
+      codePanel() || h("button", { class: "btn link", type: "button", id: "mo-invite", onclick: newCode }, moOthers().length ? "Invite someone" : "Show a join code for " + hisName()));
+  }
+
+  // ============ the narrated chapter: photos in order, the chapter's words, read aloud ============
+  function splitSentences(t) { return String(t || "").replace(/\s+/g, " ").replace(/([.!?…])\s+(?=[A-Z“"0-9])/g, "$1\u0001").split("\u0001").map(function (x) { return x.trim(); }).filter(Boolean); }
+  function slidesFor(c) {
+    var ms = c.momentIds.map(function (id) { return S.moments.filter(function (m) { return m.id === id && !m.deleted && m.forStory && m.hasPhoto; })[0]; }).filter(Boolean);
+    var sents = splitSentences(c.body), n = Math.max(1, ms.length), per = Math.max(1, Math.ceil(sents.length / n)), out = [{ m: ms[0] || null, text: c.title, title: true }];
+    for (var i = 0; i < n; i++) { var t = sents.slice(i * per, (i + 1) * per).join(" "); if (t || ms[i]) out.push({ m: ms[i] || null, text: t }); }
+    return out;
+  }
+  var SL_MS = 0;   // test hook: fixed time per slide
+  function slideMs(s) { return SL_MS || Math.max(3500, s.text.split(/\s+/).length * 380); }
+  var slT = null;
+  function slideStop() { clearTimeout(slT); try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} }
+  function slidePlay() {
+    var s = ui.sl; if (!s || !s.playing || ui.screen !== "slideshow") return;
+    clearTimeout(slT);
+    var cur = s.slides[s.i], next = function () { if (!ui.sl || ui.sl !== s || !s.playing) return; if (s.i >= s.slides.length - 1) { s.playing = false; render(false); return; } s.i++; render(false); slidePlay(); };
+    if (s.voice && window.speechSynthesis && !SL_MS) {
+      try {
+        speechSynthesis.cancel();
+        var u = new SpeechSynthesisUtterance(cur.text), v = voiceP || (voiceP = pickVoice());
+        if (v) { u.voice = v; u.lang = v.lang; } u.rate = .92; u.pitch = .9;
+        var ended = false; u.onend = u.onerror = function () { if (ended) return; ended = true; slT = setTimeout(next, 700); };
+        speechSynthesis.speak(u);
+        slT = setTimeout(function () { if (!ended) { ended = true; next(); } }, slideMs(cur) * 2.5);   // in case the voice never reports finishing
+        return;
+      } catch (e) {}
+    }
+    slT = setTimeout(next, slideMs(cur));
+  }
+  // A video file of the photos and words. The spoken voice can't be recorded by a web app, so the video is silent.
+  function exportVideo(c, slides) {
+    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) return Promise.resolve(null);
+    var W = 720, H = 1280, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    var g = cv.getContext("2d"), stream = cv.captureStream(30), types = ["video/mp4", "video/webm;codecs=vp9", "video/webm"];
+    var type = types.filter(function (t) { return MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t); })[0] || "";
+    var rec = new MediaRecorder(stream, type ? { mimeType: type } : undefined), parts = [];
+    rec.ondataavailable = function (e) { if (e.data && e.data.size) parts.push(e.data); };
+    var wrap = function (text, maxW) { var words = text.split(" "), lines = [], line = ""; words.forEach(function (w) { var t = line ? line + " " + w : w; if (g.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }); if (line) lines.push(line); return lines; };
+    var draw = function (img, s) {
+      g.fillStyle = "#07080D"; g.fillRect(0, 0, W, H);
+      if (img) { var k = Math.max(W / img.width, H / img.height), w = img.width * k, hh = img.height * k; g.drawImage(img, (W - w) / 2, (H - hh) / 2, w, hh); }
+      var gr = g.createLinearGradient(0, H * .45, 0, H); gr.addColorStop(0, "rgba(7,8,13,0)"); gr.addColorStop(1, "rgba(7,8,13,.92)"); g.fillStyle = gr; g.fillRect(0, H * .45, W, H * .55);
+      g.fillStyle = "#fff"; g.font = (s.title ? "700 54px" : "500 38px") + " -apple-system, system-ui, sans-serif";
+      var lines = wrap(s.text, W - 96), lh = s.title ? 64 : 50, y = H - 120 - (lines.length - 1) * lh;
+      lines.forEach(function (l, i) { g.fillText(l, 48, y + i * lh); });
+    };
+    var loadImg = function (s) { return s.m ? blobUrl("m:" + s.m.id).then(function (u) { if (!u) return null; return new Promise(function (res) { var im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { res(null); }; im.src = u; }); }).catch(function () { return null; }) : Promise.resolve(null); };
+    rec.start(250);
+    return slides.reduce(function (p, s) { return p.then(function () { return loadImg(s).then(function (img) { draw(img, s); return new Promise(function (res) { var t0 = Date.now(), tick = function () { draw(img, s); if (Date.now() - t0 < slideMs(s)) setTimeout(tick, 100); else res(); }; tick(); }); }); }); }, Promise.resolve())
+      .then(function () { return new Promise(function (res) { rec.onstop = function () { res(new Blob(parts, { type: rec.mimeType || type || "video/webm" })); }; rec.stop(); }); });
+  }
+
+  // ============ the small brotherhood things ============
+  function wordToday(id) {
+    if (id === "me") return S.word && S.word.day === dayKey() ? S.word.text : "";
+    var m = S.mo.members.filter(function (x) { return x.id === id; })[0];
+    return m && m.wordDay === dayKey() ? m.word : "";
+  }
+  function hisWord() {
+    var o = moOn() ? moOthers()[0] : null;
+    if (o && wordToday(o.id)) return wordToday(o.id);
+    var P = S.partner; return P.last && P.last.day === dayKey() && P.last.w ? P.last.w : "";
+  }
+  function setWord(w) {
+    w = String(w || "").trim().split(/\s+/).slice(0, 2).join(" ").slice(0, 24);
+    S.word = { day: dayKey(), text: w }; save(); sendStatus(true);
+    if (moOn()) moFetch("/v1/word", { method: "PUT", json: { word: w, day: dayKey() } });
+    render(false);
+  }
+  function wordRow() {
+    var mine = wordToday("me"), inp = h("input", { type: "text", id: "word-in", maxlength: "24", autocomplete: "off", autocapitalize: "none", placeholder: "heavy, locked in, ready…", "aria-label": "One word for today" });
+    return h("div", { class: "wordrow", id: "word" },
+      mine ? h("p", { class: "small", id: "word-mine" }, "Your word today: ", h("b", { text: mine }), " ", h("button", { class: "btn link inl", type: "button", id: "word-clear", onclick: function () { setWord(""); } }, "change")) :
+        h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); if (inp.value.trim()) setWord(inp.value); } }, inp, h("button", { class: "btn", type: "submit", id: "word-set" }, "Set")));
+  }
+  // time capsules: written in the first three days of a run, opened when it ends
+  function capsuleCard() {
+    if (!moOn()) return null;
+    var cur = periodOf(Date.now()), dayIn = dayNum(Date.now()) - dayNum(S.mo.circle.created) - cur * 10, mine = S.capsules.filter(function (c) { return c.period === cur && c.member === S.mo.me.id; })[0];
+    var ends = periodRange(cur)[1].toLocaleDateString([], { month: "short", day: "numeric" });
+    if (mine) return h("p", { class: "small", id: "cap-sealed" }, icon("lock"), " Your time capsule is sealed until " + ends + ".");
+    if (dayIn > 2) return null;
+    var ta = h("textarea", { id: "cap-text", rows: "3", maxlength: "600", placeholder: "To you (and him) at the end of these ten days…", "aria-label": "Time capsule" });
+    return h("div", { class: "card", id: "cap-write" }, h("p", { class: "status", text: "A time capsule for this run" }), h("p", { class: "small", text: "One short message, sealed until " + ends + ". It opens with the chapter." }), ta,
+      h("button", { class: "btn", type: "button", id: "cap-seal", onclick: function () {
+        var t = ta.value.trim(); if (!t) { toast("Write something first."); return; }
+        moFetch("/v1/capsules/" + cur, { method: "PUT", json: { text: t } }).then(function (r) { if (!r.ok) { toast("Not sealed: " + r.why + "."); return; } S.capsules.push({ period: cur, member: S.mo.me.id, text: t, at: Date.now() }); save(); toast("Sealed until " + ends + "."); render(false); });
+      } }, "Seal it"));
+  }
+  // breathe together: same start time on both phones, so the circles move as one
+  function breatheNow() { return S.breathe && S.breathe.until > Date.now() + (S.mo.skew || 0) ? S.breathe : null; }
+  function startTogether() {
+    moFetch("/v1/breathe", { method: "POST" }).then(function (r) {
+      if (!r.ok) { toast("Couldn't start: " + r.why + "."); return; }
+      S.mo.skew = r.data.now - Date.now(); S.breathe = { start: r.data.start, until: r.data.until, by: S.mo.me.id }; save(); go("together");
+    });
+  }
+  function togetherBtn(id) { return moOn() && moOthers().length ? h("button", { class: "btn", type: "button", id: id, onclick: function () { if (breatheNow()) go("together"); else startTogether(); } }, icon("wind"), breatheNow() ? " Join the breathing" : " Breathe together") : null; }
+  function togetherCard() {
+    var b = breatheNow(); if (!b || b.by === (S.mo.me && S.mo.me.id) || ui.screen !== "home") return null;
+    return h("div", { class: "card", id: "bt-invite" }, h("p", { class: "status", text: moName(b.by) + " is breathing. Join him?" }),
+      h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "bt-join", onclick: function () { go("together"); } }, "Breathe together")));
+  }
+  var btT = null;
+  function tickTogether() {
+    clearTimeout(btT); if (ui.screen !== "together") return;
+    var b = breatheNow(), cue = $("bt-cue"), left = $("bt-left");
+    if (!b) { if (cue) cue.textContent = "Done"; return; }
+    var now = Date.now() + (S.mo.skew || 0), ph = now - b.start;
+    if (cue) cue.textContent = ph < 0 ? "Starting in " + Math.ceil(-ph / 1000) : (ph % 10000) < 4000 ? "In" : "Out";
+    if (left) left.textContent = ph < 0 ? "" : Math.max(0, Math.ceil((b.until - now) / 1000)) + " s";
+    btT = setTimeout(tickTogether, 250);
+  }
+  // a challenge between you: both bars on Today while it's on
+  function challengeBars() {
+    if (!moOn()) return null;
+    var live = S.challenges.filter(function (c) { return c.ends > Date.now(); }); if (!live.length) return null;
+    var others = moOthers();
+    return h("section", { class: "card chal", id: "chal-bar" }, live.map(function (c) {
+      var mine = c.progress[S.mo.me.id] || 0, row = function (name, n, me) { return h("div", { class: "sbar2" }, h("span", { class: "sl", text: name }), h("span", { class: "track", "aria-hidden": "true" }, h("i", { style: "width:" + Math.round(Math.min(1, n / c.target) * 100) + "%" })), h("b", { text: n + "/" + c.target })); };
+      var daysLeft = Math.max(0, Math.ceil((c.ends - Date.now()) / 864e5));
+      return h("div", { class: "chalone", id: "chal-" + c.id },
+        h("div", { class: "mohead" }, h("p", { class: "lbl", text: c.title }), h("span", { class: "small", text: daysLeft + (daysLeft === 1 ? " day left" : " days left") })),
+        row("You", mine, true), others.map(function (o) { return row(o.name, c.progress[o.id] || 0); }),
+        h("div", { class: "row" }, h("button", { class: "chip sm", type: "button", id: "chal-plus-" + c.id, disabled: mine >= c.target, onclick: function () { chalStep(c, 1); } }, "+1"),
+          mine ? h("button", { class: "chip sm", type: "button", id: "chal-minus-" + c.id, onclick: function () { chalStep(c, -1); } }, "−1") : null));
+    }));
+  }
+  function chalStep(c, d) {
+    c.progress[S.mo.me.id] = Math.max(0, Math.min(c.target, (c.progress[S.mo.me.id] || 0) + d)); save(); haptic("tick"); render(false);
+    moFetch("/v1/challenges/" + c.id + "/progress", { method: "POST", json: { delta: d } }).then(function (r) { if (r.ok) { c.progress[S.mo.me.id] = r.data.count; save(); render(false); } });
+  }
+  function challengeForm() {
+    if (!moOn() || !moOthers().length) return null;
+    var t = h("input", { type: "text", id: "chal-title", maxlength: "60", autocomplete: "off", placeholder: "Workouts, pages, no sugar days…", "aria-label": "Challenge" });
+    var n = h("input", { type: "number", id: "chal-target", min: "1", max: "100", value: "5", inputmode: "numeric", "aria-label": "How many" });
+    var dd = h("input", { type: "number", id: "chal-days", min: "1", max: "30", value: "7", inputmode: "numeric", "aria-label": "Days" });
+    return h("details", { class: "adv", id: "chal-new" }, h("summary", null, "Start a challenge"),
+      h("div", { class: "group" }, t, h("div", { class: "row" }, h("label", { class: "small", for: "chal-target", text: "How many" }), n, h("label", { class: "small", for: "chal-days", text: "in days" }), dd),
+        h("button", { class: "btn", type: "button", id: "chal-go", onclick: function () {
+          if (!t.value.trim()) { toast("Name it first."); return; }
+          moFetch("/v1/challenges", { method: "POST", json: { title: t.value.trim(), target: +n.value, days: +dd.value } }).then(function (r) { if (!r.ok) { toast("Not started: " + r.why + "."); return; } toast("Challenge on."); moSync(); });
+        } }, "Start")));
+  }
+
+  // ============ the Omni-Mic: one tap, say it all, and it happens as you speak ============
+  // Where the phone offers live speech recognition, each thing is done the moment it's heard.
+  // Where it doesn't (some installed iPhone apps), it records, stops when you stop talking, and the AI helper transcribes.
+  var omni = null;
+  var SAID_LEAD = /^(?:(?:and|also|then|plus|oh|um|uh|so|okay|ok|hey)[, ]+)*(?:(?:i|we)(?: also| still| really)? (?:need|have|want|got|gotta|should|must)(?: to)?|i(?:'d| would) like to|i(?:'m| am) (?:going to|gonna)|i gotta|gotta|need to|have to|remind me to|remember to|don't forget to|make sure (?:i|to)|please|can you|could you|add(?: a| an| the)?(?: task(?: to| for)?)?|put|schedule(?: a| an| the)?)\s+/i;
+  var VERB_RE = /^(?:finish|do|call|text|email|go|buy|get|pick|prep|prepare|study|read|write|clean|wash|book|pay|send|submit|start|work|practice|train|review|make|cook|schedule|plan|meet|add|delete|remove|clear|mark|move|bring|undo|restore|check|take|watch|order|fix|update|research|find|apply|renew|cancel|return|drop|tell|track|i |remind|gym|run|walk|stretch|meditate|journal)\b/i;
+  var UNDO_RE = /^(?:(?:please |now |and |then |actually |wait |no )*(?:bring (?:them|it|that|those|everything|all of (?:them|it)|(?:the|my) tasks?) back|undo(?: that| it)?|restore (?:them|it|everything|(?:the|my) tasks?)|put (?:them|it|everything) back))$/i;
+  var DELALL_RE = /^(?:(?:please |now |and |then )*(?:delete|remove|clear|erase|wipe|get rid of) (?:all|every|everything)(?: (?:of )?(?:my |the )?(?:tasks?|them|it))?)$/i;
+  function splitSaid(text) {
+    var s = normText(text).replace(/[.!?;]+/g, ",").replace(/\s+(?=(?:bring (?:them|it|everything) back|undo\b|put (?:them|it) back|restore (?:them|it|everything)))/gi, ", ");
+    var out = [];
+    s.split(/\s*,\s*|\s+(?:and then|then|and also|also|plus)\s+/i).forEach(function (p) {
+      var sub = p.split(/\s+and\s+/i), cur = sub[0];
+      for (var i = 1; i < sub.length; i++) { if (VERB_RE.test(sub[i].replace(SAID_LEAD, ""))) { out.push(cur); cur = sub[i]; } else cur += " and " + sub[i]; }
+      out.push(cur);
+    });
+    return out.map(function (x) { return x.trim(); }).filter(function (x) { return x.length > 1; });
+  }
+  function cleanSaid(c) { var p = "", s = c.trim(); while (s !== p) { p = s; s = s.replace(SAID_LEAD, "").trim(); } return s; }
+  // How much it takes out of you: decides when in the day it goes, and how many fit in one day.
+  function loadOf(d) {
+    var t = (d.title + " " + (d.src || "")).toLowerCase();
+    if (/\b(?:heavy|hard|deep|big|tough)\b/.test(t) || DEADLINE_RE.test(t) || /\b(?:study|accounting|finance|coding|code|write|research|taxes|analysis|presentation|interview|budget|statistics|calculus|chemistry|physics)\b/.test(t)) return "heavy";
+    if (d.type === "CALL" || d.type === "ERRAND" || /\b(?:email|text|call|buy|pick up|laundry|dishes|clean|pay|order|renew|light|quick|easy)\b/.test(t) || (d.dur && d.dur <= 15)) return "light";
+    return "normal";
+  }
+  function heavyMins(off) { var d = addDays(new Date(), off); return S.tasks.filter(function (t) { return t.load === "heavy" && !isDone(t) && (off ? occursOn(t, d) : inToday(t)); }).reduce(function (a, t) { return a + (t.dur || 45); }, 0); }
+  // Finds the task a place on the ten-day horizon: heavy work early, light things late, never on a class, at most three heavy hours a day.
+  function autoSlot(d) {
+    if (d.time || d.anchor || d.repeat !== "once") return false;
+    var load = d.load || loadOf(d), now = new Date(), fixed = !!d.date;
+    if (!d.dur) { d.dur = load === "heavy" ? 45 : load === "light" ? 15 : 30; d.sugg.dur = "suggested"; }
+    var first = d.date ? Math.max(0, dayNum(parseDay(d.date).getTime()) - dayNum(now.getTime())) : 0;
+    for (var off = first; off < (fixed ? first + 1 : 10); off++) {
+      if (load === "heavy" && !fixed && heavyMins(off) + d.dur > 180) continue;
+      var day = addDays(now, off), from = todayAt(load === "heavy" ? "09:00" : load === "light" ? "16:00" : "12:00", day);
+      if (off === 0) from = Math.max(from, now.getTime() + 15 * 60000);
+      var end = todayAt("21:30", day); if (from > end) continue;
+      var s = nextFree(off, from, d.dur);
+      if (s && todayAt(s, day) + d.dur * 60000 <= todayAt("22:00", day)) { d.time = s; d.date = dayKey(day); d.sugg.time = "slotted"; return true; }
+    }
+    return false;
+  }
+  function voiceTask(clause) {
+    var said = cleanSaid(clause), bk = said.match(/^(?:a |an |some )?(?:good )?books? (?:recommendations?|recs?|suggestions?|ideas?) (?:on|about|for) (.+)$/i) || said.match(/^(?:recommend|suggest)(?: me)? (?:a |some )?(?:good )?books? (?:on|about|for) (.+)$/i);
+    var d;
+    if (bk) {
+      var topic = bk[1].replace(/[.!]+$/, "").trim();
+      d = blankDraft("Find a book on " + topic); d.type = "READ"; d.priority = "low"; d.load = "light"; d.dur = 5; d.sugg.dur = "suggested";
+      if (S.interests.indexOf(topic.toLowerCase()) < 0) { S.interests.push(topic.toLowerCase().slice(0, 40)); S.interests = S.interests.slice(-12); }
+    } else {
+      d = newDraft(said) || blankDraft(said);
+      d.load = loadOf(d);
+    }
+    d.asked = ["anchor", "when", "items", "time", "phone", "due", "start"];   // voice never stops to ask
+    var before = S.tasks.length;
+    if (!learned(kindKey(d.title)) || !learned(kindKey(d.title)).time) autoSlot(d);
+    commitDraft(d, "", "Saved");
+    var made = S.tasks.length > before ? S.tasks[S.tasks.length - 1] : null;
+    S.asst = null;
+    if (!made) return "Already on your list: " + d.title;
+    if (!made.time && made.repeat === "once") { var x = taskToDraft(made); x.load = d.load; if (autoSlot(x)) { made.time = x.time; made.date = x.date; made.dur = x.dur; } }
+    made.load = d.load; normTask(made); save();
+    return made.title + (whenLabel(made) ? " · " + whenLabel(made) : "") + (made.dur ? " · " + durText(made.dur) : "");
+  }
+  // one spoken thing: a command, or something to do
+  function voiceDo(clause) {
+    var c = clause.trim().replace(/[.!?]+$/, ""), plain = c.replace(/^(?:and|then|also|now|please)\s+/i, "");
+    if (UNDO_RE.test(plain)) { if (!hist.length) return "Nothing to bring back"; undoHist(); return "Brought them back"; }
+    if (DELALL_RE.test(plain)) {
+      if (!S.tasks.length) return "Nothing to delete";
+      var n = S.tasks.length; pushHist("deleting everything"); S.tasks.forEach(function (t) { bankTask(t); }); S.tasks = []; S.asst = null; save();
+      return "Deleted all " + n + ". Say “bring them back” to undo";
+    }
+    var said = cleanSaid(plain) || plain, n0 = S.tasks.length, snap = snapState();
+    var mc = msgCommand(said); if (mc) return mc === "nav" ? "Telling him" : "Message to " + hisName();
+    if (countCommand(said)) return "Counted";
+    var bl = parseBlock(said); if (bl) { addBlock(bl); return "Added to your week: " + bl.title; }
+    if (runCommand(said)) { if (snapState() !== snap && !(hist.length && hist[hist.length - 1].snap === snap)) { hist.push({ label: "that", snap: snap }); if (hist.length > 40) hist.shift(); } save(); return S.tasks.length < n0 ? "Deleted" : "Done"; }
+    if (intentOf(said) === "support") { S.lastFeel = { at: Date.now(), text: said.slice(0, 200) }; omniEnd(true); openSupport("text"); return "I'm here"; }
+    pushHist("adding that");
+    var res = voiceTask(said);
+    if (snapState() === snap) hist.pop();   // nothing changed (it was already on your list)
+    return res;
+  }
+  function omniLog(text, out) { if (!omni) return; omni.log.push({ text: text, out: out }); omni.n++; if (omni.log.length > 4) omni.log.shift(); }
+  function omniHear(text) {
+    splitSaid(text).forEach(function (cl) {
+      var key = cl.toLowerCase().replace(/[^a-z ]/g, "").trim(), i = omni ? omni.eager.indexOf(key) : -1;
+      if (i >= 0) { omni.eager.splice(i, 1); return; }   // already done while you were still talking
+      var out = voiceDo(cl); omniLog(cl, out);
+    });
+    if (omni) { clearTimeout(toastT); $("toast").hidden = true; }   // the panel shows what happened; one summary comes at the end
+    render(false); omniPaint();
+  }
+  // "delete all tasks" and "bring them back" act mid-sentence, without waiting for a pause
+  function omniEager(interim) {
+    if (!omni) return;
+    var rest = interim.slice(omni.eaten).trim().replace(/[.!?,]+$/, "");
+    if (!rest) return;
+    var parts = splitSaid(rest), lastC = parts[parts.length - 1] || "";
+    if (UNDO_RE.test(lastC) || DELALL_RE.test(lastC)) {
+      parts.slice(0, -1).forEach(function (cl) { omni.eager.push(cl.toLowerCase().replace(/[^a-z ]/g, "").trim()); omniLog(cl, voiceDo(cl)); });
+      omni.eager.push(lastC.toLowerCase().replace(/[^a-z ]/g, "").trim()); omniLog(lastC, voiceDo(lastC));
+      omni.eaten = interim.length; render(false);
+    }
+  }
+  function omniPaint() {
+    var box = $("omni-live"), b = $("omni"); if (b) { b.classList.toggle("on", !!omni || !!(rec && rec.purpose === "omni")); b.setAttribute("aria-pressed", omni || (rec && rec.purpose === "omni") ? "true" : "false"); }
+    if (!box) return;
+    var recOn = rec && rec.purpose === "omni";
+    if (!omni && !recOn) { box.hidden = true; return; }
+    box.hidden = false;
+    box.replaceChildren.apply(box, [
+      h("p", { class: "ol-h" }, h("span", { class: "recdot", "aria-hidden": "true" }), recOn ? (rec.pending ? "Starting…" : "Listening. It stops when you do.") : "Listening…"),
+      omni && omni.interim ? h("p", { class: "ol-i", id: "omni-interim", text: omni.interim }) : null,
+      omni ? h("ul", { class: "ol-log", id: "omni-log" }, omni.log.map(function (l) { return h("li", null, icon("check"), h("span", { text: l.out })); })) : null,
+      !omni || (!omni.interim && !omni.log.length) ? h("p", { class: "small", text: "Say everything: “finish accounting today, gym at 6, call Mom”. Or “delete all tasks”, then “bring them back”." }) : null
+    ].filter(Boolean));
+  }
+  function omniEnd(silent) {
+    var o = omni; if (!o) return; omni = null;
+    clearInterval(o.t);
+    try { o.sr.onend = null; o.sr.onresult = null; o.sr.stop(); } catch (e) {}
+    if (!silent) {
+      if (o.n) toast(o.n === 1 ? o.log[o.log.length - 1].out + "." : "Done: " + o.n + " things. Say or tap Undo to step back.", 6000, hist.length ? { label: "Undo", fn: undoHist } : null);
+      else toast("I didn't catch anything.");
+      announce(o.n ? o.n + " things done." : "Nothing heard.");
+    }
+    render(false); omniPaint();
+  }
+  function omniLive(SR) {
+    try {
+      var r = new SR(); r.lang = navigator.language || "en-US"; r.interimResults = true; r.continuous = true;
+      omni = { sr: r, interim: "", log: [], n: 0, eager: [], eaten: 0, last: Date.now(), start: Date.now() };
+      r.onresult = function (e) {
+        if (!omni) return;
+        var interim = "";
+        for (var i = e.resultIndex; i < e.results.length; i++) {
+          var res = e.results[i], t = res[0].transcript;
+          if (res.isFinal) { omni.interim = ""; omni.eaten = 0; omniHear(t); } else interim += t;
+        }
+        if (!omni) return;
+        omni.last = Date.now(); omni.interim = interim;
+        if (interim) omniEager(interim);
+        omniPaint();
+      };
+      r.onerror = function (e) { var why = e && e.error; if (why === "no-speech" || why === "aborted") return; omniEnd(true); toast(why === "not-allowed" || why === "service-not-allowed" ? "Speech access is off for Ten Days. Allow the microphone and speech recognition in Settings." : "Couldn't hear that. Try again.", 6000); };
+      r.onend = function () { if (omni && omni.sr === r) { if (omni.interim.trim()) omniHear(omni.interim); omniEnd(); } };
+      r.start();
+      // you stop talking, it stops listening
+      omni.t = setInterval(function () { if (omni && Date.now() - omni.last > (omni.n || omni.interim ? 2600 : 9000)) { if (omni.interim.trim()) { var x = omni.interim; omni.interim = ""; omniHear(x); } omniEnd(); } }, 300);
+      haptic("tick"); render(false); omniPaint(); announce("Listening.");
+    } catch (e) { omni = null; toast("Live listening isn't available here."); }
+  }
+  function omniTap() {
+    if (omni) { if (omni.interim.trim()) { var x = omni.interim; omni.interim = ""; omniHear(x); } omniEnd(); return; }
+    if (rec && rec.purpose === "omni") { stopRec(true); omniPaint(); return; }
+    if (rec || sr) return;
+    var SR = srClass();
+    if (SR) { omniLive(SR); return; }
+    if (aiOn("tasks")) { startRec("omni"); setTimeout(omniPaint, 0); return; }
+    toast("Voice needs either live speech recognition (not offered by this browser) or the AI helper turned on in You.", 7000);
+  }
+  // recorded instead of live: the transcript goes through the same steps
+  function aiOmni(b64) {
+    toast("Working out what you said…", 8000);
+    aiCall("A voice note is attached. Transcribe exactly what was said. Reply with JSON only: {\"transcript\":\"\"}.", "Voice note follows.", { json: true, audio: { mime: "audio/wav", b64: b64 }, wait: 45000, max: 1200, bare: true }).then(function (r) {
+      var t = r.ok && obj(r.data) ? str(r.data.transcript, 1200).trim() : "";
+      if (!t) { toast(r.ok ? "I didn't catch anything." : "AI not available: " + aiWhy(r), 6000); return; }
+      omni = { sr: { stop: function () {} }, interim: "", log: [], n: 0, eager: [], eaten: 0, last: Date.now(), start: Date.now() };
+      omniHear(t); omniEnd();
+    });
+  }
+
+  // ============ the manager: three things for now, the rest out of the way ============
+  function managerPick(now) {
+    var band = nowBand(now), ms = now.getTime();
+    var open = S.tasks.filter(function (t) { return inToday(t, now) && !isDone(t, now) && !(t.snoozeUntil > ms); });
+    var nowish = open.filter(function (t) { var d = dueAt(t, now); if (d === null) return true; return d < ms || bandOfMin(new Date(d).getHours() * 60) === band; });
+    nowish.sort(byTop(now));
+    var top = nowish.slice(0, 3);
+    if (top.length < 3) open.filter(function (t) { return top.indexOf(t) < 0; }).sort(function (a, b) { return (dueAt(a, now) || 9e15) - (dueAt(b, now) || 9e15); }).slice(0, 3 - top.length).forEach(function (t) { top.push(t); });
+    return { top: top, open: open, band: band };
+  }
+  function managerBlock(now) {
+    var m = managerPick(now), hidden = m.open.length - m.top.length, all = !!ui.mgrAll;
+    var name = { morning: "This morning", afternoon: "This afternoon", night: "Tonight" }[m.band];
+    if (!m.open.length) return h("section", { class: "mgr glass-card", id: "mgr" }, h("p", { class: "lbl", text: name }), h("p", { class: "status", id: "mgr-clear", text: S.tasks.some(function (t) { return inToday(t, now); }) ? "Everything for today is done." : "Nothing on today. Tap the mic and say what's on your mind." }));
+    return h("section", { class: "mgr glass-card", id: "mgr", "aria-labelledby": "mgr-h" },
+      h("div", { class: "mohead" }, h("h2", { class: "mgr-h", id: "mgr-h", text: name }), h("span", { class: "small", id: "mgr-n", text: m.top.length + " of " + m.open.length })),
+      h("div", { class: "tgrid one", id: "mgr-top" }, m.top.map(function (t) { return tile(t, now, false); })),
+      hidden > 0 ? h("button", { class: "btn link sm", type: "button", id: "mgr-more", "aria-expanded": all ? "true" : "false", onclick: function () { ui.mgrAll = !all; render(false); } }, all ? "Just these three" : hidden + " more today, out of the way") : null);
+  }
+  // one small thing to learn, only from books you've added
+  function learnCard() {
+    var due = quizDue("");
+    if (due.length) { var qd = S.docs.filter(function (x) { return x.id === due[0].docId; })[0]; return h("button", { class: "card learn", type: "button", id: "learn", onclick: function () { ui.qz = null; go("quiz", qd ? { docId: qd.id } : null); } }, h("span", { class: "lbl" }, icon("book"), " Learn · 5 min"), h("b", { text: due.length + (due.length === 1 ? " question" : " questions") + " to review" + (qd ? " from " + qd.name : "") })); }
+    var books = S.docs.filter(function (d) { return d.status === "ready" && (d.pos || 1) < d.pages && readToday(d).length < goalOf(d); });
+    if (!books.length) return null;
+    var score = function (d) { var n = d.name.toLowerCase(); return (S.interests.some(function (i) { return i.split(/\s+/).some(function (w) { return w.length > 3 && n.indexOf(w) >= 0; }); }) ? 4 : 0) + (d.kind === "learning" ? 2 : 0) + (d.lastRead ? 1 : 0); };
+    var d = books.sort(function (a, b) { return score(b) - score(a) || (b.lastRead || 0) - (a.lastRead || 0); })[0];
+    return h("button", { class: "card learn", type: "button", id: "learn", onclick: function () { openBook(d); } }, h("span", { class: "lbl" }, icon("book"), " Learn · 5 min"), h("b", { text: d.name }), h("span", { class: "small", text: "A few pages from page " + (d.pos || 1) + "." }));
+  }
+  // You | him, at the top of Today
+  function whoToggle() {
+    if (!S.partner.name && !S.partner.topic && !(moOn() && moOthers().length)) return null;
+    var him = ui.who === "him";
+    return h("div", { class: "seg two who", id: "who", role: "group", "aria-label": "Whose day" },
+      h("button", { type: "button", id: "who-me", "aria-pressed": him ? "false" : "true", onclick: function () { ui.who = "me"; render(false); } }, "You"),
+      h("button", { type: "button", id: "who-him", "aria-pressed": him ? "true" : "false", onclick: function () { ui.who = "him"; pollPartner(); moSync(); render(false); } }, HisName(), moOn() && moLive().length ? h("span", { class: "live", "aria-label": "here now" }) : null));
+  }
+  function hisPanel() {
+    var P = S.partner, msg = h("input", { type: "text", id: "him-msg", maxlength: "300", autocomplete: "off", autocapitalize: "sentences", enterkeyhint: "send", placeholder: "Message " + hisName() + "…", "aria-label": "Message " + hisName() });
+    var mine = S.mo.me ? S.mo.me.id : "", last = moOn() ? S.moments.filter(function (m) { return !m.deleted && m.author !== mine; }).slice(-1)[0] : null;
+    return h("section", { class: "mgr glass-card", id: "him" },
+      h("div", { class: "phead" }, h("span", { class: "pav" + (moOn() && moLive().length ? " live" : ""), "aria-hidden": "true", text: (P.name || "B").charAt(0).toUpperCase() }), h("h2", { class: "mgr-h", text: HisName() }),
+        hisWord() ? h("span", { class: "pword", id: "him-word", text: hisWord() }) : null, P.at ? h("span", { class: "small", text: ago(P.at) }) : null),
+      P.last ? statusView(P.last, "him") : h("p", { class: "small", id: "him-none", text: P.topic ? "His day shows here once he opens Ten Days." : "When he shares his day, his tasks, check-ins and counts show here." }),
+      last ? h("div", { class: "group" }, last.hasPhoto ? moPhoto(last, "sm") : null, last.caption ? h("p", { class: "mocap", text: last.caption }) : null, reactRow(last, "him-r")) : null,
+      h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); var v = msg.value.trim(); if (!v) return; msg.value = ""; sendMsg(v); } }, msg, h("button", { class: "btn", type: "submit", id: "him-send", "aria-label": "Send to " + hisName() }, icon("send"))),
+      h("div", { class: "row" }, callLink(false), togetherBtn("him-breathe"), h("button", { class: "btn link", type: "button", id: "him-more", onclick: function () { go("people"); } }, "More")));
+  }
+
+  // ============ glass that answers the tilt of the phone ============
+  function tiltWanted() { return S.fx.tilt === true || (S.fx.tilt == null && !(window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function")); }
+  var tiltRaf = 0, tiltOn = false;
+  function onTilt(e) {
+    var t = Date.now(); if (e.gamma == null || t - tiltRaf < 40) return;   // at most 25 updates a second
+    tiltRaf = t;
+    var x = Math.max(-1, Math.min(1, (e.gamma || 0) / 30)), y = Math.max(-1, Math.min(1, ((e.beta || 0) - 40) / 30)), st = document.documentElement.style;
+    st.setProperty("--gx", x.toFixed(3)); st.setProperty("--gy", y.toFixed(3));
+  }
+  function applyTilt() {
+    var want = tiltWanted() && !reduced() && "DeviceOrientationEvent" in window;
+    if (want && !tiltOn) { window.addEventListener("deviceorientation", onTilt, { passive: true }); tiltOn = true; }
+    if (!want && tiltOn) { window.removeEventListener("deviceorientation", onTilt); tiltOn = false; document.documentElement.style.removeProperty("--gx"); document.documentElement.style.removeProperty("--gy"); }
+  }
+  function askTilt(on) {
+    if (!on) { S.fx.tilt = false; save(); applyTilt(); return; }
+    var D = window.DeviceOrientationEvent;
+    if (D && typeof D.requestPermission === "function") D.requestPermission().then(function (p) { S.fx.tilt = p === "granted"; save(); applyTilt(); if (p !== "granted") toast("Motion access is off, so the glass stays still."); render(false); }, function () { S.fx.tilt = false; save(); render(false); });
+    else { S.fx.tilt = true; save(); applyTilt(); }
+  }
+
   var SCREENS = {
     a2hs: function () {
       return { title: "Add Ten Days to your Home Screen", body: [
         h("p", { text: "Ten Days sets up only from its Home Screen icon, because Safari keeps separate data." }),
         h("ol", null, h("li", { text: "Tap the Share button in Safari." }), h("li", { text: "Tap Add to Home Screen, then Add." }), h("li", { text: "Close Safari and open Ten Days from the new icon." })),
-        h("p", { class: "small", text: "Android: browser menu → Install app or Add to Home screen." })
+        h("p", { class: "small", text: "Android: browser menu → Install app or Add to Home screen." }),
+        h("button", { class: "btn link", type: "button", id: "a2hs-move", onclick: function () { go("move"); } }, "Moving from the old app? Use a move code")
       ] };
     },
     "ob-topics": function () {
@@ -5814,6 +6584,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
       var keep = function () { S.phone = his.value.trim().slice(0, 40); save(); };
       his.addEventListener("change", keep);
       return { title: "Your three channels", body: [
+        h("button", { class: "btn link", type: "button", id: "ob-move", onclick: function () { go("move"); } }, "Moving from the old app? Use a move code"),
         h("p", { text: "Add his number, then save all three channels in Notes and send your brother only the alert channel." }),
         h("div", { class: "field" }, h("label", { class: "lbl", for: "his-number", text: "His number" }), his),
         topicBox("Alert channel: send this one to him", S.topics.alert, "t-alert"),
@@ -5903,10 +6674,44 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
       var tb = function (id, ic, label, fn, extra) { var b = h("button", Object.assign({ class: "tbtn", type: "button", id: id, onclick: fn }, extra || {}), icon(ic), h("span", { text: label })); return b; };
       var tool = function (id, ic, label, fn) { return h("button", { class: "tool", type: "button", id: id, onclick: fn }, icon(ic), h("span", { text: label })); };
       var upOpen = !!ui.showUp;
+      if (S.calm) {
+        var him = ui.who === "him" && !!whoToggle(), dayOff = ui.day || 0, more = !!ui.more;
+        return { title: "Today", body: [
+          a2hsNote(), movedNote(),
+          h("button", { class: "topline", type: "button", id: "strip", onclick: function () { go("progress"); }, "aria-label": now.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }) + ". " + (st0.total ? st0.done + " of " + st0.total + " done today" : "Nothing on today's list") + ". Open Progress" },
+            h("span", { class: "ring", "aria-hidden": "true", style: "--p:" + p }), h("span", { class: "tl-date", "aria-hidden": "true", id: "today-date", text: now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }) }),
+            h("span", { class: "tl-stat", "aria-hidden": "true", text: (st0.total ? st0.done + " of " + st0.total + " done" : "A clear day") + (S.fx.rpg ? " · Lv " + L.level : "") })),
+          whoToggle(),
+          him ? hisPanel() : [
+            nowNext(now),
+            form,
+            h("span", { id: "qa-hint", hidden: true, text: "Tasks, plans, thoughts, or how you feel." }),
+            recCard(), asstView(), alertCard, hardCard(now), togetherCard(), nudgeCard(now),
+            dayOff ? null : managerBlock(now),
+            dayOff ? null : pushCard(),
+            dayOff ? null : hayCard(now),
+            dayOff ? null : learnCard(),
+            dayOff ? null : checkinsBlock(),
+            horizon(),
+            dayOff ? h("div", { class: "group", id: "task-area" }, dayView(dayOff)) : null,
+            !dayOff && ui.mgrAll ? h("div", { class: "group", id: "task-area" }, gridView(now, 0)) : null,
+            h("details", { class: "adv more", id: "more", open: more, ontoggle: function (e) { ui.more = e.target.open; } }, h("summary", null, "More"),
+              h("div", { class: "group" }, intakePrompt(), orgLine(), noticedCard(), challengeBars(), momentCard(), readingBlock(),
+                h("div", { class: "tbar", role: "toolbar", "aria-label": "List tools" },
+                  tb("tb-select", "check", ui.selecting ? "Done" : "Select", function () { if (ui.selecting) endSelect(); else { ui.selecting = true; ui.picked = []; ui.mgrAll = true; render(false); } }, { "aria-pressed": ui.selecting ? "true" : "false" }),
+                  tb("tb-undo", "undo", "Undo", undoHist, { disabled: !hist.length }),
+                  tb("all-tasks", "list", "All tasks", function () { go("m-tasks"); })),
+                h("div", { class: "tools", role: "group", "aria-label": "Tools" },
+                  tool("t-breathe", "wind", "Breathe", function () { go("breathe"); }),
+                  tool("t-focus", "timer", S.session ? "Focus · on" : "Focus", function () { go("focus"); }),
+                  tool("t-notes", "note", "Notes", function () { go("notes"); }))))]
+        ], float: [selBar(), sheetView()] };
+      }
       return { title: "Today", body: [
         h("button", { class: "topline", type: "button", id: "strip", onclick: function () { go("progress"); }, "aria-label": now.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }) + ". " + (st0.total ? st0.done + " of " + st0.total + " done today" : "Nothing on today's list") + (S.fx.rpg ? ". Level " + L.level : "") + ". Open Progress" },
           h("span", { class: "ring", "aria-hidden": "true", style: "--p:" + p }), h("span", { class: "tl-date", "aria-hidden": "true", id: "today-date", text: now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }) }),
           h("span", { class: "tl-stat", "aria-hidden": "true", text: (st0.total ? st0.done + " of " + st0.total + " done" : "A clear day") + (S.fx.rpg ? " · Lv " + L.level : "") })),
+        a2hsNote(), movedNote(),
         nowNext(now),
         S.lastReply && Date.now() - S.lastReply.at < 12 * 3600e3 ? h("p", { class: "pill", id: "status-line", text: statusLine() }) : null,
         form,
@@ -5915,13 +6720,16 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
         asstView(),
         alertCard,
         hardCard(now),
+        togetherCard(),
         nudgeCard(now),
         intakePrompt(),
         doFirstCard(now),
+        pushCard(),
         hayCard(now),
         orgLine(),
         noticedCard(),
         checkinsBlock(),
+        challengeBars(),
         momentCard(),
         readingBlock(),
         horizon(),
@@ -6118,6 +6926,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
         h("div", { class: "card supcard", id: "sup-card" }, visual,
           why ? h("p", { class: "why" }, "Your why: ", h("b", { text: "“" + why + "”" })) : null),
         deckView(sup),
+        togetherBtn("bt-go"),
         h("div", { class: "choices", role: "group", "aria-label": "What would help?" },
           choice("sup-stay", "Stay with me", sup.mode === "stay", function () { sup.mode = sup.mode === "stay" ? "" : "stay"; if (sup.mode === "stay") sup.since = Date.now(); render(false); }),
           choice("sup-step", "Help me take one step", sup.mode === "step", function () { sup.mode = sup.mode === "step" ? "" : "step"; render(false); var f = $("opt-0"); if (f) f.focus(); }),
@@ -6441,6 +7250,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
           return h("button", { type: "button", id: "mo-" + o[0], "aria-pressed": S.fx.motion === o[0] ? "true" : "false", onclick: function () { S.fx.motion = o[0]; applyMotion(); save(); render(false); } }, o[1]);
         })),
         h("p", { class: "small", id: "mo-now", text: reduced() ? "Animations are reduced right now." : "Animations are on right now." }),
+        "DeviceOrientationEvent" in window ? h("label", { class: "toggle", for: "tilt-toggle" }, h("input", { type: "checkbox", id: "tilt-toggle", checked: tiltWanted(), onchange: function (e) { askTilt(e.target.checked); } }), h("span", { text: "Glass highlights follow the tilt of your phone" })) : null,
         tog("haptics-toggle", S.haptics !== false, "Haptics", function (v) { S.haptics = v; }),
         h("p", { class: "small", text: HX.vibrate ? "This device supports vibration." : hxOk ? "On iPhone, haptics use a workaround that works on some iOS versions only." : "This device doesn't offer haptics to web apps." }),
         tog("sound-toggle", S.fx.sound, "Sound (off by default)", function (v) { S.fx.sound = v; if (v) chime("soft", true); }),
@@ -6600,7 +7410,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
           h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "pair-yes", onclick: function () { follow(offer); ui.pairOffer = null; toast("Following " + (offer.n || "them") + "."); render(false); } }, "Follow"),
             h("button", { class: "btn link", type: "button", id: "pair-no", onclick: function () { ui.pairOffer = null; render(false); } }, "No"))) : null,
         h("section", { class: "card pcard", id: "pp-his", "aria-labelledby": "pp-his-h" },
-          h("div", { class: "phead" }, h("span", { class: "pav" + (moOn() && moLive().length ? " live" : ""), "aria-hidden": "true", text: (P.name || "B").charAt(0).toUpperCase() }), h("h2", { id: "pp-his-h", text: HisName() }),
+          h("div", { class: "phead" }, h("span", { class: "pav" + (moOn() && moLive().length ? " live" : ""), "aria-hidden": "true", text: (P.name || "B").charAt(0).toUpperCase() }), h("h2", { id: "pp-his-h", text: HisName() }), hisWord() ? h("span", { class: "pword", id: "pp-word", text: hisWord() }) : null,
             moOn() && moLive().length ? h("span", { class: "live", id: "pp-live", text: "In Ten Days now" }) : null,
             P.at ? h("span", { class: "small", id: "pp-ago", text: "Updated " + ago(P.at) }) : null),
           P.topic ? (P.last ? statusView(P.last, "pp-h") : h("p", { class: "small", id: "pp-wait", text: "Connected. His day shows up here once he opens Ten Days and shares it." }))
@@ -6619,19 +7429,28 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
         h("section", { class: "card pcard", id: "pp-me", "aria-labelledby": "pp-me-h" },
           h("div", { class: "phead" }, h("span", { class: "pav me", "aria-hidden": "true", text: (S.name || "Y").charAt(0).toUpperCase() }), h("h2", { id: "pp-me-h", text: "You" }),
             S.share.on && S.share.at ? h("span", { class: "small", id: "share-ago", text: "Shared " + ago(S.share.at) }) : null),
+          wordRow(),
           statusView(cleanStatus(myStatus()), "pp-m", true),
           tog("share-on", S.share.on, "Share my day with " + hisName(), function (v) { S.share.on = v; if (v) ensureShare(); save(); if (v) sendStatus(true); render(false); }),
           S.share.on ? tog("share-names", S.share.names, "Include task and check-in names", function (v) { S.share.names = v; save(); sendStatus(true); render(false); }) : null,
           S.share.on ? h("div", { class: "row" }, h("button", { class: "btn", type: "button", id: "share-link", onclick: function () { var l = myLink(); var c = $("share-code"); copyText(l, c); } }, "Copy my link"),
             h("code", { id: "share-code", class: "small", text: myLink() })) : null,
           h("p", { class: "small", text: "Shared through ntfy.sh on a long random channel. Anyone who has your link can see these numbers, so send it only to him. Private tasks never show their names." })),
+        moSrvDefault() || moOn() ? h("section", { class: "card", id: "push-sec", "aria-labelledby": "push-h" }, h("h2", { class: "sect-h", id: "push-h", text: "Notifications" }),
+          pushOn() ? [h("p", { class: "small", id: "push-state", text: "On for this phone: I need you, moments, reactions, messages, reminders and nudges." }),
+            h("div", { class: "row" }, h("button", { class: "btn", type: "button", id: "push-test", onclick: function () { moFetch("/v1/push/test", { method: "POST" }).then(function (r) { toast(r.ok ? "Sent. It should arrive in a few seconds." : "Not sent: " + (r.status === 409 ? "this phone isn't registered anymore" : r.why) + "."); }); } }, "Send a test"),
+              h("button", { class: "btn link", type: "button", id: "push-off", onclick: pushOff }, "Turn off"))]
+          : [h("p", { class: "small", text: isIOS() && !isStandalone() ? "Add Ten Days to your Home Screen first. On iPhone, notifications only work from the icon." : "So “I need you” reaches him even when the app is closed, and nudges and reactions reach your lock screen." }),
+            h("button", { class: "btn primary", type: "button", id: "push-on2", disabled: !!ui.pushBusy, onclick: function () { turnOnPush(); } }, ui.pushBusy ? "Turning on…" : "Turn on notifications")]) : null,
+        togetherBtn("bt-go2"),
+        challengeForm(),
         h("section", { class: "card", id: "pp-sos", "aria-labelledby": "pp-sos-h" },
           h("h2", { class: "sect-h", id: "pp-sos-h", text: "When I tap “I need you”" }),
           h("p", { class: "small", text: "Ten Days stays with you first: breathing, your words, the deck. If you don't stop it, it tells " + hisName() + " after:" }),
           h("div", { class: "row", id: "sos-wait", role: "group", "aria-labelledby": "pp-sos-h" }, SOS_WAITS.map(function (w) {
             return h("button", { class: "chip", type: "button", id: "sw-" + w[0], "aria-pressed": S.sosWait === w[0] ? "true" : "false", onclick: function () { S.sosWait = w[0]; save(); render(false); } }, w[1]);
           })),
-          h("p", { class: "small", text: S.sosWait === 0 ? "It will only tell him when you tap “Tell him”." : "The wait counts while Ten Days is open. If you leave the app, it sends when you come back if the time has passed. It can't place a phone call on its own; his alert has a button to call you." })),
+          h("p", { class: "small", text: S.sosWait === 0 ? "It will only tell him when you tap “Tell him”." : moOn() ? "Even if you close Ten Days, it still tells him on time (within about a minute), by notification" + (S.topics.alert ? " and ntfy" : "") + ". His alert opens a Call button." : "The wait counts while Ten Days is open. Join a circle below and it fires even with the app closed. It can't place a phone call on its own; his alert has a button to call you." })),
         hh ? h("p", { class: "pill", id: "pp-hard", text: "Hard hours: " + hardLabel(hh) + " (" + hh.days + " days in the last six weeks)" }) : null,
         h("div", { class: "field" }, h("label", { class: "lbl", for: "pp-name", text: "His name" }), nameIn),
         h("div", { class: "field" }, h("label", { class: "lbl", for: "pp-myname", text: "Your name (shows on his phone)" }), myName),
@@ -6678,6 +7497,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
       var past = S.chapters.slice().sort(function (a, b) { return b.period - a.period; });
       var leaveAll = h("input", { type: "checkbox", id: "mo-leave-all" });
       return { title: "Moments", body: [
+        capsuleCard(),
         due !== null ? h("div", { class: "card", id: "ch-due" }, h("p", { class: "status", text: "Ten days done: " + periodLabel(due) }),
           h("p", { class: "small", text: "Turn the moments you shared into a short chapter. You can edit it before anyone sees it." }),
           h("button", { class: "btn primary", type: "button", id: "ch-due-go", onclick: function () { go("chapter", due); } }, "Write our chapter")) : null,
@@ -6740,8 +7560,10 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
         return { title: c.title || "Chapter", body: [
           h("p", { class: "small", id: "ch-range", text: periodLabel(p) + (c.by ? " · saved by " + moWho(c.by) : "") }),
           used.length ? h("div", { class: "mostrip big", id: "ch-photos" }, used.map(function (m) { return moPhoto(m, "xs"); })) : null,
+          c.byAi ? h("p", { class: "state ai" }, icon("sparkle"), "Written with AI from your moments, then checked and saved") : null,
+          (function () { var caps = S.capsules.filter(function (x) { return x.period === p; }); return caps.length && periodOf(Date.now()) > p ? h("div", { class: "card", id: "ch-caps" }, h("p", { class: "lbl" }, icon("lock"), " Time capsules, opened"), caps.map(function (x) { return h("p", null, h("b", { text: moWho(x.member) + ": " }), "“" + x.text + "”"); })) : null; })(),
           h("div", { class: "chbody", id: "ch-text" }, c.body.split(/\n{2,}/).map(function (para) { return h("p", { text: para }); })),
-          h("div", { class: "row" }, listenBtn(c.title + ". " + c.body, "ch-listen"),
+          h("div", { class: "row" }, h("button", { class: "btn primary", type: "button", id: "ch-play", onclick: function () { ui.sl = null; go("slideshow", p); } }, "Play the chapter"), listenBtn(c.title + ". " + c.body, "ch-listen"),
             h("button", { class: "btn", type: "button", id: "ch-edit", onclick: function () { ui.ch = { p: p, title: c.title, body: c.body, ids: c.momentIds.slice() }; render(false); } }, "Edit"))
         ] };
       }
@@ -6779,10 +7601,83 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
           h("label", { class: "lbl", for: "ch-body", text: "Chapter" }), body,
           h("button", { class: "btn primary", type: "button", id: "ch-save", onclick: function () {
             if (!ed.body.trim()) { toast("Write something first."); return; }
-            var x = { period: p, title: ed.title.trim().slice(0, 120) || plainChapter(p, picked).title, body: ed.body.trim().slice(0, 6000), momentIds: ed.ids.slice(0, 60), by: S.mo.me.id, updated: Date.now() };
+            var x = { period: p, title: ed.title.trim().slice(0, 120) || plainChapter(p, picked).title, body: ed.body.trim().slice(0, 6000), momentIds: ed.ids.slice(0, 60), by: S.mo.me.id, updated: Date.now(), byAi: ed.by === "ai" || !!(c && c.byAi && ed.body === c.body) };
             S.chapters = S.chapters.filter(function (y) { return y.period !== p; }).concat([x]); ui.ch = null; save(); render(false);
             moShareChapter(x);
           } }, "Save for everyone")) : null
+      ] };
+    },
+    move: function () {
+      back(S.ob.done ? "data" : "a2hs");
+      var m = ui.move, mi = ui.moveIn;
+      var inp = h("input", { type: "text", id: "move-in", maxlength: "9", autocomplete: "off", autocapitalize: "characters", spellcheck: "false", placeholder: "ABCD-2345", class: "codein", "aria-label": "Move code" });
+      return { title: "Move your data", body: [
+        h("h2", { class: "sect-h", text: "Bring your data here" }),
+        h("p", { class: "small", text: "From the old Ten Days or another phone: make a move code there (You → Your data → Move your data), then type it here. It replaces what's on this phone." }),
+        h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); moveIn(inp.value); } }, inp, h("button", { class: "btn primary", type: "submit", id: "move-go", disabled: !!(mi && mi.busy) }, mi && mi.busy ? "Moving…" : "Move here")),
+        mi && mi.err ? h("p", { class: "status bad", id: "move-in-err", role: "alert", text: mi.err }) : null,
+        h("h2", { class: "sect-h", text: "Take your data somewhere else" }),
+        h("p", { class: "small", text: "Packs everything (tasks, notes, books, photos, cards), locks it with a code only you see, and keeps it on the Ten Days server for 24 hours, for one download. Your AI key and circle key stay behind." }),
+        m && m.code ? h("div", { class: "codepanel", id: "move-out" }, h("p", { class: "lbl", text: "Your move code" }), h("p", { class: "bigcode", id: "move-code", text: m.code.slice(0, 4) + "-" + m.code.slice(4) }),
+          h("p", { class: "small", text: "Type it in the new app within 24 hours. It works once." + (m.skipped ? " Your PDF files were too big to include; their text and your cards came along, so add the PDFs again there to see the pages." : "") }))
+          : h("button", { class: "btn", type: "button", id: "move-make", disabled: !!(m && m.busy), onclick: function () { moveOut(); } }, m && m.busy ? "Packing…" : "Make a move code"),
+        m && m.err ? h("p", { class: "status bad", role: "alert", text: "Couldn't make a move code: " + m.err }) : null
+      ] };
+    },
+    call: function () {
+      back("home");
+      var c = ui.callFrom || {}, num = cleanPhone(c.num || "") || cleanPhone(S.phone), who = c.who || "He";
+      return { title: who + " needs you", body: [
+        h("p", { class: "sub", text: who + " tapped “I need you”. Call now if you can." }),
+        num ? h("a", { class: "btn primary", id: "call-go", href: "tel:" + num }, icon("phone"), " Call " + (c.who || "him")) : h("p", { class: "small", text: "No number came with it. Call from your phone." }),
+        h("button", { class: "btn", type: "button", id: "call-msg", onclick: function () { go("people"); } }, "Message instead")
+      ] };
+    },
+    slideshow: function (p) {
+      back("moments");
+      p = Math.max(0, Math.floor(+p || 0));
+      var c = moOn() ? chapterFor(p) : null;
+      if (!c) return { title: "Chapter", body: [h("p", { class: "empty", text: "This chapter isn't here." })] };
+      var s = ui.sl;
+      if (!s || s.p !== p) { slideStop(); s = ui.sl = { p: p, i: 0, playing: false, slides: slidesFor(c), voice: !!window.speechSynthesis }; }
+      var cur = s.slides[Math.min(s.i, s.slides.length - 1)], last = s.slides.length - 1;
+      var jump = function (i) { s.i = Math.max(0, Math.min(last, i)); slideStop(); render(false); if (s.playing) slidePlay(); };
+      var canVideo = !!(window.MediaRecorder && HTMLCanvasElement.prototype.captureStream);
+      return { title: c.title || "Chapter", body: [
+        h("div", { class: "slide", id: "sl-stage" }, cur.m ? moPhoto(cur.m, "slide") : h("div", { class: "mophoto slide empty", "aria-hidden": "true" }),
+          h("p", { class: "slcap" + (cur.title ? " t" : ""), id: "sl-cap", "aria-live": "polite", text: cur.text })),
+        c.byAi ? h("p", { class: "state ai", id: "sl-ai" }, icon("sparkle"), "Words written with AI from your moments, checked and saved by " + moWho(c.by)) : null,
+        h("input", { type: "range", class: "scrub", id: "sl-scrub", min: "0", max: String(last), value: String(s.i), "aria-label": "Slide " + (s.i + 1) + " of " + (last + 1), oninput: function (e) { jump(+e.target.value); } }),
+        h("div", { class: "row slctl" },
+          h("button", { class: "iconbtn", type: "button", id: "sl-prev", "aria-label": "Back", disabled: s.i === 0, onclick: function () { jump(s.i - 1); } }, icon("left")),
+          h("button", { class: "btn primary", type: "button", id: "sl-play", "aria-pressed": s.playing ? "true" : "false", onclick: function () {
+            s.playing = !s.playing;
+            if (s.playing) { if (s.i >= last) s.i = 0; render(false); slidePlay(); } else { slideStop(); render(false); }
+          } }, s.playing ? "Pause" : "Play"),
+          h("button", { class: "iconbtn flip", type: "button", id: "sl-next", "aria-label": "Skip", disabled: s.i >= last, onclick: function () { jump(s.i + 1); } }, icon("left"))),
+        h("p", { class: "small center", id: "sl-n", text: (s.i + 1) + " of " + (last + 1) }),
+        window.speechSynthesis ? h("label", { class: "toggle", for: "sl-voice" }, h("input", { type: "checkbox", id: "sl-voice", checked: s.voice, onchange: function (e) { s.voice = e.target.checked; slideStop(); if (s.playing) slidePlay(); } }), h("span", { text: "Read it aloud" })) : null,
+        canVideo ? (s.video ? h("div", { class: "group" }, h("a", { class: "btn", id: "sl-download", href: s.video.url, download: "ten-days-chapter-" + (p + 1) + (/mp4/.test(s.video.type) ? ".mp4" : ".webm") }, "Save the video"),
+            h("p", { class: "small", text: "The video has the photos and words but no voice: web apps can't record the phone's spoken voice." }))
+          : h("button", { class: "btn", type: "button", id: "sl-export", disabled: !!s.exporting, onclick: function () {
+            s.exporting = true; slideStop(); s.playing = false; render(false);
+            exportVideo(c, s.slides).then(function (b) { s.exporting = false; if (b && b.size) s.video = { url: URL.createObjectURL(b), type: b.type, size: b.size }; else toast("This phone couldn't make the video."); render(false); },
+              function () { s.exporting = false; toast("This phone couldn't make the video."); render(false); });
+          } }, s.exporting ? "Making the video…" : "Make a video"))
+          : h("p", { class: "small", id: "sl-novideo", text: "This phone can't make a video file from a web app, so the chapter plays here in Ten Days." })
+      ] };
+    },
+    together: function () {
+      back("people");
+      var b = breatheNow(), others = moOthers().map(function (x) { return x.name; }).join(", ") || "your circle";
+      setTimeout(tickTogether, 0);
+      if (!b) return { title: "Breathe together", body: [h("p", { class: "sub", text: "Start, and " + others + " gets a gentle notification to join. Same rhythm on every phone." }), togetherBtn("bt-go3")] };
+      var now = Date.now() + (S.mo.skew || 0), ph = now - b.start;
+      return { title: "Breathe together", body: [
+        h("p", { class: "sub", text: "With " + others + ". In for 4, out for 6, the same on both phones." }),
+        h("div", { class: "breath cycle", id: "bt-orb", "aria-hidden": "true", style: "--bdelay:" + (ph < 0 ? Math.round(-ph) : -(ph % 10000)) + "ms" }, h("div", { class: "fill" }), h("span", { class: "cue", id: "bt-cue", text: ph < 0 ? "Starting" : "" })),
+        h("p", { class: "small center", id: "bt-left", "aria-live": "off" }),
+        h("button", { class: "btn", type: "button", id: "bt-stop", onclick: function () { moFetch("/v1/breathe", { method: "DELETE" }); S.breathe = null; save(); go("people"); } }, "Stop")
       ] };
     },
     checkin: function () {
@@ -6808,7 +7703,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     data: function () {
       return { title: "Your data", body: [
         h("p", { text: "Ten Days keeps everything on this phone. Nothing is sent anywhere except check-ins to his phone and reminders you schedule (both through ntfy), and, if you turn on the AI helper, what you allowed in You → AI helper." }),
-        h("div", { class: "group morelist" }, h("button", { class: "btn", type: "button", id: "d-backup", onclick: function () { go("m-backup"); } }, h("span", { text: "Backup and restore" }), h("span", { class: "hint", text: "Tasks, settings, reminders text and cards. Not PDFs, photos or free days." }))),
+        h("div", { class: "group morelist" }, h("button", { class: "btn", type: "button", id: "d-move", onclick: function () { go("move"); } }, h("span", { text: "Move your data" }), h("span", { class: "hint", text: "To the new app or another phone, everything included, with a one-time code." })), h("button", { class: "btn", type: "button", id: "d-backup", onclick: function () { go("m-backup"); } }, h("span", { text: "Backup and restore" }), h("span", { class: "hint", text: "Tasks, settings, reminders text and cards. Not PDFs, photos or free days." }))),
         h("h2", { class: "sect-h", text: "Delete" }),
         confirmBtn("Delete all PDFs, photos and cards", "Tap again to delete them", function () {
           var ids = S.docs.map(function (d) { return d.id; }), blobs = S.collection.filter(function (c) { return c.blobId; }).map(function (c) { return c.blobId; });
@@ -7307,8 +8202,8 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   SCREENS.breath = SCREENS.support;   // older saved state
   SCREENS["m-free"] = SCREENS.progress;
   SCREENS.more = SCREENS.you;
-  var TAB_OF = { moments: "you", "moment-new": "you", chapter: "you", people: "you", routine: "you", home: "home", breathe: "home", notes: "home", checkins: "home", quiz: "home", "m-tasks": "home", task: "home", "task-edit": "home", focus: "home", progress: "progress", "m-log": "progress" };
-  var MODE_OF = { read: "read", focus: "focus", breathe: "support", support: "support", line: "support", progress: "grow" };
+  var TAB_OF = { move: "you", slideshow: "you", together: "you", call: "home", moments: "you", "moment-new": "you", chapter: "you", people: "you", routine: "you", home: "home", breathe: "home", notes: "home", checkins: "home", quiz: "home", "m-tasks": "home", task: "home", "task-edit": "home", focus: "home", progress: "progress", "m-log": "progress" };
+  var MODE_OF = { together: "support", call: "support", read: "read", focus: "focus", breathe: "support", support: "support", line: "support", progress: "grow" };
   function updateChrome() {
     document.body.setAttribute("data-mode", MODE_OF[ui.screen] || "plan");
     var tab = TAB_OF[ui.screen] || (ui.screen === "support" || ui.screen === "line" ? "" : "you"), tabs = $("tabs");
@@ -7334,6 +8229,8 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     // bars that float above the dock live outside the animated screen, so they stay put while you scroll
     $("float").replaceChildren.apply($("float"), [].concat(out.float || []).filter(Boolean));
     miniFocus();
+    var om = $("omni"), showOmni = !!S.calm && ui.screen === "home" && !cdT && S.ob.done;
+    if (om) { om.hidden = !showOmni; document.body.classList.toggle("has-omni", showOmni); if (!showOmni && omni) omniEnd(true); omniPaint(); }
     root.setAttribute("data-screen", ui.screen);                       // style hook only
     updateChrome();
     // the entrance animation plays when you arrive on a screen, not on every refresh (no flicker after a tap)
@@ -7400,6 +8297,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   $("hlbtn").addEventListener("pointerdown", function (e) { e.preventDefault(); saveHighlight(); });
   $("hlbtn").addEventListener("click", saveHighlight);
   $("minifocus").addEventListener("click", function () { go("focus"); });
+  $("omni").appendChild(icon("mic")); $("omni").addEventListener("click", omniTap);
   $("sos").addEventListener("click", onSOS);
   $("cd-cancel").addEventListener("click", cancelSOS);
   $("cd-now").addEventListener("click", function () { if (!cdT) return; stopCountdown(); sendSOS(); });
@@ -7407,13 +8305,13 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   window.addEventListener("resize", measureBar);
   try { if (window.ResizeObserver) new ResizeObserver(measureBar).observe($("sosbar")); } catch (e) {}   // the bar grows with Text Size
   document.addEventListener("visibilitychange", function () {
-    if (document.hidden) { clearTimeout(pollT); clearTimeout(ppT); clearTimeout(moT); return; }
+    if (document.hidden) { clearTimeout(pollT); clearTimeout(ppT); clearTimeout(moT); pushSchedule(); return; }
     moSync().then(moSchedule);
     if (cdT) cdTick();
     pollReplies(); render(false); schedulePoll();
-    pollPartner().then(schedulePartner); sendStatus(); pingHard();
+    pollPartner().then(schedulePartner); sendStatus(); pingHard(); srvAlertCheck(); pushNudgeQuiet(); pushSchedule();
   });
-  window.addEventListener("hashchange", function () { var hs = location.hash; if (/(?:^#|&)moments=1/.test(hs)) ui.moOffer = readMoLink(hs); else if (/(?:^#|&)pair=1/.test(hs)) ui.pairOffer = readPair(hs); else return; try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} go("people"); });
+  window.addEventListener("hashchange", function () { var hs = location.hash; if (/(?:^#|&)moments=1/.test(hs)) ui.moOffer = readMoLink(hs); else if (/(?:^#|&)pair=1/.test(hs)) ui.pairOffer = readPair(hs); else { if (/^#(?:n=|call=|moments$|breathe$|people$|calm$)/.test(hs)) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} openFromPush(hs); } return; } try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} go("people"); });
   window.addEventListener("online", function () { if (!document.hidden) pollReplies(); });
   setInterval(function () {
     var a = document.activeElement, typing = a && (a.id === "qa" || a.id === "task-search" || !!(a.closest && a.closest("#asst")));
@@ -7431,14 +8329,17 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     S.tasks.forEach(function (t) { t.pending = false; });   // a sort that was cut off by closing the app
     if (!S.milesInit) { afterProgress(true); S.milesInit = true; save(); }   // what you'd already done counts, without a burst of banners
     if (S.breathEnd > Date.now()) { ui.sup = { mode: "stay", since: Date.now(), g: -1 }; return go("support"); }
-    pingHard(); curateCards();
+    pingHard(); curateCards(); pushNudgeQuiet(); srvAlertCheck(); pushSchedule();
+    try { if (navigator.clearAppBadge) navigator.clearAppBadge(); } catch (e) {}
+    if (pushHash && openFromPush(pushHash)) return;
     if (ui.pairOffer || ui.moOffer) return go("people");
     go("home");
   }
   if (/(?:^#|&)pair=1/.test(location.hash)) ui.pairOffer = readPair(location.hash);
+  var pushHash = /^#(?:n=|call=|moments$|breathe$|people$|calm$)/.test(location.hash) ? location.hash : "";
   if (/(?:^#|&)moments=1/.test(location.hash)) ui.moOffer = readMoLink(location.hash);
   if (location.hash) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
-  if (location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__td = { goal: function (id) { return goalOf(S.docs.filter(function (d) { return d.id === id; })[0]); }, curate: function () { S.curated = ""; return curateCards(); }, rd: function () { return RD ? { cur: RD.cur, drawn: Object.keys(RD.done).map(Number), session: RD.session.slice() } : null; }, moSync: function () { return moSync(); }, readScale: function (v) { READ_SCALE = v; }, block: parseBlock, learned: learned, hard: hardHours, parse: parseQuick, intent: intentOf, plan: planFor, fix: fixFields, next: nextQuestion, draft: newDraft, passages: passages, xp: xpTotal };   // local testing only
+  if (location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__td = { split: splitSaid, slot: function (title) { var d = blankDraft(title); d.load = loadOf(d); autoSlot(d); return { time: d.time, date: d.date, dur: d.dur, load: d.load }; }, slideMs: function (v) { SL_MS = v; }, pushItems: function () { return pushItems(); }, goal: function (id) { return goalOf(S.docs.filter(function (d) { return d.id === id; })[0]); }, curate: function () { S.curated = ""; return curateCards(); }, rd: function () { return RD ? { cur: RD.cur, drawn: Object.keys(RD.done).map(Number), session: RD.session.slice() } : null; }, moSync: function () { return moSync(); }, readScale: function (v) { READ_SCALE = v; }, block: parseBlock, learned: learned, hard: hardHours, parse: parseQuick, intent: intentOf, plan: planFor, fix: fixFields, next: nextQuestion, draft: newDraft, passages: passages, xp: xpTotal };   // local testing only
   measureBar();
   start();
   pollReplies();
@@ -7446,6 +8347,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   pollPartner().then(schedulePartner);
   sendStatus();
   moSync().then(moSchedule);
+  swInit(); probeHost();
 })();
 </script>
 </body>
