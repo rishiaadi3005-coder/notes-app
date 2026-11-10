@@ -2,7 +2,9 @@
 
 A calm daily companion for one phone, shared with a brother or a few friends. It covers tasks, reading, support when you need it, Moments, notifications and the ten-day chapter.
 
-The whole app is one file, `index.html`, with a service worker (`sw.js`), a manifest and icons. Its server is a single Cloudflare Worker in `worker/`. The same Worker also serves the app, so the app and its server share one HTTPS address.
+The whole app is one file, `index.html`, with a service worker (`sw.js`), a manifest and icons. Its server is a single Cloudflare Worker in `worker/`. The same Worker also serves the app (`worker/src/main.js` bundles the app's files in), so the app and its server share one HTTPS address.
+
+**Live at https://ten-days.rishiaadi3005.workers.dev**
 
 > **Why a Worker and not Cloudflare Pages?** Pages can't run scheduled jobs. Ten Days needs one every minute, so that "I need you" fires on time with the app closed and reminders reach the lock screen. A Worker with static assets serves the app files exactly like Pages does, on a fixed `https://` address, on the same free plan.
 
@@ -71,6 +73,8 @@ If you still use the GitHub Pages copy:
 The old app then shows "Ten Days has a new home" with a button that makes a move code.
 
 ### 6. Redeploying after a change
+
+The app's files are bundled into the Worker, so a change to `index.html` also needs a deploy:
 
 ```bash
 npx wrangler deploy

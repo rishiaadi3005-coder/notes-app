@@ -1,7 +1,0 @@
-.git
-.gitignore
-.assetsignore
-tests
-worker
-node_modules
-*.md
