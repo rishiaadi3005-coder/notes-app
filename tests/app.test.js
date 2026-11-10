@@ -26,7 +26,7 @@ const SEED = {
     { id: "kaaaa2", title: "Workout", type: "CUSTOM", repeat: "daily", hist: [], created: 2 },
     { id: "kaaaa3", title: "Read today's pages", type: "READ", repeat: "daily", goal: "reading", hist: [], created: 3 }
   ],
-  freeDays: [], contacts: [{ id: "kc0001", name: "Mom", phone: "555 000 1111" }], view: "list", intakeDone: true, sosWait: 3
+  freeDays: [], contacts: [{ id: "kc0001", name: "Mom", phone: "555 000 1111" }], view: "list", intakeDone: true, sosWait: 3, calm: false
 };
 async function boot(browser, opts) {
   opts = opts || {};
@@ -1228,8 +1228,9 @@ async function axe(page, name) {
       await R.page.waitForFunction(() => document.querySelector("[id^='mo-pend-']"));
       ok((await R.page.textContent("[id^='mo-pend-']")).includes("Not shared yet"), "no connection: honest “not shared yet”");
       await R.page.unroute(MO); await R.page.route(MO, viaWorker);
-      await R.page.click("[id^='mo-retry-']"); await R.page.waitForTimeout(500);
-      ok(!(await S(R.page)).moments.some(m => m.pending), "Retry shares it");
+      await R.page.click("[id^='mo-retry-']", { timeout: 3000 }).catch(() => {});   // the app may already have retried on its own
+      await R.page.waitForFunction(() => !JSON.parse(localStorage.getItem("tendays.v1")).moments.some(m => m.pending), null, { timeout: 30000 });
+      ok(!(await S(R.page)).moments.some(m => m.pending), "Retry (or the automatic retry) shares it");
       await axe(R.page, "moments");
       const realErr = R.errors.concat(A.errors).filter(e => !/status of 403/.test(e));   // the wrong codes typed on purpose above
       ok(!realErr.length, "moments: no errors " + realErr.join(" | "));
@@ -1525,6 +1526,87 @@ async function axe(page, name) {
       await page.addInitScript(s => { if (!sessionStorage.getItem("seeded")) { sessionStorage.setItem("seeded", "1"); localStorage.setItem("tendays.v1", s); } }, JSON.stringify(SEED));
       await page.goto("https://tendays.test/index.html"); await page.waitForSelector("#screen h1");
       ok(await page.isVisible("#a2hs-note") && /notifications need it/i.test(await page.textContent("#a2hs-note")), "Safari on iPhone: “Add to Home Screen for the real app”");
+      await ctx.close();
+    }
+    // ---------- v12: the Omni-Mic, the manager's three, You | him, liquid glass ----------
+    console.log("v12");
+    {
+      const srStub = () => { window.SpeechRecognition = window.webkitSpeechRecognition = class { start() { window.__sr = this; window.__srOn = true; } stop() { window.__srOn = false; if (this.onend) this.onend(); } }; };
+      const say = (page, text, final) => page.evaluate(([t, f]) => { const r = [{ transcript: t }]; r.isFinal = f; window.__sr.onresult({ resultIndex: 0, results: [r] }); }, [text, final]);
+      const seed = JSON.parse(JSON.stringify(SEED)); seed.calm = true; seed_name(seed, "Rishi"); seed.fx = { tilt: true };   // tilt is opt-in (You → Motion), since phones ask permission for it
+      seed.tasks = ["Email TA", "Pay rent", "Clean desk", "Buy milk", "Water plants", "Call bank", "Sort notes", "Fix bike"].map((t, i) => ({ id: "kman000" + i, title: t, type: "CUSTOM", repeat: "once", created: i + 1, priority: i === 1 ? "urgent" : "normal" }));
+      seed.docs = [{ id: "kdoc00009", name: "Technical Trading Basics", pages: 200, status: "ready", hasFile: false, pos: 12, kind: "learning", lastRead: 5 }, { id: "kdoc00008", name: "A Novel", pages: 300, status: "ready", hasFile: false, pos: 3, lastRead: 9 }];
+      seed.partner = { name: "Audi", topic: "ts-audistatus0009", last: { v: 1, n: "Audi", day: "2026-11-09", t: [2, 4], c: [1, 2], f: 20, k: [] }, at: Date.parse("2026-11-09T14:40:00Z") };
+      const { page, errors, ctx } = await boot(browser, { seed, at: new Date("2026-11-09T15:00:00Z"), init: [srStub] });   // Monday 9:00 AM
+      // the manager: three things for now, the rest out of the way but one tap from sight
+      ok(await page.locator("#mgr-top .tile2").count() === 3 && (await page.textContent("#mgr-n")) === "3 of 8", "20 things collapse to three for now (here 3 of 8)");
+      ok((await page.textContent("#mgr-top")).includes("Pay rent"), "the urgent one is among them");
+      ok((await page.textContent("#mgr-more")).includes("5 more"), "nothing vanishes: “5 more today, out of the way”");
+      ok(!(await page.isVisible("#t-focus")) && !(await page.isVisible("#reading-tiles")) && await page.isVisible("#horizon"), "one calm canvas: the three, the ten days, the mic; the rest under More");
+      ok((await page.textContent("#learn")).includes("Technical Trading Basics"), "a 5-minute learn card, only from your own books");
+      await page.click("#mgr-more"); ok(await page.locator("#task-area .tile2").count() === 8, "one tap shows everything");
+      await page.click("#mgr-more");
+      await axe(page, "calm today");
+      // glass: a frosted focal card with a light edge; highlights follow the tilt
+      const g = await page.evaluate(() => { const c = getComputedStyle(document.getElementById("mgr")); return [c.backdropFilter || c.webkitBackdropFilter, c.borderTopColor]; });
+      ok(/blur\(24px\)/.test(g[0]) && /saturate\(2/.test(g[0]) && /0\.(25|7)\)/.test(g[1]), "frosted glass: blur 24px, saturate 200%, a thin specular edge");
+      await page.evaluate(() => window.dispatchEvent(Object.assign(new Event("deviceorientation"), { gamma: 15, beta: 55 }))); await page.waitForTimeout(120);
+      ok(await page.evaluate(() => document.documentElement.style.getPropertyValue("--gx")) === "0.500", "tilt the phone and the highlight moves");
+      // the mic: live commands, mid-sentence
+      ok(await page.isVisible("#omni"), "one glowing mic");
+      await page.click("#omni"); await page.waitForSelector("#omni-live:not([hidden])");
+      await say(page, "delete all tasks", false);
+      ok((await S(page)).tasks.length === 0 && (await page.textContent("#omni-log")).includes("Deleted all 8"), "“delete all tasks”: gone while you're still talking");
+      await say(page, "delete all tasks bring them back", false);
+      ok((await S(page)).tasks.length === 8 && (await page.textContent("#omni-log")).includes("Brought them back"), "“bring them back”: they're back, live");
+      await say(page, "delete all tasks bring them back", true);
+      ok((await S(page)).tasks.length === 8, "nothing runs twice when the sentence is finished");
+      // a whole day in one breath: split, timed, slotted, no questions
+      await say(page, "I need to finish accounting today, add a book recommendation on technical trading, and prep for Muay Thai", true);
+      let s = await S(page);
+      const acc = s.tasks.find(t => /accounting/i.test(t.title)), bk = s.tasks.find(t => /book on technical trading/i.test(t.title)), mt = s.tasks.find(t => /muay thai/i.test(t.title));
+      ok(acc && bk && mt && s.tasks.length === 11, "one breath, three things: " + [acc, bk, mt].map(t => t && t.title).join(" | "));
+      ok(acc.title === "Finish accounting" && acc.date === "2026-11-09" && /^09:(15|20)$/.test(acc.time) && acc.dur === 45 && acc.load === "heavy", "accounting: heavy, today, slotted first with a 45-minute timer (" + acc.time + ")");
+      ok(mt.time && mt.time !== acc.time && mt.dur === 30 && bk.type === "READ" && s.interests.includes("technical trading"), "the others get their own slots; the book wish is remembered as an interest");
+      ok(!(await page.$("#aq-text")) && !(await page.$("#asst-save")), "no questions, no confirmation");
+      await say(page, "gym at 6 and call mom and dad", true);
+      s = await S(page);
+      ok(s.tasks.some(t => t.title === "Gym" && t.time === "18:00") && s.tasks.some(t => /call mom and dad/i.test(t.title)), "“and” splits things to do, not “mom and dad”");
+      await say(page, "mark gym done", true);
+      ok((await S(page)).tasks.find(t => t.title === "Gym").doneOn, "“mark gym done”");
+      await say(page, "undo", true);
+      ok(!(await S(page)).tasks.find(t => t.title === "Gym").doneOn, "“undo” steps back");
+      await page.waitForFunction(() => document.getElementById("omni-live").hidden, null, { timeout: 6000 });
+      ok(!(await page.evaluate(() => window.__srOn)) && (await page.textContent("#toast")).includes("Done:"), "you stop talking, it stops listening, with a short summary");
+      // You | him
+      await page.click("#who-him");
+      ok(await page.isVisible("#him") && (await page.textContent("#him-tasks")).includes("2 of 4") && !(await page.isVisible("#mgr")), "You | Audi at the top: his day at a glance");
+      await page.click("#who-me"); ok(await page.isVisible("#mgr"), "and back");
+      // everything else is still there, under More
+      await page.click("#more summary");
+      ok(await page.isVisible("#t-focus") && await page.isVisible("#reading-tiles") && await page.isVisible("#tb-undo"), "More: tools, reading, the rest");
+      await page.click("#hd-2"); ok(await page.isVisible("#day-sum") || await page.isVisible("#day-empty"), "tap a day on the horizon to see it");
+      const sp = await page.evaluate(() => [window.__td.split("finish the report, then email it and call Sam"), window.__td.split("peanut butter and jelly for lunch")]);
+      ok(sp[0].length === 3 && sp[1].length === 1, "splitting: " + JSON.stringify(sp));
+      ok(!errors.length, "v12: no errors " + errors.join(" | "));
+      await ctx.close();
+    }
+    {
+      // no live recognition (like some installed iPhone apps): it records, stops when you stop, and the AI transcribes
+      const calls = [];
+      const seed = JSON.parse(JSON.stringify(SEED)); seed.calm = true; seed.ai = { agreed: true, consent: { tasks: true, summaries: true, library: true, support: false } };
+      const { page, errors, ctx } = await boot(browser, { seed, at: new Date("2026-11-09T15:00:00Z"), init: [() => { delete window.SpeechRecognition; delete window.webkitSpeechRecognition; Object.defineProperty(window, "webkitSpeechRecognition", { value: undefined, configurable: true }); Object.defineProperty(window, "SpeechRecognition", { value: undefined, configurable: true }); }] });
+      await page.evaluate(() => localStorage.setItem("tendays.aikey", "AIzaTESTKEY000000000000000000000000000"));
+      await aiStub(page, calls, c => JSON.stringify({ transcript: "Study finance for an hour and buy groceries" }));
+      await page.reload(); await page.waitForSelector("#omni");
+      await page.click("#omni"); await page.waitForSelector("#omni-live:not([hidden])");
+      ok((await page.textContent("#omni-live")).includes("stops when you do"), "recording mode says it stops when you do");
+      await page.waitForTimeout(1500); await page.click("#omni", { force: true });   // the test microphone beeps forever, so stop by tapping (the button pulses, hence force)
+      await page.waitForFunction(() => { const s = JSON.parse(localStorage.getItem("tendays.v1")); return s.tasks.some(t => /study finance/i.test(t.title)); }, null, { timeout: 20000 });
+      const s = await S(page), st = s.tasks.find(t => /study finance/i.test(t.title));
+      ok(st.dur === 60 && st.time && s.tasks.some(t => /groceries/i.test(t.title)), "recorded, transcribed by AI, then split and slotted the same way");
+      ok(!/What you know about the person/.test(calls[calls.length - 1].sys), "the transcription request carries nothing else about you");
+      ok(!errors.length, "v12 rec: no errors " + errors.join(" | "));
       await ctx.close();
     }
     // quizzes from a learning book (no AI: questions made from the page's sentences)

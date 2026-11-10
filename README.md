@@ -8,6 +8,14 @@ The whole app is one file, `index.html`, with a service worker (`sw.js`), a mani
 
 > **Why a Worker and not Cloudflare Pages?** Pages can't run scheduled jobs. Ten Days needs one every minute, so that "I need you" fires on time with the app closed and reminders reach the lock screen. A Worker with static assets serves the app files exactly like Pages does, on a fixed `https://` address, on the same free plan.
 
+## Today, the mic and the manager
+
+- **Today is one calm canvas:** three things for the current part of the day, the ten-day strip, and the mic. Everything else (moments, reading, tools, the full list) is under **More**. `S.calm = false` brings back the full layout.
+- **The mic:** tap once and talk. Where the browser offers live speech recognition, each thing happens as it's heard ("delete all tasks", "bring them back", "mark gym done", or a whole day in one breath). Where it doesn't, it records, stops when you stop talking, and the AI helper transcribes it; that path needs the AI helper turned on.
+- **Slotting:** spoken tasks get a time and a timer on their own. Heavy work goes early, light things late, never on a class, and at most three heavy hours a day; overflow moves to the next day on the ten-day strip.
+- **Learn card:** one 5-minute read or review, only from books you added.
+- **Glass:** blur is kept to one or two focal surfaces per screen. The tilt highlight is opt-in (You → Motion), because phones ask permission for motion.
+
 ## Deployment checklist (in order)
 
 You need a free Cloudflare account and Node.js 18 or newer. Run every command from the `worker/` folder.

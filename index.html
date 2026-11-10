@@ -940,6 +940,53 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
 .chalone { display: flex; flex-direction: column; gap: .45em; }
 .wordrow form.inline input { flex: 1; }
 .pword { font-size: .8em; padding: .2em .65em; border-radius: 99px; border: 1px solid var(--line); background: var(--field); color: var(--ink); }
+/* ---- v12: liquid glass, the Omni-Mic, the manager ---- */
+:root { --gx: 0; --gy: 0; --spec: rgba(255, 255, 255, .25); }
+@media (prefers-color-scheme: light) { :root { --spec: rgba(255, 255, 255, .7); } }
+/* every card: a razor-thin light edge and a highlight that moves with the phone (cheap: no blur) */
+.card { border-color: rgba(255, 255, 255, .14); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), 0 10px 30px rgba(0, 0, 0, .18);
+  background-image: radial-gradient(120% 90% at calc(50% + var(--gx) * 45%) calc(-10% + var(--gy) * 35%), rgba(255, 255, 255, .11), transparent 62%), linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .03)); }
+@media (prefers-color-scheme: light) { .card { border-color: rgba(20, 28, 60, .12); background-image: linear-gradient(180deg, var(--glass-hi), var(--glass-lo)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 8px 24px rgba(20, 28, 60, .08); } }
+/* real frosted glass, kept to the one or two focal surfaces on a screen */
+.glass-card { position: relative; border-radius: 24px; padding: 1.1em 1.15em; border: 1px solid var(--spec); display: flex; flex-direction: column; gap: .7em;
+  background: radial-gradient(130% 90% at calc(50% + var(--gx) * 50%) calc(-15% + var(--gy) * 40%), rgba(255, 255, 255, .20), transparent 60%), linear-gradient(160deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03));
+  -webkit-backdrop-filter: blur(24px) saturate(200%); backdrop-filter: blur(24px) saturate(200%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), inset 0 -1px 0 rgba(255, 255, 255, .06), 0 18px 44px rgba(0, 0, 0, .28); }
+@media (prefers-color-scheme: light) { .glass-card { background: linear-gradient(160deg, rgba(255, 255, 255, .78), rgba(255, 255, 255, .5)); box-shadow: inset 0 1px 0 #fff, 0 14px 34px rgba(20, 28, 60, .12); } }
+.mgr-h { margin: 0; font-size: 1.3em; font-weight: 800; letter-spacing: -.015em; }
+.tgrid.one { grid-template-columns: 1fr; }
+.tgrid.one .tile2 { min-height: 64px; }
+#mgr-more { align-self: flex-start; }
+.card.learn { display: flex; flex-direction: column; align-items: flex-start; gap: .25em; text-align: left; width: 100%; color: var(--ink); font: inherit; cursor: pointer; }
+.card.learn .lbl svg { width: 1.05em; height: 1.05em; color: var(--corner); }
+.seg.who { align-self: center; min-width: 220px; }
+.seg.who .live { margin-left: .4em; }
+.seg.who .live::before { margin: 0; }
+/* the mic: a glowing glass bead above the dock */
+.omni { position: fixed; z-index: 36; left: 50%; bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 14px); width: 68px; height: 68px; margin-left: -34px; border-radius: 50%; border: 1px solid var(--spec); color: #fff; padding: 0; display: grid; place-items: center;
+  background: radial-gradient(90% 90% at calc(35% + var(--gx) * 20%) calc(25% + var(--gy) * 20%), rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 55%), linear-gradient(150deg, #6EE7C8, #7FB2FF 55%, #C29BFF);
+  -webkit-backdrop-filter: blur(24px) saturate(200%); backdrop-filter: blur(24px) saturate(200%);
+  box-shadow: 0 0 0 6px rgba(127, 178, 255, .12), 0 0 34px rgba(127, 178, 255, .55), inset 0 1px 0 rgba(255, 255, 255, .7); transition: transform 240ms var(--ease-ios, cubic-bezier(.32, .72, 0, 1)), box-shadow 240ms ease; }
+.omni svg { width: 28px; height: 28px; color: #06121f; }
+.omni:active { transform: scale(.93); }
+.omni.on { box-shadow: 0 0 0 10px rgba(110, 231, 200, .18), 0 0 54px rgba(110, 231, 200, .8), inset 0 1px 0 rgba(255, 255, 255, .7); animation: omnipulse 1.6s ease-in-out infinite; }
+@keyframes omnipulse { 50% { transform: scale(1.07); } }
+.rm .omni.on { animation: none; }
+.omnilive { position: fixed; z-index: 36; left: 12px; right: 12px; margin: 0 auto; max-width: 516px; bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 96px); border-radius: 22px; padding: .9em 1em; border: 1px solid var(--spec); color: var(--ink);
+  background: rgba(14, 16, 24, .72); -webkit-backdrop-filter: blur(24px) saturate(200%); backdrop-filter: blur(24px) saturate(200%); box-shadow: 0 18px 44px rgba(0, 0, 0, .4); display: flex; flex-direction: column; gap: .4em; }
+@media (prefers-color-scheme: light) { .omnilive { background: rgba(255, 255, 255, .86); } }
+.omnilive p { margin: 0; }
+.ol-h { font-weight: 700; display: flex; align-items: center; gap: .5em; }
+.ol-i { font-size: 1.1em; line-height: 1.35; }
+.ol-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .25em; font-size: .92em; color: var(--muted); }
+.ol-log li { display: flex; gap: .45em; align-items: flex-start; }
+.ol-log svg { width: 1em; height: 1em; flex: none; margin-top: .2em; color: var(--ok-text); }
+body.has-omni #screen { padding-bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 100px); }
+body.has-omni .minifocus { bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 96px); }
+details.adv.more > summary { font-weight: 700; }
+body.has-omni #qa-mic { display: none; }
+body.has-omni .toast { bottom: calc(var(--bar) + env(safe-area-inset-bottom, 0px) + 96px); }
+.nownext b { color: var(--ok-text); }
 </style>
 </head>
 <body>
@@ -960,6 +1007,8 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
 <div class="sr-only" id="announce" aria-live="polite"></div>
 <div id="float"></div>
 <button id="hlbtn" class="hlbtn" type="button" hidden>Save highlight</button>
+<div id="omni-live" class="omnilive" hidden role="status" aria-live="polite"></div>
+<button id="omni" class="omni" type="button" hidden aria-pressed="false" aria-label="Speak: say tasks or commands"></button>
 <button id="minifocus" class="minifocus" type="button" hidden><span class="mf-ring" aria-hidden="true"></span><span class="mf-text" aria-hidden="true"><b id="mf-time"></b><span id="mf-task"></span></span></button>
 
 <script>
@@ -1113,7 +1162,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     s.memory = (Array.isArray(s.memory) ? s.memory : []).filter(obj).map(function (m) { return { id: str(m.id, 40) || newId(), key: str(m.key, 40), value: TIME_RE.test(m.value || "") ? m.value : "", text: str(m.text, 120), at: +m.at || Date.now() }; })
       .filter(function (m) { return m.key && m.value; }).slice(0, 50);
     var F = obj(s.fx) || {};
-    s.fx = { motion: ["system", "on", "off"].indexOf(F.motion) >= 0 ? F.motion : "system", sound: F.sound === true, timerSound: F.timerSound !== false, celebrate: F.celebrate !== false, rpg: F.rpg !== false };
+    s.fx = { motion: ["system", "on", "off"].indexOf(F.motion) >= 0 ? F.motion : "system", sound: F.sound === true, timerSound: F.timerSound !== false, celebrate: F.celebrate !== false, rpg: F.rpg !== false, tilt: F.tilt === true ? true : F.tilt === false ? false : null };
     var B = obj(s.bank) || {};
     s.bank = { xp: Math.max(0, +B.xp || 0), done: Math.max(0, +B.done || 0), focus: Math.max(0, +B.focus || 0) };
     s.miles = obj(s.miles) || {}; s.milesInit = !!s.milesInit;
@@ -1204,6 +1253,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
         replies: (Array.isArray(m.replies) ? m.replies : []).filter(obj).map(function (r) { return { id: str(r.id, 40), member: str(r.member, 40), text: str(r.text, 300), at: +r.at || 0 }; }) };
     }).slice(-400);
     s.chapters = (Array.isArray(s.chapters) ? s.chapters : []).filter(obj).map(function (c) { return { period: Math.max(0, Math.floor(+c.period || 0)), title: str(c.title, 120), body: str(c.body, 6000), momentIds: (Array.isArray(c.momentIds) ? c.momentIds : []).map(function (x) { return str(x, 40); }).slice(0, 60), by: str(c.by, 40), updated: +c.updated || 0, byAi: !!c.byAi }; }).slice(-100);
+    s.calm = s.calm !== false; s.interests = (Array.isArray(s.interests) ? s.interests : []).map(function (x) { return str(x, 40).trim(); }).filter(Boolean).slice(-12);
     var PU = obj(s.push) || {};
     s.push = { on: !!PU.on, at: +PU.at || 0, endpoint: str(PU.endpoint, 1000), sent: str(PU.sent, 20000),
       nudges: (Array.isArray(PU.nudges) ? PU.nudges : []).filter(function (x) { return obj(x) && typeof x.key === "string" && +x.at; }).map(function (x) { return { key: str(x.key, 100), at: +x.at }; }).slice(-80),
@@ -2465,7 +2515,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   var mqReduce = null;
   try { mqReduce = window.matchMedia("(prefers-reduced-motion: reduce)"); } catch (e) {}
   function reduced() { return S.fx.motion === "off" || (S.fx.motion !== "on" && !!(mqReduce && mqReduce.matches)); }
-  function applyMotion() { document.documentElement.classList.toggle("rm", reduced()); }
+  function applyMotion() { document.documentElement.classList.toggle("rm", reduced()); try { applyTilt(); } catch (e) {} }
   try { if (mqReduce && mqReduce.addEventListener) mqReduce.addEventListener("change", applyMotion); } catch (e) {}
   function announce(msg) { var a = $("announce"); if (!a) return; a.textContent = ""; setTimeout(function () { a.textContent = msg; }, 60); }
   var actx = null;
@@ -2961,7 +3011,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
       ic ? icon(ic) : null, h("span", { text: label }), extra.sug ? h("span", { class: "s", text: extra.sug }) : null);
   }
   function chipsFor(d) {
-    var sug = d.sugg && (d.sugg.time === "remembered" ? "from what you told me" : d.sugg.time === "usual" ? "your usual time" : d.sugg.time || d.sugg.date ? "suggested" : "");
+    var sug = d.sugg && (d.sugg.time === "remembered" ? "from what you told me" : d.sugg.time === "usual" ? "your usual time" : d.sugg.time === "slotted" ? "slotted for you" : d.sugg.time || d.sugg.date ? "suggested" : "");
     var wl = whenLabel(d), out = [fchip("when", "clock", wl || (d.anchor ? "No time yet" : "Anytime"), { sug: sug, miss: !wl })];
     if (d.anchor) out.push(fchip("when", "flag", cap(d.anchor)));
     if (d.due && DATE_RE.test(d.due)) out.push(fchip("when", "flag", "Due " + (d.due === dayKey() ? "today" : fmtDate(parseDay(d.due).getTime()))));
@@ -3362,11 +3412,16 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }).then(function (stream) {
       if (!rec) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
       var src = ctx.createMediaStreamSource(stream), proc = ctx.createScriptProcessor(4096, 1, 1);
-      proc.onaudioprocess = function (e) { if (rec) rec.chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); };
+      proc.onaudioprocess = function (e) {
+        if (!rec) return;
+        var ch = e.inputBuffer.getChannelData(0); rec.chunks.push(new Float32Array(ch));
+        if (rec.purpose === "omni") { var sum = 0; for (var i = 0; i < ch.length; i += 8) sum += ch[i] * ch[i]; if (Math.sqrt(sum / (ch.length / 8)) > .025) { rec.spoke = true; rec.loud = Date.now(); } }
+      };
       src.connect(proc); proc.connect(ctx.destination);
       if (ctx.state === "suspended") ctx.resume();
       rec.stream = stream; rec.src = src; rec.proc = proc; rec.pending = false; rec.start = Date.now(); rec.rate = ctx.sampleRate;
-      rec.timer = setInterval(function () { var t = $("rec-time"); if (t && rec) t.textContent = mmss(Date.now() - rec.start); if (rec && Date.now() - rec.start > (rec.purpose === "intake" ? 300e3 : 120e3)) stopRec(true); }, 250);
+      rec.timer = setInterval(function () { var t = $("rec-time"); if (t && rec) t.textContent = mmss(Date.now() - rec.start); if (rec && Date.now() - rec.start > (rec.purpose === "intake" ? 300e3 : 120e3)) stopRec(true);
+        else if (rec && rec.purpose === "omni" && ((rec.spoke && Date.now() - rec.loud > 2200) || (!rec.spoke && Date.now() - rec.start > 9000) || Date.now() - rec.start > 45000)) { stopRec(!!rec.spoke); omniPaint(); } }, 250);
       render(false); announce("Recording. Tap stop when you're done.");
     }, function (err) {
       try { ctx.close(); } catch (e) {} rec = null; render(false);
@@ -3384,7 +3439,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     var n = r.chunks.reduce(function (a, c) { return a + c.length; }, 0);
     if (n < r.rate * .6) { toast("That was too short. Hold on a moment longer next time."); return; }
     var b64 = wavB64(r.chunks, n, r.rate);
-    if (r.purpose === "intake") aiIntake(b64); else aiVoice(b64);
+    if (r.purpose === "intake") aiIntake(b64); else if (r.purpose === "omni") aiOmni(b64); else aiVoice(b64);
   }
   // 16 kHz mono WAV: small, and a format Gemini reads.
   function wavB64(chunks, n, rate) {
@@ -3429,7 +3484,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     } catch (e) { sr = null; toast("Speech isn't available here. Tap the mic on your keyboard to dictate."); }
   }
   function recCard() {
-    if (!rec && !sr) return null;
+    if ((!rec && !sr) || (rec && rec.purpose === "omni")) return null;
     return h("div", { class: "card rec", id: "rec", role: "status" },
       h("p", { class: "status" }, h("span", { class: "recdot", "aria-hidden": "true" }), rec && rec.pending ? "Starting the microphone…" : sr ? "Listening…" : "Recording ", rec && !rec.pending ? h("span", { id: "rec-time", text: mmss(Date.now() - rec.start) }) : null),
       h("p", { class: "small", text: rec && rec.purpose === "intake" ? "Talk freely: what you like, what calms you, your routines, what's hard. Up to 5 minutes." : rec ? "Say everything on your mind. Ten Days turns it into tasks, most urgent first." : "Speak, and the words go in the box." }),
@@ -5841,6 +5896,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     if (p.call !== undefined) { ui.callFrom = { num: p.call, who: p.from || "" }; go("call"); return true; }
     if (p.moments) { go("moments"); return true; }
     if (p.breathe) { go("together"); return true; }
+    if (p.calm) { go("breathe"); return true; }
     if (p.people) { go("people"); return true; }
     return !!p.n;
   }
@@ -5962,7 +6018,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     var items = [], now = new Date(), w = hardHours(), c = checkedToday();
     for (var d = 0; d < 7; d++) {
       var day = addDays(now, d), base = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime(), dk = dayKey(day), n = 0;
-      if (S.hardPing && w) items.push({ key: "hard:" + dk, at: base + w.start * 3600e3 - 15 * 60e3, title: "Heads-up", body: "The next couple of hours are usually hard. Your plan: " + (S.profile.step || defaultStep()), kind: "hard", url: "./" });
+      if (S.hardPing && w) items.push({ key: "hard:" + dk, at: base + w.start * 3600e3 - 15 * 60e3, title: "Heads-up", body: "The next couple of hours are usually hard. Your plan: " + (S.profile.step || defaultStep()), kind: "hard", url: "./#calm" });
       S.checkins.forEach(function (x) {
         var t = ckTime(x), st = S.nudge.items[x.id], at = base + t * 60e3;
         if (t < 0 || n >= 3 || (st && st.quiet > at) || (d === 0 && c.indexOf(x.id) >= 0)) return;
@@ -6269,6 +6325,251 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
         } }, "Start")));
   }
 
+  // ============ the Omni-Mic: one tap, say it all, and it happens as you speak ============
+  // Where the phone offers live speech recognition, each thing is done the moment it's heard.
+  // Where it doesn't (some installed iPhone apps), it records, stops when you stop talking, and the AI helper transcribes.
+  var omni = null;
+  var SAID_LEAD = /^(?:(?:and|also|then|plus|oh|um|uh|so|okay|ok|hey)[, ]+)*(?:(?:i|we)(?: also| still| really)? (?:need|have|want|got|gotta|should|must)(?: to)?|i(?:'d| would) like to|i(?:'m| am) (?:going to|gonna)|i gotta|gotta|need to|have to|remind me to|remember to|don't forget to|make sure (?:i|to)|please|can you|could you|add(?: a| an| the)?(?: task(?: to| for)?)?|put|schedule(?: a| an| the)?)\s+/i;
+  var VERB_RE = /^(?:finish|do|call|text|email|go|buy|get|pick|prep|prepare|study|read|write|clean|wash|book|pay|send|submit|start|work|practice|train|review|make|cook|schedule|plan|meet|add|delete|remove|clear|mark|move|bring|undo|restore|check|take|watch|order|fix|update|research|find|apply|renew|cancel|return|drop|tell|track|i |remind|gym|run|walk|stretch|meditate|journal)\b/i;
+  var UNDO_RE = /^(?:(?:please |now |and |then |actually |wait |no )*(?:bring (?:them|it|that|those|everything|all of (?:them|it)|(?:the|my) tasks?) back|undo(?: that| it)?|restore (?:them|it|everything|(?:the|my) tasks?)|put (?:them|it|everything) back))$/i;
+  var DELALL_RE = /^(?:(?:please |now |and |then )*(?:delete|remove|clear|erase|wipe|get rid of) (?:all|every|everything)(?: (?:of )?(?:my |the )?(?:tasks?|them|it))?)$/i;
+  function splitSaid(text) {
+    var s = normText(text).replace(/[.!?;]+/g, ",").replace(/\s+(?=(?:bring (?:them|it|everything) back|undo\b|put (?:them|it) back|restore (?:them|it|everything)))/gi, ", ");
+    var out = [];
+    s.split(/\s*,\s*|\s+(?:and then|then|and also|also|plus)\s+/i).forEach(function (p) {
+      var sub = p.split(/\s+and\s+/i), cur = sub[0];
+      for (var i = 1; i < sub.length; i++) { if (VERB_RE.test(sub[i].replace(SAID_LEAD, ""))) { out.push(cur); cur = sub[i]; } else cur += " and " + sub[i]; }
+      out.push(cur);
+    });
+    return out.map(function (x) { return x.trim(); }).filter(function (x) { return x.length > 1; });
+  }
+  function cleanSaid(c) { var p = "", s = c.trim(); while (s !== p) { p = s; s = s.replace(SAID_LEAD, "").trim(); } return s; }
+  // How much it takes out of you: decides when in the day it goes, and how many fit in one day.
+  function loadOf(d) {
+    var t = (d.title + " " + (d.src || "")).toLowerCase();
+    if (/\b(?:heavy|hard|deep|big|tough)\b/.test(t) || DEADLINE_RE.test(t) || /\b(?:study|accounting|finance|coding|code|write|research|taxes|analysis|presentation|interview|budget|statistics|calculus|chemistry|physics)\b/.test(t)) return "heavy";
+    if (d.type === "CALL" || d.type === "ERRAND" || /\b(?:email|text|call|buy|pick up|laundry|dishes|clean|pay|order|renew|light|quick|easy)\b/.test(t) || (d.dur && d.dur <= 15)) return "light";
+    return "normal";
+  }
+  function heavyMins(off) { var d = addDays(new Date(), off); return S.tasks.filter(function (t) { return t.load === "heavy" && !isDone(t) && (off ? occursOn(t, d) : inToday(t)); }).reduce(function (a, t) { return a + (t.dur || 45); }, 0); }
+  // Finds the task a place on the ten-day horizon: heavy work early, light things late, never on a class, at most three heavy hours a day.
+  function autoSlot(d) {
+    if (d.time || d.anchor || d.repeat !== "once") return false;
+    var load = d.load || loadOf(d), now = new Date(), fixed = !!d.date;
+    if (!d.dur) { d.dur = load === "heavy" ? 45 : load === "light" ? 15 : 30; d.sugg.dur = "suggested"; }
+    var first = d.date ? Math.max(0, dayNum(parseDay(d.date).getTime()) - dayNum(now.getTime())) : 0;
+    for (var off = first; off < (fixed ? first + 1 : 10); off++) {
+      if (load === "heavy" && !fixed && heavyMins(off) + d.dur > 180) continue;
+      var day = addDays(now, off), from = todayAt(load === "heavy" ? "09:00" : load === "light" ? "16:00" : "12:00", day);
+      if (off === 0) from = Math.max(from, now.getTime() + 15 * 60000);
+      var end = todayAt("21:30", day); if (from > end) continue;
+      var s = nextFree(off, from, d.dur);
+      if (s && todayAt(s, day) + d.dur * 60000 <= todayAt("22:00", day)) { d.time = s; d.date = dayKey(day); d.sugg.time = "slotted"; return true; }
+    }
+    return false;
+  }
+  function voiceTask(clause) {
+    var said = cleanSaid(clause), bk = said.match(/^(?:a |an |some )?(?:good )?books? (?:recommendations?|recs?|suggestions?|ideas?) (?:on|about|for) (.+)$/i) || said.match(/^(?:recommend|suggest)(?: me)? (?:a |some )?(?:good )?books? (?:on|about|for) (.+)$/i);
+    var d;
+    if (bk) {
+      var topic = bk[1].replace(/[.!]+$/, "").trim();
+      d = blankDraft("Find a book on " + topic); d.type = "READ"; d.priority = "low"; d.load = "light"; d.dur = 5; d.sugg.dur = "suggested";
+      if (S.interests.indexOf(topic.toLowerCase()) < 0) { S.interests.push(topic.toLowerCase().slice(0, 40)); S.interests = S.interests.slice(-12); }
+    } else {
+      d = newDraft(said) || blankDraft(said);
+      d.load = loadOf(d);
+    }
+    d.asked = ["anchor", "when", "items", "time", "phone", "due", "start"];   // voice never stops to ask
+    var before = S.tasks.length;
+    if (!learned(kindKey(d.title)) || !learned(kindKey(d.title)).time) autoSlot(d);
+    commitDraft(d, "", "Saved");
+    var made = S.tasks.length > before ? S.tasks[S.tasks.length - 1] : null;
+    S.asst = null;
+    if (!made) return "Already on your list: " + d.title;
+    if (!made.time && made.repeat === "once") { var x = taskToDraft(made); x.load = d.load; if (autoSlot(x)) { made.time = x.time; made.date = x.date; made.dur = x.dur; } }
+    made.load = d.load; normTask(made); save();
+    return made.title + (whenLabel(made) ? " · " + whenLabel(made) : "") + (made.dur ? " · " + durText(made.dur) : "");
+  }
+  // one spoken thing: a command, or something to do
+  function voiceDo(clause) {
+    var c = clause.trim().replace(/[.!?]+$/, ""), plain = c.replace(/^(?:and|then|also|now|please)\s+/i, "");
+    if (UNDO_RE.test(plain)) { if (!hist.length) return "Nothing to bring back"; undoHist(); return "Brought them back"; }
+    if (DELALL_RE.test(plain)) {
+      if (!S.tasks.length) return "Nothing to delete";
+      var n = S.tasks.length; pushHist("deleting everything"); S.tasks.forEach(function (t) { bankTask(t); }); S.tasks = []; S.asst = null; save();
+      return "Deleted all " + n + ". Say “bring them back” to undo";
+    }
+    var said = cleanSaid(plain) || plain, n0 = S.tasks.length, snap = snapState();
+    var mc = msgCommand(said); if (mc) return mc === "nav" ? "Telling him" : "Message to " + hisName();
+    if (countCommand(said)) return "Counted";
+    var bl = parseBlock(said); if (bl) { addBlock(bl); return "Added to your week: " + bl.title; }
+    if (runCommand(said)) { if (snapState() !== snap && !(hist.length && hist[hist.length - 1].snap === snap)) { hist.push({ label: "that", snap: snap }); if (hist.length > 40) hist.shift(); } save(); return S.tasks.length < n0 ? "Deleted" : "Done"; }
+    if (intentOf(said) === "support") { S.lastFeel = { at: Date.now(), text: said.slice(0, 200) }; omniEnd(true); openSupport("text"); return "I'm here"; }
+    pushHist("adding that");
+    var res = voiceTask(said);
+    if (snapState() === snap) hist.pop();   // nothing changed (it was already on your list)
+    return res;
+  }
+  function omniLog(text, out) { if (!omni) return; omni.log.push({ text: text, out: out }); omni.n++; if (omni.log.length > 4) omni.log.shift(); }
+  function omniHear(text) {
+    splitSaid(text).forEach(function (cl) {
+      var key = cl.toLowerCase().replace(/[^a-z ]/g, "").trim(), i = omni ? omni.eager.indexOf(key) : -1;
+      if (i >= 0) { omni.eager.splice(i, 1); return; }   // already done while you were still talking
+      var out = voiceDo(cl); omniLog(cl, out);
+    });
+    if (omni) { clearTimeout(toastT); $("toast").hidden = true; }   // the panel shows what happened; one summary comes at the end
+    render(false); omniPaint();
+  }
+  // "delete all tasks" and "bring them back" act mid-sentence, without waiting for a pause
+  function omniEager(interim) {
+    if (!omni) return;
+    var rest = interim.slice(omni.eaten).trim().replace(/[.!?,]+$/, "");
+    if (!rest) return;
+    var parts = splitSaid(rest), lastC = parts[parts.length - 1] || "";
+    if (UNDO_RE.test(lastC) || DELALL_RE.test(lastC)) {
+      parts.slice(0, -1).forEach(function (cl) { omni.eager.push(cl.toLowerCase().replace(/[^a-z ]/g, "").trim()); omniLog(cl, voiceDo(cl)); });
+      omni.eager.push(lastC.toLowerCase().replace(/[^a-z ]/g, "").trim()); omniLog(lastC, voiceDo(lastC));
+      omni.eaten = interim.length; render(false);
+    }
+  }
+  function omniPaint() {
+    var box = $("omni-live"), b = $("omni"); if (b) { b.classList.toggle("on", !!omni || !!(rec && rec.purpose === "omni")); b.setAttribute("aria-pressed", omni || (rec && rec.purpose === "omni") ? "true" : "false"); }
+    if (!box) return;
+    var recOn = rec && rec.purpose === "omni";
+    if (!omni && !recOn) { box.hidden = true; return; }
+    box.hidden = false;
+    box.replaceChildren.apply(box, [
+      h("p", { class: "ol-h" }, h("span", { class: "recdot", "aria-hidden": "true" }), recOn ? (rec.pending ? "Starting…" : "Listening. It stops when you do.") : "Listening…"),
+      omni && omni.interim ? h("p", { class: "ol-i", id: "omni-interim", text: omni.interim }) : null,
+      omni ? h("ul", { class: "ol-log", id: "omni-log" }, omni.log.map(function (l) { return h("li", null, icon("check"), h("span", { text: l.out })); })) : null,
+      !omni || (!omni.interim && !omni.log.length) ? h("p", { class: "small", text: "Say everything: “finish accounting today, gym at 6, call Mom”. Or “delete all tasks”, then “bring them back”." }) : null
+    ].filter(Boolean));
+  }
+  function omniEnd(silent) {
+    var o = omni; if (!o) return; omni = null;
+    clearInterval(o.t);
+    try { o.sr.onend = null; o.sr.onresult = null; o.sr.stop(); } catch (e) {}
+    if (!silent) {
+      if (o.n) toast(o.n === 1 ? o.log[o.log.length - 1].out + "." : "Done: " + o.n + " things. Say or tap Undo to step back.", 6000, hist.length ? { label: "Undo", fn: undoHist } : null);
+      else toast("I didn't catch anything.");
+      announce(o.n ? o.n + " things done." : "Nothing heard.");
+    }
+    render(false); omniPaint();
+  }
+  function omniLive(SR) {
+    try {
+      var r = new SR(); r.lang = navigator.language || "en-US"; r.interimResults = true; r.continuous = true;
+      omni = { sr: r, interim: "", log: [], n: 0, eager: [], eaten: 0, last: Date.now(), start: Date.now() };
+      r.onresult = function (e) {
+        if (!omni) return;
+        var interim = "";
+        for (var i = e.resultIndex; i < e.results.length; i++) {
+          var res = e.results[i], t = res[0].transcript;
+          if (res.isFinal) { omni.interim = ""; omni.eaten = 0; omniHear(t); } else interim += t;
+        }
+        if (!omni) return;
+        omni.last = Date.now(); omni.interim = interim;
+        if (interim) omniEager(interim);
+        omniPaint();
+      };
+      r.onerror = function (e) { var why = e && e.error; if (why === "no-speech" || why === "aborted") return; omniEnd(true); toast(why === "not-allowed" || why === "service-not-allowed" ? "Speech access is off for Ten Days. Allow the microphone and speech recognition in Settings." : "Couldn't hear that. Try again.", 6000); };
+      r.onend = function () { if (omni && omni.sr === r) { if (omni.interim.trim()) omniHear(omni.interim); omniEnd(); } };
+      r.start();
+      // you stop talking, it stops listening
+      omni.t = setInterval(function () { if (omni && Date.now() - omni.last > (omni.n || omni.interim ? 2600 : 9000)) { if (omni.interim.trim()) { var x = omni.interim; omni.interim = ""; omniHear(x); } omniEnd(); } }, 300);
+      haptic("tick"); render(false); omniPaint(); announce("Listening.");
+    } catch (e) { omni = null; toast("Live listening isn't available here."); }
+  }
+  function omniTap() {
+    if (omni) { if (omni.interim.trim()) { var x = omni.interim; omni.interim = ""; omniHear(x); } omniEnd(); return; }
+    if (rec && rec.purpose === "omni") { stopRec(true); omniPaint(); return; }
+    if (rec || sr) return;
+    var SR = srClass();
+    if (SR) { omniLive(SR); return; }
+    if (aiOn("tasks")) { startRec("omni"); setTimeout(omniPaint, 0); return; }
+    toast("Voice needs either live speech recognition (not offered by this browser) or the AI helper turned on in You.", 7000);
+  }
+  // recorded instead of live: the transcript goes through the same steps
+  function aiOmni(b64) {
+    toast("Working out what you said…", 8000);
+    aiCall("A voice note is attached. Transcribe exactly what was said. Reply with JSON only: {\"transcript\":\"\"}.", "Voice note follows.", { json: true, audio: { mime: "audio/wav", b64: b64 }, wait: 45000, max: 1200, bare: true }).then(function (r) {
+      var t = r.ok && obj(r.data) ? str(r.data.transcript, 1200).trim() : "";
+      if (!t) { toast(r.ok ? "I didn't catch anything." : "AI not available: " + aiWhy(r), 6000); return; }
+      omni = { sr: { stop: function () {} }, interim: "", log: [], n: 0, eager: [], eaten: 0, last: Date.now(), start: Date.now() };
+      omniHear(t); omniEnd();
+    });
+  }
+
+  // ============ the manager: three things for now, the rest out of the way ============
+  function managerPick(now) {
+    var band = nowBand(now), ms = now.getTime();
+    var open = S.tasks.filter(function (t) { return inToday(t, now) && !isDone(t, now) && !(t.snoozeUntil > ms); });
+    var nowish = open.filter(function (t) { var d = dueAt(t, now); if (d === null) return true; return d < ms || bandOfMin(new Date(d).getHours() * 60) === band; });
+    nowish.sort(byTop(now));
+    var top = nowish.slice(0, 3);
+    if (top.length < 3) open.filter(function (t) { return top.indexOf(t) < 0; }).sort(function (a, b) { return (dueAt(a, now) || 9e15) - (dueAt(b, now) || 9e15); }).slice(0, 3 - top.length).forEach(function (t) { top.push(t); });
+    return { top: top, open: open, band: band };
+  }
+  function managerBlock(now) {
+    var m = managerPick(now), hidden = m.open.length - m.top.length, all = !!ui.mgrAll;
+    var name = { morning: "This morning", afternoon: "This afternoon", night: "Tonight" }[m.band];
+    if (!m.open.length) return h("section", { class: "mgr glass-card", id: "mgr" }, h("p", { class: "lbl", text: name }), h("p", { class: "status", id: "mgr-clear", text: S.tasks.some(function (t) { return inToday(t, now); }) ? "Everything for today is done." : "Nothing on today. Tap the mic and say what's on your mind." }));
+    return h("section", { class: "mgr glass-card", id: "mgr", "aria-labelledby": "mgr-h" },
+      h("div", { class: "mohead" }, h("h2", { class: "mgr-h", id: "mgr-h", text: name }), h("span", { class: "small", id: "mgr-n", text: m.top.length + " of " + m.open.length })),
+      h("div", { class: "tgrid one", id: "mgr-top" }, m.top.map(function (t) { return tile(t, now, false); })),
+      hidden > 0 ? h("button", { class: "btn link sm", type: "button", id: "mgr-more", "aria-expanded": all ? "true" : "false", onclick: function () { ui.mgrAll = !all; render(false); } }, all ? "Just these three" : hidden + " more today, out of the way") : null);
+  }
+  // one small thing to learn, only from books you've added
+  function learnCard() {
+    var due = quizDue("");
+    if (due.length) { var qd = S.docs.filter(function (x) { return x.id === due[0].docId; })[0]; return h("button", { class: "card learn", type: "button", id: "learn", onclick: function () { ui.qz = null; go("quiz", qd ? { docId: qd.id } : null); } }, h("span", { class: "lbl" }, icon("book"), " Learn · 5 min"), h("b", { text: due.length + (due.length === 1 ? " question" : " questions") + " to review" + (qd ? " from " + qd.name : "") })); }
+    var books = S.docs.filter(function (d) { return d.status === "ready" && (d.pos || 1) < d.pages && readToday(d).length < goalOf(d); });
+    if (!books.length) return null;
+    var score = function (d) { var n = d.name.toLowerCase(); return (S.interests.some(function (i) { return i.split(/\s+/).some(function (w) { return w.length > 3 && n.indexOf(w) >= 0; }); }) ? 4 : 0) + (d.kind === "learning" ? 2 : 0) + (d.lastRead ? 1 : 0); };
+    var d = books.sort(function (a, b) { return score(b) - score(a) || (b.lastRead || 0) - (a.lastRead || 0); })[0];
+    return h("button", { class: "card learn", type: "button", id: "learn", onclick: function () { openBook(d); } }, h("span", { class: "lbl" }, icon("book"), " Learn · 5 min"), h("b", { text: d.name }), h("span", { class: "small", text: "A few pages from page " + (d.pos || 1) + "." }));
+  }
+  // You | him, at the top of Today
+  function whoToggle() {
+    if (!S.partner.name && !S.partner.topic && !(moOn() && moOthers().length)) return null;
+    var him = ui.who === "him";
+    return h("div", { class: "seg two who", id: "who", role: "group", "aria-label": "Whose day" },
+      h("button", { type: "button", id: "who-me", "aria-pressed": him ? "false" : "true", onclick: function () { ui.who = "me"; render(false); } }, "You"),
+      h("button", { type: "button", id: "who-him", "aria-pressed": him ? "true" : "false", onclick: function () { ui.who = "him"; pollPartner(); moSync(); render(false); } }, HisName(), moOn() && moLive().length ? h("span", { class: "live", "aria-label": "here now" }) : null));
+  }
+  function hisPanel() {
+    var P = S.partner, msg = h("input", { type: "text", id: "him-msg", maxlength: "300", autocomplete: "off", autocapitalize: "sentences", enterkeyhint: "send", placeholder: "Message " + hisName() + "…", "aria-label": "Message " + hisName() });
+    var mine = S.mo.me ? S.mo.me.id : "", last = moOn() ? S.moments.filter(function (m) { return !m.deleted && m.author !== mine; }).slice(-1)[0] : null;
+    return h("section", { class: "mgr glass-card", id: "him" },
+      h("div", { class: "phead" }, h("span", { class: "pav" + (moOn() && moLive().length ? " live" : ""), "aria-hidden": "true", text: (P.name || "B").charAt(0).toUpperCase() }), h("h2", { class: "mgr-h", text: HisName() }),
+        hisWord() ? h("span", { class: "pword", id: "him-word", text: hisWord() }) : null, P.at ? h("span", { class: "small", text: ago(P.at) }) : null),
+      P.last ? statusView(P.last, "him") : h("p", { class: "small", id: "him-none", text: P.topic ? "His day shows here once he opens Ten Days." : "When he shares his day, his tasks, check-ins and counts show here." }),
+      last ? h("div", { class: "group" }, last.hasPhoto ? moPhoto(last, "sm") : null, last.caption ? h("p", { class: "mocap", text: last.caption }) : null, reactRow(last, "him-r")) : null,
+      h("form", { class: "inline", onsubmit: function (e) { e.preventDefault(); var v = msg.value.trim(); if (!v) return; msg.value = ""; sendMsg(v); } }, msg, h("button", { class: "btn", type: "submit", id: "him-send", "aria-label": "Send to " + hisName() }, icon("send"))),
+      h("div", { class: "row" }, callLink(false), togetherBtn("him-breathe"), h("button", { class: "btn link", type: "button", id: "him-more", onclick: function () { go("people"); } }, "More")));
+  }
+
+  // ============ glass that answers the tilt of the phone ============
+  function tiltWanted() { return S.fx.tilt === true || (S.fx.tilt == null && !(window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function")); }
+  var tiltRaf = 0, tiltOn = false;
+  function onTilt(e) {
+    var t = Date.now(); if (e.gamma == null || t - tiltRaf < 40) return;   // at most 25 updates a second
+    tiltRaf = t;
+    var x = Math.max(-1, Math.min(1, (e.gamma || 0) / 30)), y = Math.max(-1, Math.min(1, ((e.beta || 0) - 40) / 30)), st = document.documentElement.style;
+    st.setProperty("--gx", x.toFixed(3)); st.setProperty("--gy", y.toFixed(3));
+  }
+  function applyTilt() {
+    var want = tiltWanted() && !reduced() && "DeviceOrientationEvent" in window;
+    if (want && !tiltOn) { window.addEventListener("deviceorientation", onTilt, { passive: true }); tiltOn = true; }
+    if (!want && tiltOn) { window.removeEventListener("deviceorientation", onTilt); tiltOn = false; document.documentElement.style.removeProperty("--gx"); document.documentElement.style.removeProperty("--gy"); }
+  }
+  function askTilt(on) {
+    if (!on) { S.fx.tilt = false; save(); applyTilt(); return; }
+    var D = window.DeviceOrientationEvent;
+    if (D && typeof D.requestPermission === "function") D.requestPermission().then(function (p) { S.fx.tilt = p === "granted"; save(); applyTilt(); if (p !== "granted") toast("Motion access is off, so the glass stays still."); render(false); }, function () { S.fx.tilt = false; save(); render(false); });
+    else { S.fx.tilt = true; save(); applyTilt(); }
+  }
+
   var SCREENS = {
     a2hs: function () {
       return { title: "Add Ten Days to your Home Screen", body: [
@@ -6373,6 +6674,39 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
       var tb = function (id, ic, label, fn, extra) { var b = h("button", Object.assign({ class: "tbtn", type: "button", id: id, onclick: fn }, extra || {}), icon(ic), h("span", { text: label })); return b; };
       var tool = function (id, ic, label, fn) { return h("button", { class: "tool", type: "button", id: id, onclick: fn }, icon(ic), h("span", { text: label })); };
       var upOpen = !!ui.showUp;
+      if (S.calm) {
+        var him = ui.who === "him" && !!whoToggle(), dayOff = ui.day || 0, more = !!ui.more;
+        return { title: "Today", body: [
+          a2hsNote(), movedNote(),
+          h("button", { class: "topline", type: "button", id: "strip", onclick: function () { go("progress"); }, "aria-label": now.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }) + ". " + (st0.total ? st0.done + " of " + st0.total + " done today" : "Nothing on today's list") + ". Open Progress" },
+            h("span", { class: "ring", "aria-hidden": "true", style: "--p:" + p }), h("span", { class: "tl-date", "aria-hidden": "true", id: "today-date", text: now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }) }),
+            h("span", { class: "tl-stat", "aria-hidden": "true", text: (st0.total ? st0.done + " of " + st0.total + " done" : "A clear day") + (S.fx.rpg ? " · Lv " + L.level : "") })),
+          whoToggle(),
+          him ? hisPanel() : [
+            nowNext(now),
+            form,
+            h("span", { id: "qa-hint", hidden: true, text: "Tasks, plans, thoughts, or how you feel." }),
+            recCard(), asstView(), alertCard, hardCard(now), togetherCard(), nudgeCard(now),
+            dayOff ? null : managerBlock(now),
+            dayOff ? null : pushCard(),
+            dayOff ? null : hayCard(now),
+            dayOff ? null : learnCard(),
+            dayOff ? null : checkinsBlock(),
+            horizon(),
+            dayOff ? h("div", { class: "group", id: "task-area" }, dayView(dayOff)) : null,
+            !dayOff && ui.mgrAll ? h("div", { class: "group", id: "task-area" }, gridView(now, 0)) : null,
+            h("details", { class: "adv more", id: "more", open: more, ontoggle: function (e) { ui.more = e.target.open; } }, h("summary", null, "More"),
+              h("div", { class: "group" }, intakePrompt(), orgLine(), noticedCard(), challengeBars(), momentCard(), readingBlock(),
+                h("div", { class: "tbar", role: "toolbar", "aria-label": "List tools" },
+                  tb("tb-select", "check", ui.selecting ? "Done" : "Select", function () { if (ui.selecting) endSelect(); else { ui.selecting = true; ui.picked = []; ui.mgrAll = true; render(false); } }, { "aria-pressed": ui.selecting ? "true" : "false" }),
+                  tb("tb-undo", "undo", "Undo", undoHist, { disabled: !hist.length }),
+                  tb("all-tasks", "list", "All tasks", function () { go("m-tasks"); })),
+                h("div", { class: "tools", role: "group", "aria-label": "Tools" },
+                  tool("t-breathe", "wind", "Breathe", function () { go("breathe"); }),
+                  tool("t-focus", "timer", S.session ? "Focus · on" : "Focus", function () { go("focus"); }),
+                  tool("t-notes", "note", "Notes", function () { go("notes"); }))))]
+        ], float: [selBar(), sheetView()] };
+      }
       return { title: "Today", body: [
         h("button", { class: "topline", type: "button", id: "strip", onclick: function () { go("progress"); }, "aria-label": now.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }) + ". " + (st0.total ? st0.done + " of " + st0.total + " done today" : "Nothing on today's list") + (S.fx.rpg ? ". Level " + L.level : "") + ". Open Progress" },
           h("span", { class: "ring", "aria-hidden": "true", style: "--p:" + p }), h("span", { class: "tl-date", "aria-hidden": "true", id: "today-date", text: now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }) }),
@@ -6916,6 +7250,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
           return h("button", { type: "button", id: "mo-" + o[0], "aria-pressed": S.fx.motion === o[0] ? "true" : "false", onclick: function () { S.fx.motion = o[0]; applyMotion(); save(); render(false); } }, o[1]);
         })),
         h("p", { class: "small", id: "mo-now", text: reduced() ? "Animations are reduced right now." : "Animations are on right now." }),
+        "DeviceOrientationEvent" in window ? h("label", { class: "toggle", for: "tilt-toggle" }, h("input", { type: "checkbox", id: "tilt-toggle", checked: tiltWanted(), onchange: function (e) { askTilt(e.target.checked); } }), h("span", { text: "Glass highlights follow the tilt of your phone" })) : null,
         tog("haptics-toggle", S.haptics !== false, "Haptics", function (v) { S.haptics = v; }),
         h("p", { class: "small", text: HX.vibrate ? "This device supports vibration." : hxOk ? "On iPhone, haptics use a workaround that works on some iOS versions only." : "This device doesn't offer haptics to web apps." }),
         tog("sound-toggle", S.fx.sound, "Sound (off by default)", function (v) { S.fx.sound = v; if (v) chime("soft", true); }),
@@ -7894,6 +8229,8 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     // bars that float above the dock live outside the animated screen, so they stay put while you scroll
     $("float").replaceChildren.apply($("float"), [].concat(out.float || []).filter(Boolean));
     miniFocus();
+    var om = $("omni"), showOmni = !!S.calm && ui.screen === "home" && !cdT && S.ob.done;
+    if (om) { om.hidden = !showOmni; document.body.classList.toggle("has-omni", showOmni); if (!showOmni && omni) omniEnd(true); omniPaint(); }
     root.setAttribute("data-screen", ui.screen);                       // style hook only
     updateChrome();
     // the entrance animation plays when you arrive on a screen, not on every refresh (no flicker after a tap)
@@ -7960,6 +8297,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
   $("hlbtn").addEventListener("pointerdown", function (e) { e.preventDefault(); saveHighlight(); });
   $("hlbtn").addEventListener("click", saveHighlight);
   $("minifocus").addEventListener("click", function () { go("focus"); });
+  $("omni").appendChild(icon("mic")); $("omni").addEventListener("click", omniTap);
   $("sos").addEventListener("click", onSOS);
   $("cd-cancel").addEventListener("click", cancelSOS);
   $("cd-now").addEventListener("click", function () { if (!cdT) return; stopCountdown(); sendSOS(); });
@@ -7973,7 +8311,7 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     pollReplies(); render(false); schedulePoll();
     pollPartner().then(schedulePartner); sendStatus(); pingHard(); srvAlertCheck(); pushNudgeQuiet(); pushSchedule();
   });
-  window.addEventListener("hashchange", function () { var hs = location.hash; if (/(?:^#|&)moments=1/.test(hs)) ui.moOffer = readMoLink(hs); else if (/(?:^#|&)pair=1/.test(hs)) ui.pairOffer = readPair(hs); else { if (/^#(?:n=|call=|moments$|breathe$|people$)/.test(hs)) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} openFromPush(hs); } return; } try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} go("people"); });
+  window.addEventListener("hashchange", function () { var hs = location.hash; if (/(?:^#|&)moments=1/.test(hs)) ui.moOffer = readMoLink(hs); else if (/(?:^#|&)pair=1/.test(hs)) ui.pairOffer = readPair(hs); else { if (/^#(?:n=|call=|moments$|breathe$|people$|calm$)/.test(hs)) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} openFromPush(hs); } return; } try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} go("people"); });
   window.addEventListener("online", function () { if (!document.hidden) pollReplies(); });
   setInterval(function () {
     var a = document.activeElement, typing = a && (a.id === "qa" || a.id === "task-search" || !!(a.closest && a.closest("#asst")));
@@ -7998,10 +8336,10 @@ body.rd-chrome .rdover { opacity: 1; transform: none; pointer-events: auto; }
     go("home");
   }
   if (/(?:^#|&)pair=1/.test(location.hash)) ui.pairOffer = readPair(location.hash);
-  var pushHash = /^#(?:n=|call=|moments$|breathe$|people$)/.test(location.hash) ? location.hash : "";
+  var pushHash = /^#(?:n=|call=|moments$|breathe$|people$|calm$)/.test(location.hash) ? location.hash : "";
   if (/(?:^#|&)moments=1/.test(location.hash)) ui.moOffer = readMoLink(location.hash);
   if (location.hash) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
-  if (location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__td = { slideMs: function (v) { SL_MS = v; }, pushItems: function () { return pushItems(); }, goal: function (id) { return goalOf(S.docs.filter(function (d) { return d.id === id; })[0]); }, curate: function () { S.curated = ""; return curateCards(); }, rd: function () { return RD ? { cur: RD.cur, drawn: Object.keys(RD.done).map(Number), session: RD.session.slice() } : null; }, moSync: function () { return moSync(); }, readScale: function (v) { READ_SCALE = v; }, block: parseBlock, learned: learned, hard: hardHours, parse: parseQuick, intent: intentOf, plan: planFor, fix: fixFields, next: nextQuestion, draft: newDraft, passages: passages, xp: xpTotal };   // local testing only
+  if (location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__td = { split: splitSaid, slot: function (title) { var d = blankDraft(title); d.load = loadOf(d); autoSlot(d); return { time: d.time, date: d.date, dur: d.dur, load: d.load }; }, slideMs: function (v) { SL_MS = v; }, pushItems: function () { return pushItems(); }, goal: function (id) { return goalOf(S.docs.filter(function (d) { return d.id === id; })[0]); }, curate: function () { S.curated = ""; return curateCards(); }, rd: function () { return RD ? { cur: RD.cur, drawn: Object.keys(RD.done).map(Number), session: RD.session.slice() } : null; }, moSync: function () { return moSync(); }, readScale: function (v) { READ_SCALE = v; }, block: parseBlock, learned: learned, hard: hardHours, parse: parseQuick, intent: intentOf, plan: planFor, fix: fixFields, next: nextQuestion, draft: newDraft, passages: passages, xp: xpTotal };   // local testing only
   measureBar();
   start();
   pollReplies();
